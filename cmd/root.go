@@ -22,11 +22,11 @@ func Execute() {
 	loadEnv(errLogger)
 
 	// Initialize context for backgroun goroutines management
-	ctx, cancel := context.WithCancel(context.Background())
+	_, cancel := context.WithCancel(context.Background())
 	var wg sync.WaitGroup
 
 	// Run background services
-	setupBackgroundService(ctx, &wg)
+	//setupBackgroundService(ctx, &wg)
 
 	// Initialize gin server for API
 	var server = gin.Default()
