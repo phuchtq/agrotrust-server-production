@@ -43,7 +43,6 @@ func setupSwagger(server *gin.Engine, port string) {
 	docs.SwaggerInfo.Title = "AgroTrust Server API"
 	docs.SwaggerInfo.Version = "1.0"
 	docs.SwaggerInfo.Schemes = []string{"https"}
-	docs.SwaggerInfo.Host = "localhost:" + port
 	docs.SwaggerInfo.Host = os.Getenv(env.SERVER_HOST)
 
 	// Add swagger route
