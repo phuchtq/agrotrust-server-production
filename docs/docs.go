@@ -5408,6 +5408,9 @@ const docTemplate = `{
                 "phone_number": {
                     "type": "string"
                 },
+                "profile_id": {
+                    "type": "string"
+                },
                 "refuse_reasons": {
                     "type": "array",
                     "items": {
@@ -5425,9 +5428,6 @@ const docTemplate = `{
                 },
                 "status": {
                     "description": "e.g. \"Pending\", \"Approved\", \"Refused\"",
-                    "type": "string"
-                },
-                "sub": {
                     "type": "string"
                 },
                 "updated_at": {
@@ -6829,8 +6829,8 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "locahost:8080",
 	BasePath:         "/",
 	Schemes:          []string{"http"},
-	Title:            "RaiseChild Server API",
-	Description:      "API for RaiseChild Server",
+	Title:            "AgroTrust Server API",
+	Description:      "API for AgroTrust Server",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",

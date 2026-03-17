@@ -14,6 +14,22 @@ import (
 	"github.com/redis/go-redis/v9"
 )
 
+// if _client == nil {
+// 	_client = redis.NewClient(&redis.Options{
+// 		Addr:         os.Getenv(env.REDIS_ADDRESS),
+// 		Password:     os.Getenv(env.REDIS_PASSWORD),
+// 		PoolSize:     10,
+// 		MinIdleConns: 3,
+// 		DB:           0,
+// 	})
+// }
+
+// if _redisCache == nil {
+// 	_redisCache = &redisCache{
+// 		client: _client,
+// 	}
+// }
+
 type redisCache struct {
 	client    *redis.Client
 	errLogger *log.Logger
@@ -31,31 +47,22 @@ var (
 )
 
 func InitializeRedisCache() IRedisCache {
-	// if _client == nil {
-	// 	_client = redis.NewClient(&redis.Options{
-	// 		Addr:         os.Getenv(env.REDIS_ADDRESS),
-	// 		Password:     os.Getenv(env.REDIS_PASSWORD),
-	// 		PoolSize:     10,
-	// 		MinIdleConns: 3,
-	// 		DB:           0,
-	// 	})
-	// }
-
-	// if _redisCache == nil {
-	// 	_redisCache = &redisCache{
-	// 		client: _client,
-	// 	}
-	// }
-
 	_once.Do(func() {
+		options, _ := redis.ParseURL(os.Getenv(env.REDIS_URL))
+
+		options.PoolSize = 10
+		options.MinIdleConns = 2
+
+		options.DialTimeout = 5 * time.Second
+		options.ReadTimeout = 3 * time.Second
+		options.WriteTimeout = 3 * time.Second
+
+		options.MaxRetries = 3
+		options.MinRetryBackoff = 500 * time.Millisecond
+		options.MaxRetryBackoff = 2 * time.Second
+
 		_redisCache = &redisCache{
-			client: redis.NewClient(&redis.Options{
-				Addr:         os.Getenv(env.REDIS_ADDRESS),
-				Password:     os.Getenv(env.REDIS_PASSWORD),
-				PoolSize:     10,
-				MinIdleConns: 3,
-				DB:           0,
-			}),
+			client:    redis.NewClient(options),
 			errLogger: util.GetLogConfig(shared.ERROR_LEVEL),
 		}
 	})

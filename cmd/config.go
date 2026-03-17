@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"raise-child/constants/env"
 	"raise-child/constants/noti"
 
 	"strings"
@@ -29,7 +30,7 @@ func loadEnv(logger *log.Logger) {
 // Enable CORS
 func corsConfig(server *gin.Engine) {
 	server.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"}, // Allow all origins, or specify ["http://example.com"]
+		AllowOrigins:     []string{"*"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Content-Type", "Authorization"},
 		AllowCredentials: true,
@@ -39,11 +40,11 @@ func corsConfig(server *gin.Engine) {
 
 func setupSwagger(server *gin.Engine, port string) {
 	// Configure swagger info
-	docs.SwaggerInfo.Title = "RaiseChild Server API"
+	docs.SwaggerInfo.Title = "AgroTrust Server API"
 	docs.SwaggerInfo.Version = "1.0"
-	docs.SwaggerInfo.Schemes = []string{"http", "https"}
+	docs.SwaggerInfo.Schemes = []string{"https"}
 	docs.SwaggerInfo.Host = "localhost:" + port
-	//docs.SwaggerInfo.Host = os.Getenv(env.SWAGGER_HOST)
+	docs.SwaggerInfo.Host = os.Getenv(env.SERVER_HOST)
 
 	// Add swagger route
 	server.GET("swagger/*any", gin_swagger.WrapHandler(swagger_files.Handler))

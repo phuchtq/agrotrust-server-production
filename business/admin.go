@@ -102,6 +102,13 @@ func (a *adminService) GetAdmins(req request.GetAdminsRequest, ctx context.Conte
 		return response.PaginationDataResponse{}, err
 	}
 
+	if admins == nil || len(admins) == 0 {
+		return response.PaginationDataResponse{
+			Page:   req.Page,
+			Amount: 0,
+		}, nil
+	}
+
 	var filteredAdmins []entities.AdminNft
 	for i := len(admins) - 1; i >= 0; i-- {
 		var admin entities.AdminNft = admins[i]
