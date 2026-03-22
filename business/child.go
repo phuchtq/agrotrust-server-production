@@ -102,37 +102,53 @@ func GenerateChildService() (business.IChildService, error) {
 
 // GetChild implements business.IChildService.
 func (c *childService) GetChild(id string, ctx context.Context) (response.ChildResponse, error) {
-	if !util.IsValidSuiAddressStrict(id) {
-		return response.ChildResponse{}, errors.New(noti.GENERIC_ERROR_WARN_MSG)
-	}
+	// if !util.IsValidSuiAddressStrict(id) {
+	// 	return response.ChildResponse{}, errors.New(noti.GENERIC_ERROR_WARN_MSG)
+	// }
 
+	// var res response.ChildResponse
+	// var redisKey string = c.getGetChildRediskey(id)
+	// if c.redisCache.Get(redisKey, &res, ctx) {
+	// 	return res, nil
+	// }
+
+	// var client = c.clients[constant.SuiTestnet]
+	// child, err := on_chain.GetOnChainObject[entities.Child](on_chain.GetOnChainObjectRequest{
+	// 	Client:    client,
+	// 	ObjectId:  id,
+	// 	ErrLogger: c.errLogger,
+	// }, ctx)
+	// if err != nil {
+	// 	return response.ChildResponse{}, err
+	// }
+
+	// res = child.ToChildResponse()
+	// if len(res.DynamicFields) > 0 {
+	// 	// Has dynamic fields
+	// 	if dynamicValues, _ := on_chain.GetDynamicFields(id, client, c.errLogger, ctx); dynamicValues != nil {
+	// 		res.DynamicValues = dynamicValues
+	// 	}
+	// }
+
+	// c.redisCache.Set(redisKey, res, time.Minute*5, ctx)
+
+	// return res, err
+
+	////////////////////////
+	// MOCK DATA
 	var res response.ChildResponse
 	var redisKey string = c.getGetChildRediskey(id)
 	if c.redisCache.Get(redisKey, &res, ctx) {
 		return res, nil
 	}
-
-	var client = c.clients[constant.SuiTestnet]
-	child, err := on_chain.GetOnChainObject[entities.Child](on_chain.GetOnChainObjectRequest{
-		Client:    client,
-		ObjectId:  id,
-		ErrLogger: c.errLogger,
-	}, ctx)
-	if err != nil {
-		return response.ChildResponse{}, err
-	}
-
-	res = child.ToChildResponse()
-	if len(res.DynamicFields) > 0 {
-		// Has dynamic fields
-		if dynamicValues, _ := on_chain.GetDynamicFields(id, client, c.errLogger, ctx); dynamicValues != nil {
-			res.DynamicValues = dynamicValues
+	for _, child := range mockChildren {
+		if child.ID == id {
+			c.redisCache.Set(redisKey, child, time.Minute*5, ctx)
+			return child, nil
 		}
 	}
 
-	c.redisCache.Set(redisKey, res, time.Minute*5, ctx)
-
-	return res, err
+	return res, nil
 }
 
 // GetChilds implements business.IChildService.
@@ -153,42 +169,95 @@ func (c *childService) GetChildren(req request.GetChildrenRequest, ctx context.C
 		return res, nil
 	}
 
-	var client = c.clients[constant.SuiTestnet]
-	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-		Client:    client,
-		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-		ErrLogger: c.errLogger,
-	}, ctx)
-	if err != nil {
-		return response.PaginationDataResponse{}, err
-	}
+	// var client = c.clients[constant.SuiTestnet]
+	// manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+	// 	Client:    client,
+	// 	ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+	// 	ErrLogger: c.errLogger,
+	// }, ctx)
+	// if err != nil {
+	// 	return response.PaginationDataResponse{}, err
+	// }
 
-	children, err := on_chain.GetOnChainObjects[entities.Child](on_chain.GetOnChainObjectsRequest{
-		Client:    client,
-		ObjectIds: manageObj.ChildIds,
-		ErrLogger: c.errLogger,
-	}, ctx)
-	if err != nil {
-		return response.PaginationDataResponse{}, err
-	}
+	// children, err := on_chain.GetOnChainObjects[entities.Child](on_chain.GetOnChainObjectsRequest{
+	// 	Client:    client,
+	// 	ObjectIds: manageObj.ChildIds,
+	// 	ErrLogger: c.errLogger,
+	// }, ctx)
+	// if err != nil {
+	// 	return response.PaginationDataResponse{}, err
+	// }
 
-	if children == nil {
-		return response.PaginationDataResponse{}, nil
-	}
+	// if children == nil || len(children) == 0 {
+	// 	return response.PaginationDataResponse{}, nil
+	// }
 
-	if req.Page < 1 {
-		req.Page = 1
-	}
+	// var keyword string = util.StanderizeString(req.Keyword)
+	// var region string = util.StanderizeString(req.Region)
+	// var filteredChildren []entities.Child
+	// for i := len(children) - 1; i >= 0; i-- {
+	// 	var child entities.Child = children[i]
 
-	if req.PageSize < 1 {
-		req.PageSize = default_page_size
-	}
+	// 	if region != "" {
+	// 		if util.StanderizeString(child.Region) != region { // Not matched
+	// 			continue
+	// 		}
+	// 	}
 
+	// 	if req.Gender != "" {
+	// 		if child.Gender != req.Gender { // Not matched
+	// 			continue
+	// 		}
+	// 	}
+
+	// 	if req.YearOfBirth != nil {
+	// 		var dob time.Time = util.RawDateToTime(child.DateOfBirth)
+	// 		if dob.Year() != *req.YearOfBirth { // Not matched
+	// 			continue
+	// 		}
+	// 	}
+
+	// 	if keyword != "" {
+	// 		var firstName string = util.StanderizeString(child.FirstName)
+	// 		var lastName string = util.StanderizeString(child.LastName)
+	// 		if !strings.Contains(firstName, keyword) && !strings.Contains(lastName, keyword) && !strings.Contains(child.IdentityCode, keyword) { // Not matched
+	// 			continue
+	// 		}
+	// 	}
+
+	// 	filteredChildren = append(filteredChildren, child)
+	// }
+
+	// sort.Slice(filteredChildren, func(i, j int) bool {
+	// 	var name1 string = filteredChildren[i].LastName + " " + filteredChildren[i].FirstName
+	// 	var name2 string = filteredChildren[j].LastName + " " + filteredChildren[j].FirstName
+
+	// 	if req.SortOrder == "ASC" {
+	// 		return name1 < name2
+	// 	}
+
+	// 	return name2 > name1
+	// })
+
+	// var skippedRecords int = (req.Page - 1) * req.PageSize
+	// if len(filteredChildren) <= skippedRecords {
+	// 	return response.PaginationDataResponse{}, nil
+	// }
+
+	// var data []response.ChildResponse
+	// for i := skippedRecords; i < len(filteredChildren); i++ {
+	// 	data = append(data, filteredChildren[i].ToMinimumChildResponse())
+	// }
+
+	//////////////////
+	// MOCK DATA
+
+	var children = mockChildren
 	var keyword string = util.StanderizeString(req.Keyword)
 	var region string = util.StanderizeString(req.Region)
-	var filteredChildren []entities.Child
+	var filteredChildren []response.ChildResponse
 	for i := len(children) - 1; i >= 0; i-- {
-		var child entities.Child = children[i]
+		var child response.ChildResponse = children[i]
 
 		if region != "" {
 			if util.StanderizeString(child.Region) != region { // Not matched
@@ -203,8 +272,7 @@ func (c *childService) GetChildren(req request.GetChildrenRequest, ctx context.C
 		}
 
 		if req.YearOfBirth != nil {
-			var dob time.Time = util.RawDateToTime(child.DateOfBirth)
-			if dob.Year() != *req.YearOfBirth { // Not matched
+			if child.DateOfBirth.Year() != *req.YearOfBirth { // Not matched
 				continue
 			}
 		}
@@ -238,7 +306,7 @@ func (c *childService) GetChildren(req request.GetChildrenRequest, ctx context.C
 
 	var data []response.ChildResponse
 	for i := skippedRecords; i < len(filteredChildren); i++ {
-		data = append(data, filteredChildren[i].ToMinimumChildResponse())
+		data = append(data, filteredChildren[i])
 	}
 
 	res = response.PaginationDataResponse{
@@ -2246,4 +2314,65 @@ func (c *childService) getGetChildrenRediskey(req request.GetChildrenRequest) st
 
 func (c *childService) getGetChildRediskey(id string) string {
 	return fmt.Sprintf("child:%s", id)
+}
+
+var mockChildren = getMockChildren()
+
+func getMockChildren() []response.ChildResponse {
+	now := time.Now()
+	children := make([]response.ChildResponse, 20)
+
+	firstNames := []string{"Hào", "Gia", "Bảo", "Minh", "Tuệ", "An", "Linh", "Khôi", "Diệp", "Thanh", "Đức", "Trí", "Ngọc", "Mai", "Lan", "Hùng", "Sơn", "Vinh", "Phúc", "Quý"}
+	lastNames := []string{"Nguyễn", "Trần", "Lê", "Phạm", "Hoàng", "Phan", "Vũ", "Đặng", "Bùi", "Đỗ"}
+
+	for i := 0; i < 20; i++ {
+		// idStr := string(rune('1' + i)) // Simple string ID "1", "2"...
+		// if i >= 9 {
+		// 	// Handle 2-digit IDs
+		// 	idStr = fmt.Sprintf("%d", i+1)
+		// }
+
+		children[i] = response.ChildResponse{
+			ID:           fmt.Sprintf("%d", i+1),
+			IdentityCode: fmt.Sprintf("CHILD-%06d", 100+i),
+			FirstName:    firstNames[i],
+			LastName:     lastNames[i%10],
+			Gender:       []string{"Male", "Female"}[i%2],
+			DateOfBirth:  time.Date(2015+i%5, time.Month(i%12+1), 1, 0, 0, 0, 0, time.UTC),
+			HomeAddress:  fmt.Sprintf("%d Đường số %d, Phường %d", i+10, i, i%10),
+			Region:       "Hồ Chí Minh",
+			AvatarBlobId: fmt.Sprintf("avt-child-%d", i+1),
+			HomeBlobID:   fmt.Sprintf("home-child-%d", i+1),
+			FirstGuardian: request.ChildGuardianProfile{
+				FullName:           lastNames[i%10] + " Văn A",
+				PhoneNumber:        "0900000001",
+				Relation:           "Father",
+				IdentityCardBlobID: "id-card-g1",
+			},
+			SecondGuardian: &request.ChildGuardianProfile{
+				FullName:           lastNames[(i+1)%10] + " Thị B",
+				PhoneNumber:        "0900000002",
+				Relation:           "Mother",
+				IdentityCardBlobID: "id-card-g2",
+			},
+			ImageBlobIds:         []string{"img-1", "img-2"},
+			UploadImagePeriods:   []time.Time{now.Add(-24 * time.Hour), now},
+			DynamicFields:        []string{"height", "weight"},
+			BooksNeeds:           []string{"Sách Toán lớp 1", "Truyện tranh"},
+			HealthInsuranceNeed:  "BHYT Tự nguyện",
+			MealNeed:             "Cơm trưa tại trường",
+			SpecialNeedProposals: []string{"Hỗ trợ xe đạp"},
+			SpecialNeedCampaigns: []string{"Trung thu cho em"},
+			Gifts:                []string{"Bánh kẹo", "Quần áo"},
+			UploadedBy:           "admin-01",
+			UploadedAt:           now.Add(-48 * time.Hour),
+			UpdatedAt:            now,
+			DynamicValues: map[string]interface{}{
+				"height": 120 + i,
+				"weight": 25 + i,
+			},
+		}
+	}
+
+	return children
 }

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"raise-child/constants/env"
 	"raise-child/constants/noti"
@@ -285,15 +286,59 @@ func (u *uploadChildRequestService) CreateUploadChildRequest(req request.UploadC
 
 // GetUploadChildRequest implements business.IUploadChildRequestService.
 func (u *uploadChildRequestService) GetUploadChildRequest(id string, ctx context.Context) (*entities.UploadChildRequest, error) {
-	if id == "" {
-		return nil, errors.New(noti.GENERIC_ERROR_WARN_MSG)
+	//return u.uploadChildRequestRepo.GetUploadChildRequest(id, ctx)
+
+	for _, req := range mockUploadChildReqs {
+		if req.ID == id {
+			return &req, nil
+		}
 	}
 
-	return u.uploadChildRequestRepo.GetUploadChildRequest(id, ctx)
+	return nil, nil
 }
 
 // GetUploadChildRequests implements business.IUploadChildRequestService.
 func (u *uploadChildRequestService) GetUploadChildRequests(req request.GetUploadChildRequests, ctx context.Context) (response.PaginationDataResponse, error) {
+	// req.SortOrder = util.StanderizeSortOrder(req.SortOrder)
+	// if req.Page < 1 {
+	// 	req.Page = 1
+	// }
+
+	// if req.PageSize < 1 {
+	// 	req.PageSize = default_page_size
+	// }
+
+	// var res response.PaginationDataResponse
+	// var redisKey string = u.getGetUploadChildRequestsRedisKey(req)
+	// if u.redisCache.Get(redisKey, &res, ctx) {
+	// 	return res, nil
+	// }
+
+	// data, pages, err := u.uploadChildRequestRepo.GetUploadChildRequests(req, ctx)
+	// if err != nil {
+	// 	return response.PaginationDataResponse{}, err
+	// }
+
+	// var amount int
+	// if data == nil || len(data) == 0 {
+	// 	amount = 0
+	// } else {
+	// 	amount = len(data)
+	// }
+
+	// res = response.PaginationDataResponse{
+	// 	Data:       data,
+	// 	Amount:     amount,
+	// 	Page:       req.Page,
+	// 	TotalPages: pages,
+	// }
+
+	// u.redisCache.Set(redisKey, res, time.Minute*5, ctx)
+
+	// return res, nil
+
+	/////////////////////
+	// MOCK DATA
 	req.SortOrder = util.StanderizeSortOrder(req.SortOrder)
 	if req.Page < 1 {
 		req.Page = 1
@@ -309,23 +354,12 @@ func (u *uploadChildRequestService) GetUploadChildRequests(req request.GetUpload
 		return res, nil
 	}
 
-	data, pages, err := u.uploadChildRequestRepo.GetUploadChildRequests(req, ctx)
-	if err != nil {
-		return response.PaginationDataResponse{}, err
-	}
-
-	var amount int
-	if data == nil || len(data) == 0 {
-		amount = 0
-	} else {
-		amount = len(data)
-	}
-
+	var data []entities.UploadChildRequest = mockUploadChildReqs[req.Page-1*req.PageSize : req.Page*req.PageSize]
 	res = response.PaginationDataResponse{
 		Data:       data,
-		Amount:     amount,
+		Amount:     len(data),
 		Page:       req.Page,
-		TotalPages: pages,
+		TotalPages: int(math.Ceil(float64(len(data)) / float64(req.PageSize))),
 	}
 
 	u.redisCache.Set(redisKey, res, time.Minute*5, ctx)
@@ -335,10 +369,45 @@ func (u *uploadChildRequestService) GetUploadChildRequests(req request.GetUpload
 
 // GetWalletUploadChildRequests implements business.IUploadChildRequestService.
 func (u *uploadChildRequestService) GetWalletUploadChildRequests(id string, page int, ctx context.Context) (response.PaginationDataResponse, error) {
-	if !util.IsValidSuiAddressStrict(id) {
-		return response.PaginationDataResponse{}, errors.New(noti.GENERIC_ERROR_WARN_MSG)
-	}
+	// if !util.IsValidSuiAddressStrict(id) {
+	// 	return response.PaginationDataResponse{}, errors.New(noti.GENERIC_ERROR_WARN_MSG)
+	// }
 
+	// if page < 1 {
+	// 	page = 1
+	// }
+
+	// var res response.PaginationDataResponse
+	// var redisKey string = u.getGetUploadChildRequestsOfWalletRedisKey(id, page)
+	// if u.redisCache.Get(redisKey, &res, ctx) {
+	// 	return res, nil
+	// }
+
+	// data, pages, err := u.uploadChildRequestRepo.GetWalletUploadChildRequests(id, page, ctx)
+	// if err != nil {
+	// 	return response.PaginationDataResponse{}, err
+	// }
+
+	// var amount int
+	// if data == nil || len(data) == 0 {
+	// 	amount = 0
+	// } else {
+	// 	amount = len(data)
+	// }
+
+	// res = response.PaginationDataResponse{
+	// 	Data:       data,
+	// 	Amount:     amount,
+	// 	Page:       page,
+	// 	TotalPages: pages,
+	// }
+
+	// u.redisCache.Set(redisKey, res, time.Minute*5, ctx)
+
+	// return res, nil
+
+	///////////////////
+	// MOCK DATA
 	if page < 1 {
 		page = 1
 	}
@@ -349,23 +418,12 @@ func (u *uploadChildRequestService) GetWalletUploadChildRequests(id string, page
 		return res, nil
 	}
 
-	data, pages, err := u.uploadChildRequestRepo.GetWalletUploadChildRequests(id, page, ctx)
-	if err != nil {
-		return response.PaginationDataResponse{}, err
-	}
-
-	var amount int
-	if data == nil || len(data) == 0 {
-		amount = 0
-	} else {
-		amount = len(data)
-	}
-
+	var data []entities.CenterRequest = mockCenterRequests[page-1*10 : page*10]
 	res = response.PaginationDataResponse{
 		Data:       data,
-		Amount:     amount,
+		Amount:     len(data),
 		Page:       page,
-		TotalPages: pages,
+		TotalPages: int(math.Ceil(float64(len(data)) / 10)),
 	}
 
 	u.redisCache.Set(redisKey, res, time.Minute*5, ctx)
@@ -465,4 +523,81 @@ func (u *uploadChildRequestService) getGetUploadChildRequestsRedisKey(req reques
 
 func (u *uploadChildRequestService) getGetUploadChildRequestsOfWalletRedisKey(id string, page int) string {
 	return fmt.Sprintf("upload_child_req:of:%s:s:%d:p;%d", id, default_page_size, page)
+}
+
+var mockUploadChildReqs = getMockUploadChildRequests()
+
+func getMockUploadChildRequests() []entities.UploadChildRequest {
+	requests := make([]entities.UploadChildRequest, 20)
+	now := time.Now()
+
+	var ptrStr = func(s string) *string { return &s }
+	var ptrTime = func(t time.Time) *time.Time { return &t }
+
+	for i := 0; i < 20; i++ {
+		id := fmt.Sprintf("%d", i+1)
+
+		// Khởi tạo giá trị mặc định cho Pending
+		reviewStatus := "Pending"
+		var reviewedBy *string = nil
+		var closedAt *time.Time = nil
+		approvers := []string{}
+		refusers := []string{}
+		refuseReasons := []string{}
+		isConfirm := false
+
+		// Phân bổ logic trạng thái: 0=Pending, 1=Approved, 2=Refused
+		if i%3 == 1 {
+			reviewStatus = "Approved"
+			reviewedBy = ptrStr("Admin_Alpha")
+			closedAt = ptrTime(now)
+			approvers = []string{"Admin_Alpha"}
+			isConfirm = true
+		} else if i%3 == 2 {
+			reviewStatus = "Refused"
+			reviewedBy = ptrStr("Admin_Beta")
+			closedAt = ptrTime(now)
+			refusers = []string{"Admin_Beta"}
+			refuseReasons = []string{"Thông tin người giám hộ không khớp với hồ sơ."}
+		}
+
+		requests[i] = entities.UploadChildRequest{
+			ID:           id,
+			ProfileID:    "PROF-" + id,
+			IdentityCode: fmt.Sprintf("ID%06d", 100+i),
+			AvatarBlobId: "avatar-" + id + ".png",
+			HomeBlobID:   "home-" + id + ".png",
+			Region:       "Quảng Nam",
+			FirstName:    []string{"Văn", "Thị", "Đức", "Minh"}[i%4],
+			LastName:     []string{"Tùng", "Hoa", "Mạnh", "Lan"}[i%4],
+			Gender:       []string{"Male", "Female"}[i%2],
+			DateOfBirth:  "2018-02-14",
+			HomeAddress:  "Thôn 4, Xã X, Huyện Y",
+			FirstGuardianProfile: entities.ChildGuardianProfile{
+				FullName:           "Nguyễn Văn Cha",
+				PhoneNumber:        "0912345678",
+				Relation:           "Father",
+				IdentityCardBlobID: "id-card-guardian-1-" + id,
+			},
+			SecondGuardianProfile: &entities.ChildGuardianProfile{
+				FullName:           "Lê Thị Mẹ",
+				PhoneNumber:        "0987654321",
+				Relation:           "Mother",
+				IdentityCardBlobID: "id-card-guardian-2-" + id,
+			},
+			Approvers:       approvers,
+			Refusers:        refusers,
+			RefuseReasons:   refuseReasons,
+			AIEvaluation:    "Passed",
+			Status:          reviewStatus,
+			ReviewStatus:    reviewStatus,
+			IsConfirmUpload: isConfirm,
+			CreatedBy:       "User_" + id,
+			ReviewedBy:      reviewedBy,
+			CreatedAt:       now.Add(time.Duration(-i) * time.Hour),
+			UpdatedAt:       now,
+			ClosedAt:        closedAt,
+		}
+	}
+	return requests
 }

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"raise-child/constants/env"
 	"raise-child/constants/noti"
@@ -326,15 +327,59 @@ func (r *registrationRequestService) CreateRegistrationRequest(req request.Creat
 
 // GetRegistrationRequest implements business.IRegistrationRequestService.
 func (r *registrationRequestService) GetRegistrationRequest(id string, ctx context.Context) (*entities.RegistrationRequest, error) {
-	if id == "" {
-		return nil, errors.New(noti.GENERIC_ERROR_WARN_MSG)
+	// if id == "" {
+	// 	return nil, errors.New(noti.GENERIC_ERROR_WARN_MSG)
+	// }
+
+	// return r.registrationRequestRepo.GetRegistrationRequest(id, ctx)
+
+	////////////
+	// MOCK DATA
+	for _, req := range mockRegistrationRequests {
+		if req.ID == id {
+			return &req, nil
+		}
 	}
 
-	return r.registrationRequestRepo.GetRegistrationRequest(id, ctx)
+	return nil, nil
 }
 
 // GetRegistrationRequests implements business.IRegistrationRequestService.
 func (r *registrationRequestService) GetRegistrationRequests(req request.GetRegistrationRequests, ctx context.Context) (response.PaginationDataResponse, error) {
+	// req.SortOrder = util.StanderizeSortOrder(req.SortOrder)
+	// if req.Page < 1 {
+	// 	req.Page = 1
+	// }
+
+	// if req.PageSize < 1 {
+	// 	req.PageSize = default_page_size
+	// }
+
+	// var res response.PaginationDataResponse
+	// var redisKey string = r.getGetRegistrationRequestsRedisKey(req)
+	// if r.redisCache.Get(redisKey, &res, ctx) {
+	// 	return res, nil
+	// }
+
+	// data, pages, err := r.registrationRequestRepo.GetRegistrationRequests(req, ctx)
+	// var amount int
+	// if data == nil || len(data) == 0 {
+	// 	amount = 0
+	// } else {
+	// 	amount = len(data)
+	// }
+
+	// res = response.PaginationDataResponse{
+	// 	Data:       data,
+	// 	Amount:     amount,
+	// 	Page:       req.Page,
+	// 	TotalPages: pages,
+	// }
+
+	// r.redisCache.Set(redisKey, res, time.Minute*5, ctx)
+
+	// return res, err
+
 	req.SortOrder = util.StanderizeSortOrder(req.SortOrder)
 	if req.Page < 1 {
 		req.Page = 1
@@ -350,33 +395,30 @@ func (r *registrationRequestService) GetRegistrationRequests(req request.GetRegi
 		return res, nil
 	}
 
-	data, pages, err := r.registrationRequestRepo.GetRegistrationRequests(req, ctx)
-	var amount int
-	if data == nil || len(data) == 0 {
-		amount = 0
-	} else {
-		amount = len(data)
-	}
-
+	var data []entities.RegistrationRequest = mockRegistrationRequests[req.Page-1*req.PageSize : req.Page*req.PageSize]
 	res = response.PaginationDataResponse{
 		Data:       data,
-		Amount:     amount,
+		Amount:     len(data),
 		Page:       req.Page,
-		TotalPages: pages,
+		TotalPages: int(math.Ceil(float64(len(data)) / float64(req.PageSize))),
 	}
 
 	r.redisCache.Set(redisKey, res, time.Minute*5, ctx)
 
-	return res, err
+	return res, nil
 }
 
 // GetWalletRegistrationRequests implements business.IRegistrationRequestService.
 func (r *registrationRequestService) GetWalletRegistrationRequests(id string, ctx context.Context) ([]entities.RegistrationRequest, error) {
-	if !utils.IsValidSuiAddress(models.SuiAddress(id)) {
-		return nil, errors.New(noti.GENERIC_ERROR_WARN_MSG)
-	}
+	// if !util.IsValidSuiAddressStrict(id) {
+	// 	return nil, errors.New(noti.GENERIC_ERROR_WARN_MSG)
+	// }
 
-	return r.registrationRequestRepo.GetWalletRegistrationRequests(id, ctx)
+	// return r.registrationRequestRepo.GetWalletRegistrationRequests(id, ctx)
+
+	///////////////////
+	// MOCK DATA
+	return mockRegistrationRequests, nil
 }
 
 // VoteRegistrationRequest implements business.IRegistrationRequestService.
@@ -477,4 +519,74 @@ func (r *registrationRequestService) getGetRegistrationRequestsRedisKey(req requ
 
 	return fmt.Sprintf("registration_req:role:%s:available:%s:kw:%s:r:%s:g:%s:status:%s:closed:%s:o:%s:s:%d:p:%d",
 		role, isAvailable, keyword, region, gender, status, isClosed, req.SortOrder, req.PageSize, req.Page)
+}
+
+var mockRegistrationRequests = getMockRegistrationRequests()
+
+func getMockRegistrationRequests() []entities.RegistrationRequest {
+	requests := make([]entities.RegistrationRequest, 20)
+	now := time.Now()
+
+	// Dữ liệu mẫu để chọn ngẫu nhiên/xoay vòng
+	regions := []string{"Hà Nội", "TP.HCM", "Đà Nẵng", "Cần Thơ", "Hải Phòng"}
+	roles := []string{"Volunteer", "Donor"}
+	firstNames := []string{"Nguyễn", "Trần", "Lê", "Phạm", "Hoàng", "Huỳnh", "Phan", "Vũ"}
+	lastNames := []string{"An", "Bình", "Cường", "Dũng", "Em", "Hoa", "Lan", "Minh"}
+	genders := []string{"Male", "Female"}
+
+	for i := 0; i < 20; i++ {
+		id := fmt.Sprintf("%d", i+1)
+		role := roles[i%2]
+		region := regions[i%5]
+		fName := firstNames[i%8]
+		lName := lastNames[i%8]
+		gender := genders[i%2]
+
+		status := "Pending"
+		approvers := []string{}
+		refusers := []string{}
+		refuseReasons := []string{}
+		isAvailable := false
+		var closedAt time.Time
+
+		// Logic phân bổ trạng thái
+		if i%3 == 1 { // Các mục index 1, 4, 7... là Approved
+			status = "Approved"
+			approvers = []string{"Admin_Alpha", "Admin_Beta"}
+			isAvailable = true
+			closedAt = now
+		} else if i%3 == 2 { // Các mục index 2, 5, 8... là Refused
+			status = "Refused"
+			refusers = []string{"Admin_Gamma"}
+			refuseReasons = []string{"Thông tin định danh không trùng khớp với ảnh chụp."}
+			closedAt = now
+		}
+
+		requests[i] = entities.RegistrationRequest{
+			ID:                   id,
+			ProfileID:            "PROF-" + id,
+			RegisterRole:         role,
+			IdentityCode:         fmt.Sprintf("001090%06d", 123456+i),
+			IdentityCardBlobID:   "blob-id-card-" + id,
+			AvatarBlobID:         "blob-avatar-" + id,
+			Region:               region,
+			FirstName:            fName,
+			LastName:             lName,
+			Gender:               gender,
+			DateOfBirth:          "1990-01-01",
+			PhoneNumber:          fmt.Sprintf("090%07d", i),
+			Email:                fmt.Sprintf("user%s@example.com", id),
+			Approvers:            approvers,
+			Refusers:             refusers,
+			RefuseReasons:        refuseReasons,
+			Status:               status,
+			IsConfirmRegister:    false,
+			IsAvailableToConfirm: isAvailable,
+			CreatedBy:            "System",
+			CreatedAt:            now.Add(time.Duration(-i) * time.Hour),
+			UpdatedAt:            now,
+			ClosedAt:             closedAt,
+		}
+	}
+	return requests
 }

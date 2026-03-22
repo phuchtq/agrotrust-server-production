@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"math"
 	"os"
 	"raise-child/constants/env"
 	"raise-child/constants/noti"
@@ -317,28 +318,76 @@ func (c *centerRequestService) CreateRequest(req request.CreateCenterRequest, ct
 
 // GetRequest implements business.ICenterRequestService.
 func (c *centerRequestService) GetRequest(id string, ctx context.Context) (*entities.CenterRequest, error) {
-	// if id == "" {
-	// 	return nil, errors.New(noti.GENERIC_ERROR_WARN_MSG)
+	// var data entities.CenterRequest
+	// var redisKey string = c.getCenterRequestRedisKey(id)
+	// if c.redisCache.Get(redisKey, &data, ctx) {
+	// 	return &data, nil
 	// }
 
+	// res, err := c.centerRequestRepo.GetRequest(id, ctx)
+	// if err != nil {
+	// 	return nil, err
+	// }
+
+	// c.redisCache.Set(redisKey, *res, time.Minute, ctx)
+
+	// return res, nil
+
+	/////////////////////
+	// MOCK DATA
 	var data entities.CenterRequest
 	var redisKey string = c.getCenterRequestRedisKey(id)
 	if c.redisCache.Get(redisKey, &data, ctx) {
 		return &data, nil
 	}
 
-	res, err := c.centerRequestRepo.GetRequest(id, ctx)
-	if err != nil {
-		return nil, err
+	for _, req := range mockCenterRequests {
+		if req.ID == id {
+			c.redisCache.Set(redisKey, req, time.Minute, ctx)
+			return &req, nil
+		}
 	}
 
-	c.redisCache.Set(redisKey, *res, time.Minute, ctx)
-
-	return res, nil
+	return nil, nil
 }
 
 // GetRequests implements business.ICenterRequestService.
 func (c *centerRequestService) GetRequests(req request.GetCenterRequests, ctx context.Context) (response.PaginationDataResponse, error) {
+	// if req.Page < 1 {
+	// 	req.Page = 1
+	// }
+
+	// if req.PageSize < 1 {
+	// 	req.PageSize = default_page_size
+	// }
+
+	// var res response.PaginationDataResponse
+	// var redisKey string = c.getGetCenterRequestsRedisKey(req)
+	// if c.redisCache.Get(redisKey, &res, ctx) {
+	// 	return res, nil
+	// }
+
+	// data, pages, err := c.centerRequestRepo.GetRegistrationRequests(req, ctx)
+	// var amount int
+	// if data == nil || len(data) == 0 {
+	// 	amount = 0
+	// } else {
+	// 	amount = len(data)
+	// }
+
+	// res = response.PaginationDataResponse{
+	// 	Data:       data,
+	// 	Amount:     amount,
+	// 	Page:       req.Page,
+	// 	TotalPages: pages,
+	// }
+
+	// c.redisCache.Set(redisKey, res, time.Minute*5, ctx)
+
+	// return res, err
+
+	//////////////////
+	// MOCK DATA
 	if req.Page < 1 {
 		req.Page = 1
 	}
@@ -353,47 +402,58 @@ func (c *centerRequestService) GetRequests(req request.GetCenterRequests, ctx co
 		return res, nil
 	}
 
-	data, pages, err := c.centerRequestRepo.GetRegistrationRequests(req, ctx)
-	var amount int
-	if data == nil || len(data) == 0 {
-		amount = 0
-	} else {
-		amount = len(data)
-	}
-
+	var data []entities.CenterRequest = mockCenterRequests[req.Page-1*req.PageSize : req.Page*req.PageSize]
 	res = response.PaginationDataResponse{
 		Data:       data,
-		Amount:     amount,
+		Amount:     len(data),
 		Page:       req.Page,
-		TotalPages: pages,
+		TotalPages: int(math.Ceil(float64(len(data)) / float64(req.PageSize))),
 	}
 
 	c.redisCache.Set(redisKey, res, time.Minute*5, ctx)
 
-	return res, err
+	return res, nil
 }
 
 // GetWalletRequests implements business.ICenterRequestService.
 func (c *centerRequestService) GetWalletRequests(id string, ctx context.Context) ([]entities.CenterRequest, error) {
-	if !util.IsValidSuiAddressStrict(id) {
-		return nil, errors.New(noti.GENERIC_ERROR_WARN_MSG)
-	}
+	// if !util.IsValidSuiAddressStrict(id) {
+	// 	return nil, errors.New(noti.GENERIC_ERROR_WARN_MSG)
+	// }
 
+	// var res []entities.CenterRequest
+	// var redisKey string = c.getGetWalletCenterRequestsRedisKey(id)
+	// if c.redisCache.Get(redisKey, &res, ctx) {
+	// 	return res, nil
+	// }
+
+	// var errRes error
+	// res, errRes = c.centerRequestRepo.GetWalletRegistrationRequests(id, ctx)
+	// if errRes != nil {
+	// 	return nil, errRes
+	// }
+
+	// c.redisCache.Set(redisKey, res, time.Minute*5, ctx)
+
+	// return res, errRes
+
+	//////////////////
+	// MOCK DATA
 	var res []entities.CenterRequest
 	var redisKey string = c.getGetWalletCenterRequestsRedisKey(id)
 	if c.redisCache.Get(redisKey, &res, ctx) {
 		return res, nil
 	}
 
-	var errRes error
-	res, errRes = c.centerRequestRepo.GetWalletRegistrationRequests(id, ctx)
-	if errRes != nil {
-		return nil, errRes
+	for _, req := range mockCenterRequests {
+		if id == req.CreatedBy {
+			res = append(res, req)
+		}
 	}
 
 	c.redisCache.Set(redisKey, res, time.Minute*5, ctx)
 
-	return res, errRes
+	return res, nil
 }
 
 // VoteRequest implements business.ICenterRequestService.
@@ -529,4 +589,123 @@ func (c *centerRequestService) getGetWalletCenterRequestsRedisKey(wallet string)
 
 func (c *centerRequestService) getCenterRequestRedisKey(id string) string {
 	return fmt.Sprintf("center_rq:%s", id)
+}
+
+var global_cur_time = time.Now()
+var mockCenterRequests = []entities.CenterRequest{
+	{
+		ID: "1", ProfileID: "PROF-001", Region: "Hà Nội", Address: "123 Đường Láng, Đống Đa",
+		PhoneNumber: "0901112223", ImageBlobID: "img-001", Status: "Approved",
+		Approvers: []string{"admin-01", "admin-02"}, IsAvailableToConfirm: true, IsConfirmRegister: true,
+		CreatedBy: "user-01", CreatedAt: global_cur_time.Add(-100 * time.Hour), UpdatedAt: global_cur_time.Add(-24 * time.Hour),
+	},
+	{
+		ID: "2", ProfileID: "PROF-002", Region: "TP.HCM", Address: "456 Lê Lợi, Quận 1",
+		PhoneNumber: "0902223334", ImageBlobID: "img-002", Status: "Pending",
+		Approvers: []string{}, IsAvailableToConfirm: false, IsConfirmRegister: false,
+		CreatedBy: "user-02", CreatedAt: global_cur_time.Add(-90 * time.Hour), UpdatedAt: global_cur_time.Add(-80 * time.Hour),
+	},
+	{
+		ID: "3", ProfileID: "PROF-003", Region: "Đà Nẵng", Address: "789 Võ Nguyên Giáp",
+		PhoneNumber: "0903334445", ImageBlobID: "img-003", Status: "Refused",
+		Refusers: []string{"admin-03"}, RefuseReasons: []string{"Ảnh chứng chỉ mờ"},
+		IsAvailableToConfirm: false, IsConfirmRegister: false,
+		CreatedBy: "user-03", CreatedAt: global_cur_time.Add(-80 * time.Hour), UpdatedAt: global_cur_time.Add(-70 * time.Hour),
+	},
+	{
+		ID: "4", ProfileID: "PROF-004", Region: "Cần Thơ", Address: "12 Đại lộ Hòa Bình",
+		PhoneNumber: "0904445556", ImageBlobID: "img-004", Status: "Approved",
+		Approvers: []string{"admin-01"}, IsAvailableToConfirm: true, IsConfirmRegister: false,
+		CreatedBy: "user-04", CreatedAt: global_cur_time.Add(-70 * time.Hour), UpdatedAt: global_cur_time.Add(-60 * time.Hour),
+	},
+	{
+		ID: "5", ProfileID: "PROF-005", Region: "Hải Phòng", Address: "34 Lạch Tray",
+		PhoneNumber: "0905556667", ImageBlobID: "img-005", Status: "Pending",
+		IsAvailableToConfirm: false, IsConfirmRegister: false,
+		CreatedBy: "user-05", CreatedAt: global_cur_time.Add(-60 * time.Hour), UpdatedAt: global_cur_time.Add(-50 * time.Hour),
+	},
+	{
+		ID: "6", ProfileID: "PROF-006", Region: "Huế", Address: "56 Hùng Vương",
+		PhoneNumber: "0906667778", ImageBlobID: "img-006", Status: "Refused",
+		Refusers: []string{"admin-02"}, RefuseReasons: []string{"Địa chỉ không tồn tại"},
+		CreatedBy: "user-06", CreatedAt: global_cur_time.Add(-50 * time.Hour), UpdatedAt: global_cur_time.Add(-40 * time.Hour),
+	},
+	{
+		ID: "7", ProfileID: "PROF-007", Region: "Nha Trang", Address: "78 Trần Phú",
+		PhoneNumber: "0907778889", ImageBlobID: "img-007", Status: "Approved",
+		Approvers: []string{"admin-04"}, IsAvailableToConfirm: true, IsConfirmRegister: true,
+		CreatedBy: "user-07", CreatedAt: global_cur_time.Add(-40 * time.Hour), UpdatedAt: global_cur_time.Add(-30 * time.Hour),
+	},
+	{
+		ID: "8", ProfileID: "PROF-008", Region: "Đà Lạt", Address: "90 Phan Đình Phùng",
+		PhoneNumber: "0908889990", ImageBlobID: "img-008", Status: "Pending",
+		CreatedBy: "user-08", CreatedAt: global_cur_time.Add(-30 * time.Hour), UpdatedAt: global_cur_time.Add(-20 * time.Hour),
+	},
+	{
+		ID: "9", ProfileID: "PROF-009", Region: "Vũng Tàu", Address: "23 Thùy Vân",
+		PhoneNumber: "0909990001", ImageBlobID: "img-009", Status: "Approved",
+		Approvers: []string{"admin-01", "admin-05"}, IsAvailableToConfirm: true, IsConfirmRegister: false,
+		CreatedBy: "user-09", CreatedAt: global_cur_time.Add(-20 * time.Hour), UpdatedAt: global_cur_time.Add(-10 * time.Hour),
+	},
+	{
+		ID: "10", ProfileID: "PROF-010", Region: "Hà Nội", Address: "11 Cầu Giấy",
+		PhoneNumber: "0911223344", ImageBlobID: "img-010", Status: "Pending",
+		CreatedBy: "user-10", CreatedAt: global_cur_time.Add(-10 * time.Hour), UpdatedAt: global_cur_time.Add(-5 * time.Hour),
+	},
+	{
+		ID: "11", ProfileID: "PROF-011", Region: "TP.HCM", Address: "88 Nguyễn Huệ",
+		PhoneNumber: "0912334455", ImageBlobID: "img-011", Status: "Refused",
+		RefuseReasons: []string{"Số điện thoại không liên lạc được"},
+		CreatedBy:     "user-11", CreatedAt: global_cur_time.Add(-15 * time.Hour), UpdatedAt: global_cur_time.Add(-2 * time.Hour),
+	},
+	{
+		ID: "12", ProfileID: "PROF-012", Region: "Bắc Ninh", Address: "45 Lý Thái Tổ",
+		PhoneNumber: "0913445566", ImageBlobID: "img-012", Status: "Approved",
+		Approvers: []string{"admin-02"}, IsAvailableToConfirm: true, IsConfirmRegister: true,
+		CreatedBy: "user-12", CreatedAt: global_cur_time.Add(-12 * time.Hour), UpdatedAt: global_cur_time.Add(-1 * time.Hour),
+	},
+	{
+		ID: "13", ProfileID: "PROF-013", Region: "Quảng Ninh", Address: "67 Hạ Long",
+		PhoneNumber: "0914556677", ImageBlobID: "img-013", Status: "Pending",
+		CreatedBy: "user-13", CreatedAt: global_cur_time.Add(-8 * time.Hour), UpdatedAt: global_cur_time.Add(-4 * time.Hour),
+	},
+	{
+		ID: "14", ProfileID: "PROF-014", Region: "Nghệ An", Address: "12 Vinh",
+		PhoneNumber: "0915667788", ImageBlobID: "img-014", Status: "Pending",
+		CreatedBy: "user-14", CreatedAt: global_cur_time.Add(-6 * time.Hour), UpdatedAt: global_cur_time.Add(-3 * time.Hour),
+	},
+	{
+		ID: "15", ProfileID: "PROF-015", Region: "Thanh Hóa", Address: "34 Sầm Sơn",
+		PhoneNumber: "0916778899", ImageBlobID: "img-015", Status: "Refused",
+		RefuseReasons: []string{"Hồ sơ thiếu công chứng"},
+		CreatedBy:     "user-15", CreatedAt: global_cur_time.Add(-24 * time.Hour), UpdatedAt: global_cur_time.Add(-12 * time.Hour),
+	},
+	{
+		ID: "16", ProfileID: "PROF-016", Region: "Hà Giang", Address: "56 Đồng Văn",
+		PhoneNumber: "0917889900", ImageBlobID: "img-016", Status: "Approved",
+		Approvers: []string{"admin-03"}, IsAvailableToConfirm: true, IsConfirmRegister: false,
+		CreatedBy: "user-16", CreatedAt: global_cur_time.Add(-48 * time.Hour), UpdatedAt: global_cur_time.Add(-24 * time.Hour),
+	},
+	{
+		ID: "17", ProfileID: "PROF-017", Region: "Lào Cai", Address: "78 Sa Pa",
+		PhoneNumber: "0918990011", ImageBlobID: "img-017", Status: "Pending",
+		CreatedBy: "user-17", CreatedAt: global_cur_time.Add(-72 * time.Hour), UpdatedAt: global_cur_time.Add(-36 * time.Hour),
+	},
+	{
+		ID: "18", ProfileID: "PROF-018", Region: "Phú Quốc", Address: "90 Dương Đông",
+		PhoneNumber: "0919001122", ImageBlobID: "img-018", Status: "Approved",
+		Approvers: []string{"admin-01"}, IsAvailableToConfirm: true, IsConfirmRegister: true,
+		CreatedBy: "user-18", CreatedAt: global_cur_time.Add(-96 * time.Hour), UpdatedAt: global_cur_time.Add(-48 * time.Hour),
+	},
+	{
+		ID: "19", ProfileID: "PROF-019", Region: "Bình Dương", Address: "12 Thủ Dầu Một",
+		PhoneNumber: "0920112233", ImageBlobID: "img-019", Status: "Pending",
+		CreatedBy: "user-19", CreatedAt: global_cur_time.Add(-120 * time.Hour), UpdatedAt: global_cur_time.Add(-60 * time.Hour),
+	},
+	{
+		ID: "20", ProfileID: "PROF-020", Region: "Đồng Nai", Address: "34 Biên Hòa",
+		PhoneNumber: "0921223344", ImageBlobID: "img-020", Status: "Refused",
+		RefuseReasons: []string{"Thông tin đăng ký không khớp"},
+		CreatedBy:     "user-20", CreatedAt: global_cur_time.Add(-144 * time.Hour), UpdatedAt: global_cur_time.Add(-72 * time.Hour),
+	},
 }
