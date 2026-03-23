@@ -515,6 +515,9 @@ func (g *giftService) GetGiftsOfChild(id string, req request.GetGiftsRequest, ct
 	var data []response.GiftResponse
 	for i := skippedRecords; i < len(filteredGifts); i++ {
 		data = append(data, filteredGifts[i].ToGiftResponse())
+		if len(data) == req.PageSize {
+			break
+		}
 	}
 
 	res = response.PaginationDataResponse{
@@ -612,6 +615,9 @@ func (g *giftService) GetGiftsOfRegion(region string, req request.GetGiftsReques
 	var data []response.GiftResponse
 	for i := skippedRecords; i < len(filteredGifts); i++ {
 		data = append(data, filteredGifts[i].ToGiftResponse())
+		if len(data) == req.PageSize {
+			break
+		}
 	}
 
 	res = response.PaginationDataResponse{

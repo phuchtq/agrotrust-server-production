@@ -316,7 +316,7 @@ func (r *regionService) GetSupportedRegionSuggestions(req request.GetSupportedRe
 		return res, nil
 	}
 
-	var data []entities.SupportedRegionSuggestion = mockSuggestions[req.Page-1*req.PageSize : req.Page*req.PageSize]
+	var data []entities.SupportedRegionSuggestion = mockSuggestions[(req.Page-1)*req.PageSize : req.Page*req.PageSize]
 	res = response.PaginationDataResponse{
 		Data:       data,
 		Amount:     len(data),

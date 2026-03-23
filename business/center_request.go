@@ -402,7 +402,7 @@ func (c *centerRequestService) GetRequests(req request.GetCenterRequests, ctx co
 		return res, nil
 	}
 
-	var data []entities.CenterRequest = mockCenterRequests[req.Page-1*req.PageSize : req.Page*req.PageSize]
+	var data []entities.CenterRequest = mockCenterRequests[(req.Page-1)*req.PageSize : req.Page*req.PageSize]
 	res = response.PaginationDataResponse{
 		Data:       data,
 		Amount:     len(data),

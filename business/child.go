@@ -247,6 +247,9 @@ func (c *childService) GetChildren(req request.GetChildrenRequest, ctx context.C
 	// var data []response.ChildResponse
 	// for i := skippedRecords; i < len(filteredChildren); i++ {
 	// 	data = append(data, filteredChildren[i].ToMinimumChildResponse())
+	// if len(data) == req.PageSize {
+	// 	break
+	// }
 	// }
 
 	//////////////////
@@ -307,6 +310,9 @@ func (c *childService) GetChildren(req request.GetChildrenRequest, ctx context.C
 	var data []response.ChildResponse
 	for i := skippedRecords; i < len(filteredChildren); i++ {
 		data = append(data, filteredChildren[i])
+		if len(data) == req.PageSize {
+			break
+		}
 	}
 
 	res = response.PaginationDataResponse{

@@ -354,7 +354,7 @@ func (u *uploadChildRequestService) GetUploadChildRequests(req request.GetUpload
 		return res, nil
 	}
 
-	var data []entities.UploadChildRequest = mockUploadChildReqs[req.Page-1*req.PageSize : req.Page*req.PageSize]
+	var data []entities.UploadChildRequest = mockUploadChildReqs[(req.Page-1)*req.PageSize : req.Page*req.PageSize]
 	res = response.PaginationDataResponse{
 		Data:       data,
 		Amount:     len(data),
@@ -418,7 +418,7 @@ func (u *uploadChildRequestService) GetWalletUploadChildRequests(id string, page
 		return res, nil
 	}
 
-	var data []entities.CenterRequest = mockCenterRequests[page-1*10 : page*10]
+	var data []entities.CenterRequest = mockCenterRequests[(page-1)*10 : page*10]
 	res = response.PaginationDataResponse{
 		Data:       data,
 		Amount:     len(data),

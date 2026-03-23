@@ -671,6 +671,9 @@ func (w *withdrawProposalService) GetWithdrawProposals(req request.GetWithdrawPr
 	// var data []response.WithdrawProposalResponse
 	// for i := skippedRecords; i < len(filteredProposals); i++ {
 	// 	data = append(data, filteredProposals[i].ToMinimumWithdrawProposalResponse())
+	// if len(data) == req.PageSize {
+	// 		break
+	// 	}
 	// }
 
 	// res = response.PaginationDataResponse{
@@ -796,6 +799,9 @@ func (w *withdrawProposalService) GetWithdrawProposals(req request.GetWithdrawPr
 	var data []response.WithdrawProposalResponse
 	for i := skippedRecords; i < len(filteredProposals); i++ {
 		data = append(data, filteredProposals[i])
+		if len(data) == req.PageSize {
+			break
+		}
 	}
 
 	res = response.PaginationDataResponse{

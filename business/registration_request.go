@@ -395,7 +395,7 @@ func (r *registrationRequestService) GetRegistrationRequests(req request.GetRegi
 		return res, nil
 	}
 
-	var data []entities.RegistrationRequest = mockRegistrationRequests[req.Page-1*req.PageSize : req.Page*req.PageSize]
+	var data []entities.RegistrationRequest = mockRegistrationRequests[(req.Page-1)*req.PageSize : req.Page*req.PageSize]
 	res = response.PaginationDataResponse{
 		Data:       data,
 		Amount:     len(data),

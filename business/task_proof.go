@@ -288,7 +288,7 @@ func (t *taskProofService) GetTaskProofs(req request.GetTaskProofsRequest, ctx c
 		return res, nil
 	}
 
-	var data []entities.TaskProof = mockTaskProofs[req.Page-1*req.PageSize : req.Page*req.PageSize]
+	var data []entities.TaskProof = mockTaskProofs[(req.Page-1)*req.PageSize : req.Page*req.PageSize]
 	res = response.PaginationDataResponse{
 		Data:       data,
 		Amount:     len(data),

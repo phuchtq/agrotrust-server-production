@@ -162,6 +162,9 @@ func (s *donorService) GetDonors(req request.GetDonorsRequest, ctx context.Conte
 	// var data []response.DonorResponse
 	// for i := skippedRecords; i < len(filteredDonors); i++ {
 	// 	data = append(data, filteredDonors[i].ToDonorResponse())
+	// if len(data) == req.PageSize {
+	// 	break
+	// }
 	// }
 
 	///////////////////
@@ -198,6 +201,9 @@ func (s *donorService) GetDonors(req request.GetDonorsRequest, ctx context.Conte
 	var data []response.DonorResponse
 	for i := skippedRecords; i < len(filteredDonors); i++ {
 		data = append(data, filteredDonors[i])
+		if len(data) == req.PageSize {
+			break
+		}
 	}
 
 	res = response.PaginationDataResponse{

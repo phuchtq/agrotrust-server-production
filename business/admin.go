@@ -160,10 +160,13 @@ func (a *adminService) GetAdmins(req request.GetAdminsRequest, ctx context.Conte
 	// 	return response.PaginationDataResponse{}, nil
 	// }
 
-	// var data []response.AdminNftResponse
-	// for i := skippedRecords; i < len(filteredAdmins); i++ {
-	// 	data = append(data, filteredAdmins[i].ToAdminNftResponse())
+	//  var data []response.AdminNftResponse
+	//  for i := skippedRecords; i < len(filteredAdmins); i++ {
+	//  	data = append(data, filteredAdmins[i].ToAdminNftResponse())
+	// if len(data) == req.PageSize {
+	// 	break
 	// }
+	//  }
 
 	/////////////
 	// MOCK DATA
@@ -221,6 +224,9 @@ func (a *adminService) GetAdmins(req request.GetAdminsRequest, ctx context.Conte
 	var data []response.AdminNftResponse
 	for i := skippedRecords; i < len(filteredAdmins); i++ {
 		data = append(data, filteredAdmins[i])
+		if len(data) == req.PageSize {
+			break
+		}
 	}
 
 	res = response.PaginationDataResponse{
