@@ -359,7 +359,7 @@ func (u *uploadChildRequestService) GetUploadChildRequests(req request.GetUpload
 		Data:       data,
 		Amount:     len(data),
 		Page:       req.Page,
-		TotalPages: int(math.Ceil(float64(len(data)) / float64(req.PageSize))),
+		TotalPages: int(math.Ceil(float64(len(mockUploadChildReqs)) / float64(req.PageSize))),
 	}
 
 	u.redisCache.Set(redisKey, res, time.Minute*5, ctx)
@@ -423,7 +423,7 @@ func (u *uploadChildRequestService) GetWalletUploadChildRequests(id string, page
 		Data:       data,
 		Amount:     len(data),
 		Page:       page,
-		TotalPages: int(math.Ceil(float64(len(data)) / 10)),
+		TotalPages: int(math.Ceil(float64(len(mockCenterRequests)) / 10)),
 	}
 
 	u.redisCache.Set(redisKey, res, time.Minute*5, ctx)

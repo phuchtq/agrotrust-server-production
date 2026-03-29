@@ -246,7 +246,7 @@ func (g *giftService) CreateGift(req request.CreateGiftRequest, ctx context.Cont
 		return response.BuildTransactionResponse{}, err
 	}
 
-	if profile.FirstName == "" {
+	if profile.FirstName == nil {
 		return response.BuildTransactionResponse{}, errors.New(noti.PROFILE_EMPTY_MESSAGE)
 	}
 
@@ -331,11 +331,11 @@ func (g *giftService) CreateGift(req request.CreateGiftRequest, ctx context.Cont
 				GiftImageBlobID: req.GiftImageBlobID,
 				Category:        req.Category,
 				Amount:          req.GiftValue,
-				FirstName:       profile.FirstName,
-				LastName:        profile.LastName,
-				Gender:          profile.Gender,
-				PhoneNumber:     profile.PhoneNumber,
-				Email:           profile.Email,
+				FirstName:       *profile.FirstName,
+				LastName:        *profile.LastName,
+				Gender:          *profile.Gender,
+				PhoneNumber:     *profile.PhoneNumber,
+				Email:           *profile.Email,
 				Message:         msg,
 				Description:     description,
 			},
@@ -355,11 +355,11 @@ func (g *giftService) CreateGift(req request.CreateGiftRequest, ctx context.Cont
 			GiftImageBlobID: req.GiftImageBlobID,
 			Category:        req.Category,
 			Amount:          req.GiftValue,
-			FirstName:       profile.FirstName,
-			LastName:        profile.LastName,
-			Gender:          profile.Gender,
-			PhoneNumber:     profile.PhoneNumber,
-			Email:           profile.Email,
+			FirstName:       *profile.FirstName,
+			LastName:        *profile.LastName,
+			Gender:          *profile.Gender,
+			PhoneNumber:     *profile.PhoneNumber,
+			Email:           *profile.Email,
 			Message:         msg,
 			Description:     description,
 		})

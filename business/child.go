@@ -982,7 +982,7 @@ func (c *childService) SupportHealthInsuranceNeed(id string, ctx context.Context
 		return response.UrlAPIResponse{}, err
 	}
 
-	if profile.IdentityCode == "" {
+	if profile.IdentityCode == nil {
 		return response.UrlAPIResponse{}, errors.New(noti.PROFILE_EMPTY_MESSAGE)
 	}
 
@@ -1776,7 +1776,7 @@ func (c *childService) SupportBooksNeed(id string, ctx context.Context) (respons
 		return response.UrlAPIResponse{}, err
 	}
 
-	if profile.IdentityCode == "" {
+	if profile.IdentityCode == nil {
 		return response.UrlAPIResponse{}, errors.New(noti.PROFILE_EMPTY_MESSAGE)
 	}
 
@@ -1938,7 +1938,7 @@ func (c *childService) SupportMealNeed(id string, req request.SupportMealNeadReq
 		return response.UrlAPIResponse{}, err
 	}
 
-	if profile.IdentityCode == "" {
+	if profile.IdentityCode == nil {
 		return response.UrlAPIResponse{}, errors.New(noti.PROFILE_EMPTY_MESSAGE)
 	}
 
@@ -2146,7 +2146,7 @@ func (c *childService) SupportSpecialNeed(id string, req request.SupportSpecialN
 		return response.UrlAPIResponse{}, err
 	}
 
-	if profile.IdentityCode == "" {
+	if profile.IdentityCode == nil {
 		return response.UrlAPIResponse{}, errors.New(noti.PROFILE_EMPTY_MESSAGE)
 	}
 

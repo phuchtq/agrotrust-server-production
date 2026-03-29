@@ -407,7 +407,7 @@ func (c *centerRequestService) GetRequests(req request.GetCenterRequests, ctx co
 		Data:       data,
 		Amount:     len(data),
 		Page:       req.Page,
-		TotalPages: int(math.Ceil(float64(len(data)) / float64(req.PageSize))),
+		TotalPages: int(math.Ceil(float64(len(mockCenterRequests)) / float64(req.PageSize))),
 	}
 
 	c.redisCache.Set(redisKey, res, time.Minute*5, ctx)
@@ -504,7 +504,7 @@ func (c *centerRequestService) VoteRequest(id string, req request.VoteRequest, c
 
 	var isRegionStaff bool = false
 	for _, nft := range nfts {
-		if nft.Role == request.Region {
+		if nft.Region == request.Region {
 			isRegionStaff = true
 			break
 		}

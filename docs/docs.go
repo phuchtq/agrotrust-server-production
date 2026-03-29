@@ -3390,6 +3390,59 @@ const docTemplate = `{
                 }
             }
         },
+        "/profiles/personal-wallet-profile/{id}": {
+            "get": {
+                "description": "Get a wallet personal profile",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "profile"
+                ],
+                "summary": "Get a wallet personal profile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Wallet Address",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Filter criteria",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.GetTransactionRecordsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.PersonalWalletProfileResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid data. Please try again.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "There is something wrong in the system during the process. Please try again later.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/profiles/{id}": {
             "post": {
                 "security": [
@@ -4903,6 +4956,96 @@ const docTemplate = `{
                 }
             }
         },
+        "/tx-records": {
+            "get": {
+                "description": "Get a list of transaction records",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tx-records"
+                ],
+                "summary": "Get a list of transaction records",
+                "parameters": [
+                    {
+                        "description": "Filter criteria",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.GetTransactionRecordsRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.PaginationDataResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid data. Please try again.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "There is something wrong in the system during the process. Please try again later.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/tx-records/{id}": {
+            "get": {
+                "description": "Get a transaction record specific information by its unique ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "tx-records"
+                ],
+                "summary": "Get a transaction record specific information",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Transaction Record ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.TransactionResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid data. Please try again.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "There is something wrong in the system during the process. Please try again later.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/tx/execute": {
             "post": {
                 "security": [
@@ -5637,28 +5780,28 @@ const docTemplate = `{
                 "content": {
                     "type": "string"
                 },
-                "createdAt": {
+                "created_at": {
                     "type": "string"
                 },
-                "createdBy": {
+                "created_by": {
                     "type": "string"
                 },
                 "id": {
                     "type": "string"
                 },
-                "profileID": {
+                "profile_id": {
                     "type": "string"
                 },
                 "region": {
                     "type": "string"
                 },
-                "reviewedBy": {
+                "reviewed_by": {
                     "type": "string"
                 },
                 "status": {
                     "type": "string"
                 },
-                "updatedAt": {
+                "updated_at": {
                     "type": "string"
                 }
             }
@@ -6106,6 +6249,42 @@ const docTemplate = `{
                 }
             }
         },
+        "request.GetTransactionRecordsRequest": {
+            "type": "object",
+            "properties": {
+                "action_type": {
+                    "description": "e.g. \"Withdraw\", \"Donate\"",
+                    "type": "string"
+                },
+                "actor": {
+                    "type": "string"
+                },
+                "keyword": {
+                    "type": "string"
+                },
+                "max_amount": {
+                    "type": "integer"
+                },
+                "min_amount": {
+                    "type": "integer"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "page_size": {
+                    "type": "integer"
+                },
+                "pool_id": {
+                    "type": "string"
+                },
+                "sort_criteria": {
+                    "type": "string"
+                },
+                "sort_order": {
+                    "type": "string"
+                }
+            }
+        },
         "request.LoginRequestV2": {
             "type": "object",
             "required": [
@@ -6384,6 +6563,9 @@ const docTemplate = `{
                     "type": "object",
                     "additionalProperties": true
                 },
+                "first_guardian": {
+                    "$ref": "#/definitions/request.ChildGuardianProfile"
+                },
                 "first_name": {
                     "type": "string"
                 },
@@ -6395,6 +6577,15 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                },
+                "health_insurance_need": {
+                    "type": "string"
+                },
+                "home_address": {
+                    "type": "string"
+                },
+                "home_blob_id": {
+                    "type": "string"
                 },
                 "id": {
                     "type": "string"
@@ -6416,6 +6607,9 @@ const docTemplate = `{
                 },
                 "region": {
                     "type": "string"
+                },
+                "second_guardian": {
+                    "$ref": "#/definitions/request.ChildGuardianProfile"
                 },
                 "special_need_campaigns": {
                     "type": "array",
@@ -6592,6 +6786,38 @@ const docTemplate = `{
                 }
             }
         },
+        "response.PersonalWalletProfileResponse": {
+            "type": "object",
+            "properties": {
+                "first_name": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "record_amount": {
+                    "type": "integer"
+                },
+                "total_donation": {
+                    "type": "integer"
+                },
+                "total_pages": {
+                    "type": "integer"
+                },
+                "transaction_records": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.TransactionResponse"
+                    }
+                },
+                "wallet_address": {
+                    "type": "string"
+                }
+            }
+        },
         "response.RegionsResponse": {
             "type": "object",
             "properties": {
@@ -6634,6 +6860,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "owner": {
                     "type": "string"
                 },
                 "phone_number": {
@@ -6826,9 +7055,9 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "locahost:8080",
+	Host:             "agrotrust-server-production.onrender.com",
 	BasePath:         "/",
-	Schemes:          []string{"http"},
+	Schemes:          []string{"https"},
 	Title:            "AgroTrust Server API",
 	Description:      "API for AgroTrust Server",
 	InfoInstanceName: "swagger",

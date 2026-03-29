@@ -204,21 +204,21 @@ definitions:
     properties:
       content:
         type: string
-      createdAt:
+      created_at:
         type: string
-      createdBy:
+      created_by:
         type: string
       id:
         type: string
-      profileID:
+      profile_id:
         type: string
       region:
         type: string
-      reviewedBy:
+      reviewed_by:
         type: string
       status:
         type: string
-      updatedAt:
+      updated_at:
         type: string
     type: object
   entities.UploadChildRequest:
@@ -527,6 +527,30 @@ definitions:
     - signature
     - tx_bytes
     type: object
+  request.GetTransactionRecordsRequest:
+    properties:
+      action_type:
+        description: e.g. "Withdraw", "Donate"
+        type: string
+      actor:
+        type: string
+      keyword:
+        type: string
+      max_amount:
+        type: integer
+      min_amount:
+        type: integer
+      page:
+        type: integer
+      page_size:
+        type: integer
+      pool_id:
+        type: string
+      sort_criteria:
+        type: string
+      sort_order:
+        type: string
+    type: object
   request.LoginRequestV2:
     properties:
       address:
@@ -719,6 +743,8 @@ definitions:
       dynamic_values:
         additionalProperties: true
         type: object
+      first_guardian:
+        $ref: '#/definitions/request.ChildGuardianProfile'
       first_name:
         type: string
       gender:
@@ -727,6 +753,12 @@ definitions:
         items:
           type: string
         type: array
+      health_insurance_need:
+        type: string
+      home_address:
+        type: string
+      home_blob_id:
+        type: string
       id:
         type: string
       identity_code:
@@ -741,6 +773,8 @@ definitions:
         type: string
       region:
         type: string
+      second_guardian:
+        $ref: '#/definitions/request.ChildGuardianProfile'
       special_need_campaigns:
         items:
           type: string
@@ -856,6 +890,27 @@ definitions:
       phone_number:
         type: string
     type: object
+  response.PersonalWalletProfileResponse:
+    properties:
+      first_name:
+        type: string
+      last_name:
+        type: string
+      page:
+        type: integer
+      record_amount:
+        type: integer
+      total_donation:
+        type: integer
+      total_pages:
+        type: integer
+      transaction_records:
+        items:
+          $ref: '#/definitions/response.TransactionResponse'
+        type: array
+      wallet_address:
+        type: string
+    type: object
   response.RegionsResponse:
     properties:
       regions:
@@ -884,6 +939,8 @@ definitions:
       last_name:
         type: string
       name:
+        type: string
+      owner:
         type: string
       phone_number:
         type: string
@@ -1002,7 +1059,7 @@ definitions:
       withdraw_amount:
         type: integer
     type: object
-host: locahost:8080
+host: agrotrust-server-production.onrender.com
 info:
   contact: {}
   description: API for AgroTrust Server
@@ -3292,6 +3349,42 @@ paths:
       summary: Upload an account personal information
       tags:
       - profile
+  /profiles/personal-wallet-profile/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a wallet personal profile
+      parameters:
+      - description: Wallet Address
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Filter criteria
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetTransactionRecordsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.PersonalWalletProfileResponse'
+        "400":
+          description: Invalid data. Please try again.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "500":
+          description: There is something wrong in the system during the process.
+            Please try again later.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+      summary: Get a wallet personal profile
+      tags:
+      - profile
   /regions:
     get:
       consumes:
@@ -4250,6 +4343,67 @@ paths:
       summary: Review a task
       tags:
       - tasks
+  /tx-records:
+    get:
+      consumes:
+      - application/json
+      description: Get a list of transaction records
+      parameters:
+      - description: Filter criteria
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.GetTransactionRecordsRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.PaginationDataResponse'
+        "400":
+          description: Invalid data. Please try again.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "500":
+          description: There is something wrong in the system during the process.
+            Please try again later.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+      summary: Get a list of transaction records
+      tags:
+      - tx-records
+  /tx-records/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a transaction record specific information by its unique ID
+      parameters:
+      - description: Transaction Record ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.TransactionResponse'
+        "400":
+          description: Invalid data. Please try again.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "500":
+          description: There is something wrong in the system during the process.
+            Please try again later.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+      summary: Get a transaction record specific information
+      tags:
+      - tx-records
   /tx/execute:
     post:
       consumes:
@@ -4534,7 +4688,7 @@ paths:
       tags:
       - Withdrawal
 schemes:
-- http
+- https
 securityDefinitions:
   BearerAuth:
     in: header

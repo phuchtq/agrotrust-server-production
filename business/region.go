@@ -321,7 +321,7 @@ func (r *regionService) GetSupportedRegionSuggestions(req request.GetSupportedRe
 		Data:       data,
 		Amount:     len(data),
 		Page:       req.Page,
-		TotalPages: int(math.Ceil(float64(len(data)) / float64(req.PageSize))),
+		TotalPages: int(math.Ceil(float64(len(mockSuggestions)) / float64(req.PageSize))),
 	}
 
 	r.redisCache.Set(redisKey, res, time.Minute*5, ctx)

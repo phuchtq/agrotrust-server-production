@@ -293,7 +293,7 @@ func (t *taskProofService) GetTaskProofs(req request.GetTaskProofsRequest, ctx c
 		Data:       data,
 		Amount:     len(data),
 		Page:       req.Page,
-		TotalPages: int(math.Ceil(float64(len(data)) / float64(req.PageSize))),
+		TotalPages: int(math.Ceil(float64(len(mockTaskProofs)) / float64(req.PageSize))),
 	}
 
 	t.redisCache.Set(redisKey, res, time.Minute*5, ctx)

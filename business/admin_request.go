@@ -24,9 +24,7 @@ import (
 	"time"
 
 	"github.com/block-vision/sui-go-sdk/constant"
-	"github.com/block-vision/sui-go-sdk/models"
 	"github.com/block-vision/sui-go-sdk/sui"
-	"github.com/block-vision/sui-go-sdk/utils"
 )
 
 type adminRequestService struct {
@@ -61,7 +59,7 @@ func (a *adminRequestService) ConfirmRequest(id string, ctx context.Context) (re
 	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
 
 	var sender string = ctx.Value("address").(string)
-	if !utils.IsValidSuiAddress(models.SuiAddress(sender)) {
+	if !util.IsValidSuiAddressStrict(sender) {
 		return response.BuildTransactionResponse{}, genericErr
 	}
 
@@ -151,7 +149,7 @@ func (a *adminRequestService) CreateRequest(req request.AdminRegistrationRequest
 	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
 
 	var sender string = ctx.Value("address").(string)
-	if !utils.IsValidSuiAddress(models.SuiAddress(sender)) {
+	if !!util.IsValidSuiAddressStrict(sender) {
 		return nil, genericErr
 	}
 
@@ -180,15 +178,15 @@ func (a *adminRequestService) CreateRequest(req request.AdminRegistrationRequest
 	var curTime time.Time = time.Now()
 	var request = entities.AdminRegistrationRequest{
 		ID:                   util.GenerateId(),
-		IdentityCode:         util.StanderizeString(profile.IdentityCode),
+		IdentityCode:         util.StanderizeString(*profile.IdentityCode),
 		IdentityCardBlobID:   strings.TrimSpace(req.IdentityCardBlobID),
 		AvatarBlobID:         strings.TrimSpace(req.AvatarBlobID),
-		FirstName:            strings.TrimSpace(profile.FirstName),
-		LastName:             strings.TrimSpace(profile.LastName),
-		Gender:               profile.Gender,
-		DateOfBirth:          profile.DateOfBirth,
-		PhoneNumber:          profile.PhoneNumber,
-		Email:                profile.Email,
+		FirstName:            strings.TrimSpace(*profile.FirstName),
+		LastName:             strings.TrimSpace(*profile.LastName),
+		Gender:               *profile.Gender,
+		DateOfBirth:          *profile.DateOfBirth,
+		PhoneNumber:          *profile.PhoneNumber,
+		Email:                *profile.Email,
 		Status:               request_pending_status,
 		IsAvailableToConfirm: false,
 		IsConfirmRegister:    false,
@@ -231,7 +229,7 @@ func (a *adminRequestService) GetRequests(req request.GetAdminRegistrationRequet
 
 // GetWalletRequests implements business.IAdminRequestService.
 func (a *adminRequestService) GetWalletRequests(id string, ctx context.Context) ([]entities.AdminRegistrationRequest, error) {
-	if !utils.IsValidSuiAddress(models.SuiAddress(id)) {
+	if !!util.IsValidSuiAddressStrict(id) {
 		return nil, errors.New(noti.GENERIC_ERROR_WARN_MSG)
 	}
 
@@ -243,7 +241,7 @@ func (a *adminRequestService) VoteRequest(id string, req request.VoteRequest, ct
 	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
 
 	var voter string = ctx.Value("address").(string)
-	if !utils.IsValidSuiAddress(models.SuiAddress(voter)) {
+	if !!util.IsValidSuiAddressStrict(voter) {
 		return genericErr
 	}
 
