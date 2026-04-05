@@ -1015,7 +1015,7 @@ definitions:
       amount:
         type: integer
       coin_type:
-        description: e.g., "Sui", "USDC"
+        description: e.g., "VND"
         type: string
       created_at:
         type: string
@@ -4598,12 +4598,37 @@ paths:
       - application/json
       description: Get a list of transaction records
       parameters:
-      - description: Filter criteria
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/request.GetTransactionRecordsRequest'
+      - description: e.g. "Withdraw", "Donate"
+        in: query
+        name: action_type
+        type: string
+      - in: query
+        name: actor
+        type: string
+      - in: query
+        name: keyword
+        type: string
+      - in: query
+        name: max_amount
+        type: integer
+      - in: query
+        name: min_amount
+        type: integer
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: page_size
+        type: integer
+      - in: query
+        name: pool_id
+        type: string
+      - in: query
+        name: sort_criteria
+        type: string
+      - in: query
+        name: sort_order
+        type: string
       produces:
       - application/json
       responses:

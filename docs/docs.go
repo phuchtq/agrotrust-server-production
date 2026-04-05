@@ -5316,13 +5316,55 @@ const docTemplate = `{
                 "summary": "Get a list of transaction records",
                 "parameters": [
                     {
-                        "description": "Filter criteria",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/request.GetTransactionRecordsRequest"
-                        }
+                        "type": "string",
+                        "description": "e.g. \"Withdraw\", \"Donate\"",
+                        "name": "action_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "actor",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "keyword",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "max_amount",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "min_amount",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "pool_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "sort_criteria",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "sort_order",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -7320,7 +7362,7 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "coin_type": {
-                    "description": "e.g., \"Sui\", \"USDC\"",
+                    "description": "e.g., \"VND\"",
                     "type": "string"
                 },
                 "created_at": {
