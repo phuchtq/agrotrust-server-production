@@ -2677,7 +2677,7 @@ func getMockChildren() []response.ChildResponse {
 			Gender:       []string{"Male", "Female"}[i%2],
 			DateOfBirth:  time.Date(2015+i%5, time.Month(i%12+1), 1, 0, 0, 0, 0, time.UTC),
 			HomeAddress:  fmt.Sprintf("%d Đường số %d, Phường %d", i+10, i, i%10),
-			Region:       "Hồ Chí Minh",
+			Region:       "TP.HCM ",
 			AvatarBlobId: fmt.Sprintf("avt-child-%d", i+1),
 			HomeBlobID:   fmt.Sprintf("home-child-%d", i+1),
 			FirstGuardian: request.ChildGuardianProfile{
