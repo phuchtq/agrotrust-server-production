@@ -6216,6 +6216,9 @@ const docTemplate = `{
                 "avatar_blob_id": {
                     "type": "string"
                 },
+                "birth_certificate_blob_id": {
+                    "type": "string"
+                },
                 "closed_at": {
                     "type": "string"
                 },
@@ -6958,6 +6961,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "avatar_blob_id": {
+                    "type": "string"
+                },
+                "birth_certificate_blob_id": {
                     "type": "string"
                 },
                 "books_needs": {
