@@ -10,7 +10,7 @@ import (
 )
 
 func InitializeTransactionRecordRoutes(server *gin.Engine) {
-	var contextPath string = "profiles"
+	var contextPath string = "tx-records"
 
 	// Rate limits
 	var viewLimit = middleware.InitializeRateLimiter(rate.Every(time.Second/5), 20)
