@@ -3754,13 +3754,55 @@
                         "required": true
                     },
                     {
-                        "description": "Filter criteria",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/request.GetTransactionRecordsRequest"
-                        }
+                        "type": "string",
+                        "description": "e.g. \"Withdraw\", \"Donate\"",
+                        "name": "action_type",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "actor",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "keyword",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "max_amount",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "min_amount",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "pool_id",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "sort_criteria",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "sort_order",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -6636,42 +6678,6 @@
                 }
             }
         },
-        "request.GetTransactionRecordsRequest": {
-            "type": "object",
-            "properties": {
-                "action_type": {
-                    "description": "e.g. \"Withdraw\", \"Donate\"",
-                    "type": "string"
-                },
-                "actor": {
-                    "type": "string"
-                },
-                "keyword": {
-                    "type": "string"
-                },
-                "max_amount": {
-                    "type": "integer"
-                },
-                "min_amount": {
-                    "type": "integer"
-                },
-                "page": {
-                    "type": "integer"
-                },
-                "page_size": {
-                    "type": "integer"
-                },
-                "pool_id": {
-                    "type": "string"
-                },
-                "sort_criteria": {
-                    "type": "string"
-                },
-                "sort_order": {
-                    "type": "string"
-                }
-            }
-        },
         "request.LoginRequestV2": {
             "type": "object",
             "required": [
@@ -6870,8 +6876,7 @@
                 "gender",
                 "identity_code",
                 "last_name",
-                "phone_number",
-                "region"
+                "phone_number"
             ],
             "properties": {
                 "date_of_birth": {
@@ -6893,9 +6898,6 @@
                     "type": "string"
                 },
                 "phone_number": {
-                    "type": "string"
-                },
-                "region": {
                     "type": "string"
                 }
             }

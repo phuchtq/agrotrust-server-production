@@ -529,30 +529,6 @@ definitions:
     - signature
     - tx_bytes
     type: object
-  request.GetTransactionRecordsRequest:
-    properties:
-      action_type:
-        description: e.g. "Withdraw", "Donate"
-        type: string
-      actor:
-        type: string
-      keyword:
-        type: string
-      max_amount:
-        type: integer
-      min_amount:
-        type: integer
-      page:
-        type: integer
-      page_size:
-        type: integer
-      pool_id:
-        type: string
-      sort_criteria:
-        type: string
-      sort_order:
-        type: string
-    type: object
   request.LoginRequestV2:
     properties:
       address:
@@ -700,8 +676,6 @@ definitions:
         type: string
       phone_number:
         type: string
-      region:
-        type: string
     required:
     - date_of_birth
     - email
@@ -710,7 +684,6 @@ definitions:
     - identity_code
     - last_name
     - phone_number
-    - region
     type: object
   request.VoteRequest:
     properties:
@@ -3613,12 +3586,37 @@ paths:
         name: id
         required: true
         type: string
-      - description: Filter criteria
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/request.GetTransactionRecordsRequest'
+      - description: e.g. "Withdraw", "Donate"
+        in: query
+        name: action_type
+        type: string
+      - in: query
+        name: actor
+        type: string
+      - in: query
+        name: keyword
+        type: string
+      - in: query
+        name: max_amount
+        type: integer
+      - in: query
+        name: min_amount
+        type: integer
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: page_size
+        type: integer
+      - in: query
+        name: pool_id
+        type: string
+      - in: query
+        name: sort_criteria
+        type: string
+      - in: query
+        name: sort_order
+        type: string
       produces:
       - application/json
       responses:
