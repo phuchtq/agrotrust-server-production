@@ -165,12 +165,11 @@ func (u *uploadChildRepo) GetUploadChildRequests(req request.GetUploadChildReque
 		order = req.SortOrder
 	}
 
-	queryCondition += "ORDER BY created_at " + order
-
 	var query string = generateRetrieveQuery(generateRetrieveQueryRequest{
 		table:       upload_child_request_table,
 		limitAmount: req.PageSize,
 		condition:   queryCondition,
+		order:       " ORDER BY created_at " + order,
 		page:        req.Page,
 		isGetCount:  false,
 	})

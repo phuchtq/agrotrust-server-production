@@ -78,7 +78,6 @@ func GetOnChainObject[T any](req GetOnChainObjectRequest, ctx context.Context) (
 }
 
 func GetOnChainObjects[T any](req GetOnChainObjectsRequest, ctx context.Context) ([]T, error) {
-
 	// VER 1
 	// var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
 	// var retrieveReq = models.SuiMultiGetObjectsRequest{
@@ -246,6 +245,10 @@ func GetOnChainOwnedObjects[T any](req GetOnChainOwnedObjectsRequest, ctx contex
 
 		res, err := req.Client.SuiXGetOwnedObjects(ctx, retrieveReq)
 		if err != nil {
+			if strings.Contains(err.Error(), "no result") {
+				return nil, nil
+			}
+
 			req.ErrLogger.Println(noti.RETRIEVE_ON_CHAIN_DATA_ERR_MSG + err.Error())
 			return nil, errors.New(noti.INTERNALL_ERR_MSG)
 		}
