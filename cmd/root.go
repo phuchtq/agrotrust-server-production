@@ -8,6 +8,8 @@ import (
 	"raise-child/constants/env"
 	"raise-child/constants/shared"
 	"raise-child/util"
+	"raise-child/util/ai"
+	walrus_pkg "raise-child/util/walrus_pkg"
 	"sync"
 	"syscall"
 	"time"
@@ -22,11 +24,11 @@ func Execute() {
 	loadEnv(errLogger)
 
 	// Initialize context for backgroun goroutines management
-	_, cancel := context.WithCancel(context.Background())
+	ctx, cancel := context.WithCancel(context.Background())
 	var wg sync.WaitGroup
 
 	// Run background services
-	//setupBackgroundService(ctx, &wg)
+	setupBackgroundService(ctx, &wg)
 
 	// Initialize gin server for API
 	var server = gin.Default()
@@ -51,6 +53,12 @@ func Execute() {
 
 	// Setup payments
 	setupPayments(errLogger)
+
+	// Init AI provider
+	ai.InitializeAiProvider(ctx, errLogger)
+
+	// Init walrus provider
+	walrus_pkg.InitializeWalrusProvider(errLogger)
 
 	// Convert gin server to HTTP server
 	var httpServer = &http.Server{

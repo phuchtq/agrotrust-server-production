@@ -23,9 +23,11 @@ import (
 	"raise-child/model/dtos/response"
 	"raise-child/model/entities"
 	"raise-child/util"
+	"raise-child/util/ai"
 	"raise-child/util/cache"
 	"raise-child/util/db"
 	on_chain "raise-child/util/on_chain"
+	walrus_pkg "raise-child/util/walrus_pkg"
 	"slices"
 
 	i_repository "raise-child/interfaces/repository"
@@ -42,10 +44,13 @@ type childService struct {
 	pendingWithdrawProposalRepo         i_repository.IPendingWithdrawProposalRepository
 	withdrawRepo                        i_repository.IOffChainWithdrawProposalRepository
 	donationRepo                        i_repository.IOffChainDonationRepository
+	mealDurationRepo                    i_repository.IMealSupportDurationRepository
 	paymentRepo                         i_repository.IPaymentRepository
 	profileRepo                         i_repository.IProfileRepository
 	bankRepo                            i_repository.IBankProfileRepository
 	leaderNotiRepo                      i_repository.ILeaderNotiRepository
+	aiProvider                          ai.IAiClientProvider
+	walrusProvider                      walrus_pkg.IWalrusProvider
 	redisCache                          cache.IRedisCache
 	clients                             map[string]sui.ISuiAPI
 	errLogger                           *log.Logger
@@ -56,10 +61,13 @@ func initializeChildService(
 	pendingWithdrawProposalRepo i_repository.IPendingWithdrawProposalRepository,
 	withdrawRepo i_repository.IOffChainWithdrawProposalRepository,
 	donationRepo i_repository.IOffChainDonationRepository,
+	mealDurationRepo i_repository.IMealSupportDurationRepository,
 	paymentRepo i_repository.IPaymentRepository,
 	profileRepo i_repository.IProfileRepository,
 	bankRepo i_repository.IBankProfileRepository,
 	leaderNotiRepo i_repository.ILeaderNotiRepository,
+	aiProvider ai.IAiClientProvider,
+	walrusProvider walrus_pkg.IWalrusProvider,
 	clients map[string]sui.ISuiAPI,
 	errLogger *log.Logger,
 ) business.IChildService {
@@ -68,10 +76,13 @@ func initializeChildService(
 		pendingWithdrawProposalRepo:         pendingWithdrawProposalRepo,
 		withdrawRepo:                        withdrawRepo,
 		donationRepo:                        donationRepo,
+		mealDurationRepo:                    mealDurationRepo,
 		paymentRepo:                         paymentRepo,
 		profileRepo:                         profileRepo,
 		bankRepo:                            bankRepo,
 		leaderNotiRepo:                      leaderNotiRepo,
+		aiProvider:                          aiProvider,
+		walrusProvider:                      walrusProvider,
 		redisCache:                          cache.InitializeRedisCache(),
 		clients:                             clients,
 		errLogger:                           errLogger,
@@ -91,10 +102,13 @@ func GenerateChildService() (business.IChildService, error) {
 		repository.InitializePendingWithdrawProposalRepo(cnn, errLogger),
 		repository.InitializeOffChainWithdrawProposalRepository(cnn, errLogger),
 		repository.InitializeOffChainDonationRepository(cnn, errLogger),
+		repository.InitializeMealSupportDurationRepository(cnn, errLogger),
 		repository.InitializePaymentRepository(cnn, errLogger),
 		repository.InitializeProfileRepository(cnn, errLogger),
 		repository.InitializeBankProfileRepository(cnn, errLogger),
 		repository.InitializeLeaderNotiRepository(cnn, errLogger),
+		ai.InitializeAiProvider(nil, errLogger),
+		walrus_pkg.InitializeWalrusProvider(errLogger),
 		_networkAliases,
 		errLogger,
 	), nil
@@ -102,51 +116,51 @@ func GenerateChildService() (business.IChildService, error) {
 
 // GetChild implements business.IChildService.
 func (c *childService) GetChild(id string, ctx context.Context) (response.ChildResponse, error) {
-	// if !util.IsValidSuiAddressStrict(id) {
-	// 	return response.ChildResponse{}, errors.New(noti.GENERIC_ERROR_WARN_MSG)
-	// }
+	if !util.IsValidSuiAddressStrict(id) {
+		return response.ChildResponse{}, errors.New(noti.GENERIC_ERROR_WARN_MSG)
+	}
 
-	// var res response.ChildResponse
-	// var redisKey string = c.getGetChildRediskey(id)
-	// if c.redisCache.Get(redisKey, &res, ctx) {
-	// 	return res, nil
-	// }
-
-	// var client = c.clients[constant.SuiTestnet]
-	// child, err := on_chain.GetOnChainObject[entities.Child](on_chain.GetOnChainObjectRequest{
-	// 	Client:    client,
-	// 	ObjectId:  id,
-	// 	ErrLogger: c.errLogger,
-	// }, ctx)
-	// if err != nil {
-	// 	return response.ChildResponse{}, err
-	// }
-
-	// res = child.ToChildResponse()
-	// if len(res.DynamicFields) > 0 {
-	// 	// Has dynamic fields
-	// 	if dynamicValues, _ := on_chain.GetDynamicFields(id, client, c.errLogger, ctx); dynamicValues != nil {
-	// 		res.DynamicValues = dynamicValues
-	// 	}
-	// }
-
-	// c.redisCache.Set(redisKey, res, time.Minute*5, ctx)
-
-	// return res, err
-
-	////////////////////////
-	// MOCK DATA
 	var res response.ChildResponse
 	var redisKey string = c.getGetChildRediskey(id)
 	if c.redisCache.Get(redisKey, &res, ctx) {
 		return res, nil
 	}
-	for _, child := range mockChildren {
-		if child.ID == id {
-			c.redisCache.Set(redisKey, child, time.Minute*5, ctx)
-			return child, nil
+
+	var client = c.clients[constant.SuiTestnet]
+	child, err := on_chain.GetOnChainObject[entities.Child](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  id,
+		ErrLogger: c.errLogger,
+	}, ctx)
+	if err != nil {
+		return response.ChildResponse{}, err
+	}
+
+	res = child.ToChildResponse()
+	if len(res.DynamicFields) > 0 {
+		// Has dynamic fields
+		if dynamicValues, _ := on_chain.GetDynamicFields(id, client, c.errLogger, ctx); dynamicValues != nil {
+			res.DynamicValues = dynamicValues
 		}
 	}
+
+	c.redisCache.Set(redisKey, res, time.Minute*5, ctx)
+
+	// return res, err
+
+	////////////////////////
+	// // MOCK DATA
+	// var res response.ChildResponse
+	// var redisKey string = c.getGetChildRediskey(id)
+	// if c.redisCache.Get(redisKey, &res, ctx) {
+	// 	return res, nil
+	// }
+	// for _, child := range mockChildren {
+	// 	if child.ID == id {
+	// 		c.redisCache.Set(redisKey, child, time.Minute*5, ctx)
+	// 		return child, nil
+	// 	}
+	// }
 
 	return res, nil
 }
@@ -169,98 +183,34 @@ func (c *childService) GetChildren(req request.GetChildrenRequest, ctx context.C
 		return res, nil
 	}
 
-	// var client = c.clients[constant.SuiTestnet]
-	// manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-	// 	Client:    client,
-	// 	ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-	// 	ErrLogger: c.errLogger,
-	// }, ctx)
-	// if err != nil {
-	// 	return response.PaginationDataResponse{}, err
-	// }
+	var client = c.clients[constant.SuiTestnet]
+	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: c.errLogger,
+	}, ctx)
+	if err != nil {
+		return response.PaginationDataResponse{}, err
+	}
 
-	// children, err := on_chain.GetOnChainObjects[entities.Child](on_chain.GetOnChainObjectsRequest{
-	// 	Client:    client,
-	// 	ObjectIds: manageObj.ChildIds,
-	// 	ErrLogger: c.errLogger,
-	// }, ctx)
-	// if err != nil {
-	// 	return response.PaginationDataResponse{}, err
-	// }
+	children, err := on_chain.GetOnChainObjects[entities.Child](on_chain.GetOnChainObjectsRequest{
+		Client:    client,
+		ObjectIds: manageObj.ChildIds,
+		ErrLogger: c.errLogger,
+	}, ctx)
+	if err != nil {
+		return response.PaginationDataResponse{}, err
+	}
 
-	// if children == nil || len(children) == 0 {
-	// 	return response.PaginationDataResponse{}, nil
-	// }
+	if children == nil || len(children) == 0 {
+		return response.PaginationDataResponse{}, nil
+	}
 
-	// var keyword string = util.StanderizeString(req.Keyword)
-	// var region string = util.StanderizeString(req.Region)
-	// var filteredChildren []entities.Child
-	// for i := len(children) - 1; i >= 0; i-- {
-	// 	var child entities.Child = children[i]
-
-	// 	if region != "" {
-	// 		if util.StanderizeString(child.Region) != region { // Not matched
-	// 			continue
-	// 		}
-	// 	}
-
-	// 	if req.Gender != "" {
-	// 		if child.Gender != req.Gender { // Not matched
-	// 			continue
-	// 		}
-	// 	}
-
-	// 	if req.YearOfBirth != nil {
-	// 		var dob time.Time = util.RawDateToTime(child.DateOfBirth)
-	// 		if dob.Year() != *req.YearOfBirth { // Not matched
-	// 			continue
-	// 		}
-	// 	}
-
-	// 	if keyword != "" {
-	// 		var firstName string = util.StanderizeString(child.FirstName)
-	// 		var lastName string = util.StanderizeString(child.LastName)
-	// 		if !strings.Contains(firstName, keyword) && !strings.Contains(lastName, keyword) && !strings.Contains(child.IdentityCode, keyword) { // Not matched
-	// 			continue
-	// 		}
-	// 	}
-
-	// 	filteredChildren = append(filteredChildren, child)
-	// }
-
-	// sort.Slice(filteredChildren, func(i, j int) bool {
-	// 	var name1 string = filteredChildren[i].LastName + " " + filteredChildren[i].FirstName
-	// 	var name2 string = filteredChildren[j].LastName + " " + filteredChildren[j].FirstName
-
-	// 	if req.SortOrder == "ASC" {
-	// 		return name1 < name2
-	// 	}
-
-	// 	return name2 > name1
-	// })
-
-	// var skippedRecords int = (req.Page - 1) * req.PageSize
-	// if len(filteredChildren) <= skippedRecords {
-	// 	return response.PaginationDataResponse{}, nil
-	// }
-
-	// var data []response.ChildResponse
-	// for i := skippedRecords; i < len(filteredChildren); i++ {
-	// 	data = append(data, filteredChildren[i].ToMinimumChildResponse())
-	// if len(data) == req.PageSize {
-	// 	break
-	// }
-	// }
-
-	//////////////////
-	// MOCK DATA
-
-	var children = mockChildren
 	var keyword string = util.StanderizeString(req.Keyword)
 	var region string = util.StanderizeString(req.Region)
-	var filteredChildren []response.ChildResponse
+	var filteredChildren []entities.Child
 	for i := len(children) - 1; i >= 0; i-- {
-		var child response.ChildResponse = children[i]
+		var child entities.Child = children[i]
 
 		if region != "" {
 			if util.StanderizeString(child.Region) != region { // Not matched
@@ -275,7 +225,8 @@ func (c *childService) GetChildren(req request.GetChildrenRequest, ctx context.C
 		}
 
 		if req.YearOfBirth != nil {
-			if child.DateOfBirth.Year() != *req.YearOfBirth { // Not matched
+			var dob time.Time = util.RawDateToTime(child.DateOfBirth)
+			if dob.Year() != *req.YearOfBirth { // Not matched
 				continue
 			}
 		}
@@ -309,11 +260,74 @@ func (c *childService) GetChildren(req request.GetChildrenRequest, ctx context.C
 
 	var data []response.ChildResponse
 	for i := skippedRecords; i < len(filteredChildren); i++ {
-		data = append(data, filteredChildren[i])
+		data = append(data, filteredChildren[i].ToMinimumChildResponse())
 		if len(data) == req.PageSize {
 			break
 		}
 	}
+
+	//////////////////
+	//// MOCK DATA
+
+	// var children = mockChildren
+	// var keyword string = util.StanderizeString(req.Keyword)
+	// var region string = util.StanderizeString(req.Region)
+	// var filteredChildren []response.ChildResponse
+	// for i := len(children) - 1; i >= 0; i-- {
+	// 	var child response.ChildResponse = children[i]
+
+	// 	if region != "" {
+	// 		if util.StanderizeString(child.Region) != region { // Not matched
+	// 			continue
+	// 		}
+	// 	}
+
+	// 	if req.Gender != "" {
+	// 		if child.Gender != req.Gender { // Not matched
+	// 			continue
+	// 		}
+	// 	}
+
+	// 	if req.YearOfBirth != nil {
+	// 		if child.DateOfBirth.Year() != *req.YearOfBirth { // Not matched
+	// 			continue
+	// 		}
+	// 	}
+
+	// 	if keyword != "" {
+	// 		var firstName string = util.StanderizeString(child.FirstName)
+	// 		var lastName string = util.StanderizeString(child.LastName)
+	// 		if !strings.Contains(firstName, keyword) && !strings.Contains(lastName, keyword) && !strings.Contains(child.IdentityCode, keyword) { // Not matched
+	// 			continue
+	// 		}
+	// 	}
+
+	// 	filteredChildren = append(filteredChildren, child)
+	// }
+
+	// sort.Slice(filteredChildren, func(i, j int) bool {
+	// 	var name1 string = filteredChildren[i].LastName + " " + filteredChildren[i].FirstName
+	// 	var name2 string = filteredChildren[j].LastName + " " + filteredChildren[j].FirstName
+
+	// 	if req.SortOrder == "ASC" {
+	// 		return name1 < name2
+	// 	}
+
+	// 	return name2 > name1
+	// })
+
+	// var skippedRecords int = (req.Page - 1) * req.PageSize
+	// if len(filteredChildren) <= skippedRecords {
+	// 	return response.PaginationDataResponse{}, nil
+	// }
+
+	// var data []response.ChildResponse
+	// for i := skippedRecords; i < len(filteredChildren); i++ {
+	// 	data = append(data, filteredChildren[i])
+	// 	if len(data) == req.PageSize {
+	// 		break
+	// 	}
+	// }
 
 	res = response.PaginationDataResponse{
 		Data:       data,
@@ -820,6 +834,18 @@ func (c *childService) CreateBooksNeedWithdrawProposalV2(req request.CreateNorma
 			break
 		}
 	}
+	var aiEvaluation string
+	if req.ProofBlobID != nil {
+		proofBytes, _ := c.walrusProvider.FetchBytesImage(*req.ProofBlobID)
+		if proofBytes != nil {
+			aiEvaluation = c.aiProvider.ValidateWithdrawProposal(ai.ValidateWithdrawProposal{
+				Purpose:         purpose,
+				WithdrawAmount:  withdrawAmount,
+				Description:     description,
+				ProofBytesImage: proofBytes,
+			}, ctx)
+		}
+	}
 
 	// todo: AI validation
 	var res = entities.PendingWithdrawProposal{
@@ -834,7 +860,7 @@ func (c *childService) CreateBooksNeedWithdrawProposalV2(req request.CreateNorma
 		ProofBlobID:    req.ProofBlobID,
 		Description:    description,
 		Status:         request_pending_status,
-		AIEvaluation:   "",
+		AIEvaluation:   aiEvaluation,
 		CreatedAt:      curTime,
 		UpdatedAt:      curTime,
 	}
@@ -954,6 +980,19 @@ func (c *childService) CreateHealthInsuranceNeedWithdrawProposalV2(req request.C
 		}
 	}
 
+	var aiEvaluation string
+	if req.ProofBlobID != nil {
+		proofBytes, _ := c.walrusProvider.FetchBytesImage(*req.ProofBlobID)
+		if proofBytes != nil {
+			aiEvaluation = c.aiProvider.ValidateWithdrawProposal(ai.ValidateWithdrawProposal{
+				Purpose:         purpose,
+				WithdrawAmount:  withdrawAmount,
+				Description:     description,
+				ProofBytesImage: proofBytes,
+			}, ctx)
+		}
+	}
+
 	// todo: AI validation
 	var res = entities.PendingWithdrawProposal{
 		ID:             util.GenerateId(),
@@ -967,7 +1006,7 @@ func (c *childService) CreateHealthInsuranceNeedWithdrawProposalV2(req request.C
 		ProofBlobID:    req.ProofBlobID,
 		Description:    description,
 		Status:         request_pending_status,
-		AIEvaluation:   "",
+		AIEvaluation:   aiEvaluation,
 		CreatedAt:      curTime,
 		UpdatedAt:      curTime,
 	}
@@ -1206,6 +1245,19 @@ func (c *childService) CreateMealNeedWithdrawProposalV2(req request.CreateNormal
 		}
 	}
 
+	var aiEvaluation string
+	if req.ProofBlobID != nil {
+		proofBytes, _ := c.walrusProvider.FetchBytesImage(*req.ProofBlobID)
+		if proofBytes != nil {
+			aiEvaluation = c.aiProvider.ValidateWithdrawProposal(ai.ValidateWithdrawProposal{
+				Purpose:         purpose,
+				WithdrawAmount:  withdrawAmount,
+				Description:     description,
+				ProofBytesImage: proofBytes,
+			}, ctx)
+		}
+	}
+
 	// todo: AI validation
 	var res = entities.PendingWithdrawProposal{
 		ID:             util.GenerateId(),
@@ -1219,7 +1271,7 @@ func (c *childService) CreateMealNeedWithdrawProposalV2(req request.CreateNormal
 		ProofBlobID:    req.ProofBlobID,
 		Description:    description,
 		Status:         request_pending_status,
-		AIEvaluation:   "",
+		AIEvaluation:   aiEvaluation,
 		CreatedAt:      curTime,
 		UpdatedAt:      curTime,
 	}
@@ -1295,6 +1347,21 @@ func (c *childService) CreateSpecialNeedWithdrawProposalV2(req request.CreateSpe
 		}
 	}
 
+	var description string = strings.TrimSpace(req.Description)
+	var purpose string = string(entities.SPECIAL_NEED_PURPOSE)
+	var aiEvaluation string
+	if req.ProofBlobID != nil {
+		proofBytes, _ := c.walrusProvider.FetchBytesImage(*req.ProofBlobID)
+		if proofBytes != nil {
+			aiEvaluation = c.aiProvider.ValidateWithdrawProposal(ai.ValidateWithdrawProposal{
+				Purpose:         purpose,
+				WithdrawAmount:  req.Amount,
+				Description:     description,
+				ProofBytesImage: proofBytes,
+			}, ctx)
+		}
+	}
+
 	var curTime time.Time = time.Now()
 	var res = entities.PendingWithdrawProposal{
 		ID:             util.GenerateId(),
@@ -1302,17 +1369,16 @@ func (c *childService) CreateSpecialNeedWithdrawProposalV2(req request.CreateSpe
 		Creator:        sender,
 		PoolID:         localPoolId,
 		PoolName:       localPoolName,
-		Purpose:        string(entities.SPECIAL_NEED_PURPOSE),
+		Purpose:        purpose,
 		Target:         req.CampaignID,
 		WithdrawAmount: req.Amount,
 		ProofBlobID:    req.ProofBlobID,
-		Description:    req.Description,
+		Description:    description,
 		Status:         request_pending_status,
-		AIEvaluation:   "",
+		AIEvaluation:   aiEvaluation,
 		CreatedAt:      curTime,
 		UpdatedAt:      curTime,
 	}
-
 	return &res, c.pendingWithdrawProposalRepo.CreatePendingWithdrawProposal(res, ctx)
 }
 
@@ -1544,6 +1610,19 @@ func (c *childService) CreateSpecialNeedProposalV2(req request.CreateSpecialNeed
 		return nil, errors.New(noti.LEADER_NOT_UPLOAD_BANK_PROFILE_MESSAGE)
 	}
 
+	var description string = strings.TrimSpace(req.Description)
+	var aiEvaluation string
+	if req.ProofBlobID != nil {
+		proofBytes, _ := c.walrusProvider.FetchBytesImage(*req.ProofBlobID)
+		if proofBytes != nil {
+			aiEvaluation = c.aiProvider.ValidateChildSpecialNeedProposal(ai.ValidateChildSpecialNeedProposal{
+				CamapaignTarget: req.Target,
+				Description:     description,
+				ProofBytesImage: proofBytes,
+			}, ctx)
+		}
+	}
+
 	// todo: AI validation
 	var curTime time.Time = time.Now()
 	var proposal = entities.PendingChildSpecialNeedProposal{
@@ -1555,7 +1634,7 @@ func (c *childService) CreateSpecialNeedProposalV2(req request.CreateSpecialNeed
 		Target:         req.Target,
 		Description:    strings.TrimSpace(req.Description),
 		ProofBlobID:    req.ProofBlobID,
-		AIEvaluation:   "",
+		AIEvaluation:   aiEvaluation,
 		CreatedAt:      curTime,
 		UpdatedAt:      curTime,
 	}

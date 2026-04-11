@@ -628,6 +628,8 @@ definitions:
     properties:
       avatar_blob_id:
         type: string
+      birth_certificate_blob_id:
+        type: string
       date_of_birth:
         type: string
       first_guardian:
@@ -650,6 +652,7 @@ definitions:
         $ref: '#/definitions/request.ChildGuardianProfile'
     required:
     - avatar_blob_id
+    - birth_certificate_blob_id
     - date_of_birth
     - first_guardian
     - first_name

@@ -6824,6 +6824,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "avatar_blob_id",
+                "birth_certificate_blob_id",
                 "date_of_birth",
                 "first_guardian",
                 "first_name",
@@ -6836,6 +6837,9 @@ const docTemplate = `{
             ],
             "properties": {
                 "avatar_blob_id": {
+                    "type": "string"
+                },
+                "birth_certificate_blob_id": {
                     "type": "string"
                 },
                 "date_of_birth": {

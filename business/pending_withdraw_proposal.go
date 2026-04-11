@@ -16,9 +16,11 @@ import (
 	"raise-child/model/entities"
 	"raise-child/repository"
 	"raise-child/util"
+	"raise-child/util/ai"
 	"raise-child/util/cache"
 	"raise-child/util/db"
 	on_chain "raise-child/util/on_chain"
+	walrus_pkg "raise-child/util/walrus_pkg"
 	"slices"
 	"strings"
 	"time"
@@ -31,6 +33,8 @@ type pendingWithdrawProposalService struct {
 	pendingWithdrawProposalRepo i_repository.IPendingWithdrawProposalRepository
 	offWithdrawProposalRepo     i_repository.IOffChainWithdrawProposalRepository
 	bankProfileRepo             i_repository.IBankProfileRepository
+	aiProvider                  ai.IAiClientProvider
+	walrusProvider              walrus_pkg.IWalrusProvider
 	redisCache                  cache.IRedisCache
 	clients                     map[string]sui.ISuiAPI
 	errLogger                   *log.Logger
@@ -39,12 +43,16 @@ type pendingWithdrawProposalService struct {
 func initializePendingWithdrawProposalService(
 	pendingWithdrawProposalRepo i_repository.IPendingWithdrawProposalRepository,
 	bankProfileRepo i_repository.IBankProfileRepository,
+	aiProvider ai.IAiClientProvider,
+	walrusProvider walrus_pkg.IWalrusProvider,
 	clients map[string]sui.ISuiAPI,
 	errLogger *log.Logger,
 ) business.IPendingWithdrawProposalService {
 	return &pendingWithdrawProposalService{
 		pendingWithdrawProposalRepo: pendingWithdrawProposalRepo,
 		bankProfileRepo:             bankProfileRepo,
+		aiProvider:                  aiProvider,
+		walrusProvider:              walrusProvider,
 		redisCache:                  cache.InitializeRedisCache(),
 		clients:                     clients,
 		errLogger:                   errLogger,
@@ -62,6 +70,8 @@ func GeneratePendingWithdrawProposalService() (business.IPendingWithdrawProposal
 	return initializePendingWithdrawProposalService(
 		repository.InitializePendingWithdrawProposalRepo(cnn, errLogger),
 		repository.InitializeBankProfileRepository(cnn, errLogger),
+		ai.InitializeAiProvider(nil, errLogger),
+		walrus_pkg.InitializeWalrusProvider(errLogger),
 		_networkAliases,
 		errLogger,
 	), nil
@@ -299,6 +309,21 @@ func (p *pendingWithdrawProposalService) CreatePendingWithdrawProposal(req reque
 		poolName = localPool.Region
 	}
 
+	var purpose string = string(entities.WITHDRAW_PURPOSE)
+	var description string = strings.TrimSpace(req.Description)
+	var aiEvaluation string
+	if req.ProofBlobID != nil {
+		proofBytes, _ := p.walrusProvider.FetchBytesImage(*req.ProofBlobID)
+		if proofBytes != nil {
+			aiEvaluation = p.aiProvider.ValidateWithdrawProposal(ai.ValidateWithdrawProposal{
+				Purpose:         purpose,
+				WithdrawAmount:  req.WithdrawAmount,
+				Description:     description,
+				ProofBytesImage: proofBytes,
+			}, ctx)
+		}
+	}
+
 	// todo: AI validation
 	var curTime time.Time = time.Now()
 	var proposal = entities.PendingWithdrawProposal{
@@ -307,13 +332,13 @@ func (p *pendingWithdrawProposalService) CreatePendingWithdrawProposal(req reque
 		Creator:        sender,
 		PoolID:         poolId,
 		PoolName:       poolName,
-		Purpose:        string(entities.WITHDRAW_PURPOSE),
+		Purpose:        purpose,
 		Target:         req.PoolID,
 		WithdrawAmount: req.WithdrawAmount,
 		ProofBlobID:    req.ProofBlobID,
-		Description:    strings.TrimSpace(req.Description),
+		Description:    description,
 		Status:         request_pending_status,
-		AIEvaluation:   "",
+		AIEvaluation:   aiEvaluation,
 		CreatedAt:      curTime,
 		UpdatedAt:      curTime,
 	}

@@ -109,6 +109,12 @@ const (
 	NOTE_UPDATE_CHILD_NEED_DATE_MESSAGE string = "It is currently not date to update child need."
 
 	INVALID_DATE_MESSAGE string = "Invalid date."
+
+	NEED_WITHDRAWN_MESSAGE string = "The need of this child has been withdrawn."
+
+	ALREADY_ANOTHER_REGION_STAFF_MESSAGE string = "You are already a staff of another region."
+
+	ALREADY_STAFF_ROLE_MESSAGE string = "You are already a staff."
 )
 
 const (
