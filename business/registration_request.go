@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"math"
 	"os"
 	"raise-child/constants/env"
 	"raise-child/constants/noti"
@@ -375,55 +374,21 @@ func (r *registrationRequestService) GetRegistrationRequest(id string, ctx conte
 	// 	return nil, errors.New(noti.GENERIC_ERROR_WARN_MSG)
 	// }
 
-	// return r.registrationRequestRepo.GetRegistrationRequest(id, ctx)
+	return r.registrationRequestRepo.GetRegistrationRequest(id, ctx)
 
 	////////////
-	// MOCK DATA
-	for _, req := range mockRegistrationRequests {
-		if req.ID == id {
-			return &req, nil
-		}
-	}
+	// // MOCK DATA
+	// for _, req := range mockRegistrationRequests {
+	// 	if req.ID == id {
+	// 		return &req, nil
+	// 	}
+	// }
 
-	return nil, nil
+	// return nil, nil
 }
 
 // GetRegistrationRequests implements business.IRegistrationRequestService.
 func (r *registrationRequestService) GetRegistrationRequests(req request.GetRegistrationRequests, ctx context.Context) (response.PaginationDataResponse, error) {
-	// req.SortOrder = util.StanderizeSortOrder(req.SortOrder)
-	// if req.Page < 1 {
-	// 	req.Page = 1
-	// }
-
-	// if req.PageSize < 1 {
-	// 	req.PageSize = default_page_size
-	// }
-
-	// var res response.PaginationDataResponse
-	// var redisKey string = r.getGetRegistrationRequestsRedisKey(req)
-	// if r.redisCache.Get(redisKey, &res, ctx) {
-	// 	return res, nil
-	// }
-
-	// data, pages, err := r.registrationRequestRepo.GetRegistrationRequests(req, ctx)
-	// var amount int
-	// if data == nil || len(data) == 0 {
-	// 	amount = 0
-	// } else {
-	// 	amount = len(data)
-	// }
-
-	// res = response.PaginationDataResponse{
-	// 	Data:       data,
-	// 	Amount:     amount,
-	// 	Page:       req.Page,
-	// 	TotalPages: pages,
-	// }
-
-	// r.redisCache.Set(redisKey, res, time.Minute*5, ctx)
-
-	// return res, err
-
 	req.SortOrder = util.StanderizeSortOrder(req.SortOrder)
 	if req.Page < 1 {
 		req.Page = 1
@@ -439,17 +404,51 @@ func (r *registrationRequestService) GetRegistrationRequests(req request.GetRegi
 		return res, nil
 	}
 
-	var data []entities.RegistrationRequest = mockRegistrationRequests[(req.Page-1)*req.PageSize : req.Page*req.PageSize]
+	data, pages, err := r.registrationRequestRepo.GetRegistrationRequests(req, ctx)
+	var amount int
+	if data == nil || len(data) == 0 {
+		amount = 0
+	} else {
+		amount = len(data)
+	}
+
 	res = response.PaginationDataResponse{
 		Data:       data,
-		Amount:     len(data),
+		Amount:     amount,
 		Page:       req.Page,
-		TotalPages: int(math.Ceil(float64(len(mockRegistrationRequests)) / float64(req.PageSize))),
+		TotalPages: pages,
 	}
 
 	r.redisCache.Set(redisKey, res, time.Minute*5, ctx)
 
-	return res, nil
+	return res, err
+
+	// req.SortOrder = util.StanderizeSortOrder(req.SortOrder)
+	// if req.Page < 1 {
+	// 	req.Page = 1
+	// }
+
+	// if req.PageSize < 1 {
+	// 	req.PageSize = default_page_size
+	// }
+
+	// var res response.PaginationDataResponse
+	// var redisKey string = r.getGetRegistrationRequestsRedisKey(req)
+	// if r.redisCache.Get(redisKey, &res, ctx) {
+	// 	return res, nil
+	// }
+
+	// var data []entities.RegistrationRequest = mockRegistrationRequests[(req.Page-1)*req.PageSize : req.Page*req.PageSize]
+	// res = response.PaginationDataResponse{
+	// 	Data:       data,
+	// 	Amount:     len(data),
+	// 	Page:       req.Page,
+	// 	TotalPages: int(math.Ceil(float64(len(mockRegistrationRequests)) / float64(req.PageSize))),
+	// }
+
+	// r.redisCache.Set(redisKey, res, time.Minute*5, ctx)
+
+	// return res, nil
 }
 
 // GetWalletRegistrationRequests implements business.IRegistrationRequestService.
