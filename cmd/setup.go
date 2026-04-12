@@ -81,6 +81,9 @@ func setupApiRoutes(server *gin.Engine) {
 	// Config API endpoints
 	api_route.InitializeConfigRoutes(server)
 
+	// Child Need API endpoints
+	api_route.InitializeChildNeedRoutes(server)
+
 	// Default route to Swagger documentation
 	server.GET("/", func(ctx *gin.Context) {
 		ctx.Redirect(http.StatusMovedPermanently, "/swagger/index.html#")

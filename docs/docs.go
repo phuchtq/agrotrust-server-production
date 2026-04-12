@@ -868,6 +868,138 @@ const docTemplate = `{
                 }
             }
         },
+        "/child-needs/books-need/{id}": {
+            "get": {
+                "description": "Retrieves books need of a child by its unique ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "child-needs"
+                ],
+                "summary": "Get books need of a child",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Child Books Need ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.BooksNeedResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid data. Please try again.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "There is something wrong in the system during the process. Please try again later.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/child-needs/health-insurance-need/{id}": {
+            "get": {
+                "description": "Retrieves health insurance need of a child by its unique ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "child-needs"
+                ],
+                "summary": "Get health insurance need of a child",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Child Health Insurance Need ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.HealthInsuranceNeedResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid data. Please try again.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "There is something wrong in the system during the process. Please try again later.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/child-needs/meal-need/{id}": {
+            "get": {
+                "description": "Retrieves meal need of a child by its unique ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "child-needs"
+                ],
+                "summary": "Get meal need of a child",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Child Meal Need ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.MealNeedResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid data. Please try again.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "There is something wrong in the system during the process. Please try again later.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/child-upload-reqs": {
             "get": {
                 "description": "Retrieve a list of child upload requests based on query parameters.",
@@ -6943,6 +7075,59 @@ const docTemplate = `{
                 }
             }
         },
+        "response.BooksNeedResponse": {
+            "type": "object",
+            "properties": {
+                "donations": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "donors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "semester": {
+                    "type": "integer"
+                },
+                "supported_years": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "value": {
+                    "type": "integer"
+                },
+                "withdraw_proposals": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "withdraws_for_need": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "year": {
+                    "type": "integer"
+                },
+                "year_changes": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
         "response.BuildTransactionResponse": {
             "type": "object",
             "properties": {
@@ -7098,6 +7283,12 @@ const docTemplate = `{
                 "phone_number": {
                     "type": "string"
                 },
+                "supported_childs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "total_donation": {
                     "type": "integer"
                 },
@@ -7159,6 +7350,127 @@ const docTemplate = `{
                 },
                 "uploaded_at": {
                     "type": "string"
+                }
+            }
+        },
+        "response.HealthInsuranceNeedResponse": {
+            "type": "object",
+            "properties": {
+                "donations": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "donors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "supported_years": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                },
+                "value": {
+                    "type": "integer"
+                },
+                "withdraw_proposals": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "withdraws_for_need": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "year": {
+                    "type": "integer"
+                },
+                "year_changes": {
+                    "type": "array",
+                    "items": {
+                        "type": "integer"
+                    }
+                }
+            }
+        },
+        "response.MealNeedResponse": {
+            "type": "object",
+            "properties": {
+                "donations": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "donors": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "durations": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.WrapDuration"
+                    }
+                },
+                "id": {
+                    "type": "string"
+                },
+                "provide_meal_dates": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "provide_meal_periods": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "provide_meal_staffs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "supported_years": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.WrapSupportedYear"
+                    }
+                },
+                "total_supported_months": {
+                    "type": "integer"
+                },
+                "value": {
+                    "type": "integer"
+                },
+                "withdraw_proposals": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "withdraws_for_need": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "year": {
+                    "type": "integer"
                 }
             }
         },
@@ -7228,6 +7540,12 @@ const docTemplate = `{
                 },
                 "record_amount": {
                     "type": "integer"
+                },
+                "supported_childs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
                 },
                 "total_donation": {
                     "type": "integer"
@@ -7466,6 +7784,28 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "withdraw_amount": {
+                    "type": "integer"
+                }
+            }
+        },
+        "response.WrapDuration": {
+            "type": "object",
+            "properties": {
+                "end_period": {
+                    "type": "string"
+                },
+                "start_period": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.WrapSupportedYear": {
+            "type": "object",
+            "properties": {
+                "supported_months": {
+                    "type": "integer"
+                },
+                "year": {
                     "type": "integer"
                 }
             }
