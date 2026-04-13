@@ -119,9 +119,12 @@ func (p *profileService) UploadProfile(id string, req request.UploadProfileReque
 		return response.PersonalProfileResponse{}, errors.New(noti.GENERIC_PERSONAL_INFO_REGISTERED_WANR_MSG)
 	}
 
+	var firstName string = strings.TrimSpace(req.FirstName)
+	var lastName string = strings.TrimSpace(req.LastName)
+
 	profile.IdentityCode = &identityCode
-	*profile.FirstName = strings.TrimSpace(req.FirstName)
-	*profile.LastName = strings.TrimSpace(req.LastName)
+	profile.FirstName = &firstName
+	profile.LastName = &lastName
 	profile.Gender = &gender
 	profile.DateOfBirth = &dateOfBirth
 	profile.PhoneNumber = &phoneNumber
