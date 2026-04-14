@@ -238,12 +238,11 @@ func (r *registratioRequestRepo) GetRegistrationRequests(req request.GetRegistra
 		order = req.SortOrder
 	}
 
-	queryCondition += "ORDER BY created_at " + order
-
 	var query string = generateRetrieveQuery(generateRetrieveQueryRequest{
 		table:       registraion_request_table,
 		limitAmount: req.PageSize,
 		condition:   queryCondition,
+		order:       " ORDER BY created_at " + order,
 		page:        req.Page,
 		isGetCount:  false,
 	})
