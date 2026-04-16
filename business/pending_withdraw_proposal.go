@@ -107,13 +107,14 @@ func (p *pendingWithdrawProposalService) ApprovePendingWithdrawProposal(id strin
 		return response.BuildTransactionResponse{}, errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
 	}
 
-	var module, function string
+	var module, function, localPoolId string
 	var args []interface{}
 	var closedAt int64 = util.ToMilliseconds(util.GetRequestDuration())
 	if proposal.Purpose == string(entities.WITHDRAW_PURPOSE) {
 		var poolModule = on_chain.InitializeModulePool()
 		module = poolModule.GetModule()
 		function = poolModule.GetFunctionCreateWithdrawProposalV2()
+		localPoolId = proposal.PoolID
 		//localPoolId = proposal.PoolID
 		// if localPoolId == os.Getenv(env.POOL_ID) {
 		// 	localPoolId = os.Getenv(env.SHARED_LOCAL_POOL_ID)
@@ -130,7 +131,6 @@ func (p *pendingWithdrawProposalService) ApprovePendingWithdrawProposal(id strin
 		})
 	} else {
 		var childModule = on_chain.InitializeModuleChild()
-		module = childModule.GetModule()
 
 		switch proposal.Purpose {
 		case string(entities.BOOKS_NEED_PURPOSE):
@@ -143,7 +143,9 @@ func (p *pendingWithdrawProposalService) ApprovePendingWithdrawProposal(id strin
 				return response.BuildTransactionResponse{}, err
 			}
 
+			module = childModule.GetModule()
 			function = childModule.GetFunctionCreateChildBooksNeedWithdrawProposalV2()
+			localPoolId = proposal.PoolID
 			args = childModule.ToCreateChildNormalNeedWithdrawProposalArgumentsV2(on_chain.CreateChildNormalNeedWithdrawProposalArgumentsV2{
 				NeedID:      proposal.Target,
 				ChildID:     need.ChildID,
@@ -163,7 +165,9 @@ func (p *pendingWithdrawProposalService) ApprovePendingWithdrawProposal(id strin
 				return response.BuildTransactionResponse{}, err
 			}
 
+			module = childModule.GetModule()
 			function = childModule.GetFunctionCreateChildHealthInsuranceNeedWithdrawProposalV2()
+			localPoolId = proposal.PoolID
 			args = childModule.ToCreateChildNormalNeedWithdrawProposalArgumentsV2(on_chain.CreateChildNormalNeedWithdrawProposalArgumentsV2{
 				NeedID:      proposal.Target,
 				ChildID:     need.ChildID,
@@ -184,7 +188,9 @@ func (p *pendingWithdrawProposalService) ApprovePendingWithdrawProposal(id strin
 				return response.BuildTransactionResponse{}, err
 			}
 
+			module = childModule.GetModule()
 			function = childModule.GetFunctionCreateChildMealNeedWithdrawProposalV2()
+			localPoolId = proposal.PoolID
 			args = childModule.ToCreateChildNormalNeedWithdrawProposalArgumentsV2(on_chain.CreateChildNormalNeedWithdrawProposalArgumentsV2{
 				NeedID:      proposal.Target,
 				ChildID:     need.ChildID,
@@ -204,11 +210,33 @@ func (p *pendingWithdrawProposalService) ApprovePendingWithdrawProposal(id strin
 				return response.BuildTransactionResponse{}, err
 			}
 
+			module = childModule.GetModule()
 			function = childModule.GetFunctionCreateChildSpecialNeedWithdrawProposalV2()
+			localPoolId = proposal.PoolID
 			args = childModule.ToCreateChildSpecialNeedWithdrawProposalArgumentsV2(on_chain.CreateChildSpecialNeedWithdrawProposalArgumentsV2{
 				CampaignID:     proposal.Target,
 				LocalPool:      proposal.PoolID,
 				ChildID:        campaign.ChildID,
+				WithdrawAmount: proposal.WithdrawAmount,
+				Description:    proposal.Description,
+				ProofBlobID:    proposal.ProofBlobID,
+				ClosedAt:       closedAt,
+				Creator:        proposal.Creator,
+			})
+		case string(entities.CAMPAIGN_PURPOSE):
+			var campaignModule = on_chain.InitializeModuleCampaign()
+			module = campaignModule.GetModule()
+			function = campaignModule.GetFunctionWithdrawFromCampaign()
+
+			if proposal.PoolID != os.Getenv(env.POOL_ID) {
+				localPoolId = proposal.PoolID
+			} else {
+				localPoolId = os.Getenv(env.SHARED_LOCAL_POOL_ID)
+			}
+
+			args = campaignModule.ToCreateCampaignWithdrawProposalArguments(on_chain.CreateCampaignWithdrawProposalArguments{
+				LocalPoolID:    localPoolId,
+				CampaignID:     proposal.Target,
 				WithdrawAmount: proposal.WithdrawAmount,
 				Description:    proposal.Description,
 				ProofBlobID:    proposal.ProofBlobID,
@@ -244,7 +272,7 @@ func (p *pendingWithdrawProposalService) ApprovePendingWithdrawProposal(id strin
 			ID:          proposalId,
 			Purpose:     proposal.Purpose,
 			Target:      proposal.Target,
-			LocalPoolID: proposal.PoolID,
+			LocalPoolID: localPoolId,
 			CreatedAt:   time.Now(),
 		}, ctx)
 }

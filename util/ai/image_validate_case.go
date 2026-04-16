@@ -11,6 +11,7 @@ const (
 	provide_meal_for_child_task_proof_validate_case string = "Provide Lunch Meal For Child Task Proof Validation"
 	withdraw_proposal_validate_case                 string = "Withdraw Proposal Validation"
 	child_special_need_proposal_validate_case       string = "Child Special Need Campaign Validation"
+	pool_campaign_validate_case                     string = "Pool Campaign Validation"
 )
 
 type ValidateUploadChildRequest struct {
@@ -70,7 +71,14 @@ type ValidateWithdrawProposal struct {
 	Description     string `json:"description"`
 	ProofBytesImage []byte `json:"proof_bytes_image"`
 }
+
 type ValidateChildSpecialNeedProposal struct {
+	CamapaignTarget int64  `json:"campaign_target"`
+	Description     string `json:"campaign_description"`
+	ProofBytesImage []byte `json:"proof_bytes_image"`
+}
+
+type ValidatePoolCampaign struct {
 	CamapaignTarget int64  `json:"campaign_target"`
 	Description     string `json:"campaign_description"`
 	ProofBytesImage []byte `json:"proof_bytes_image"`

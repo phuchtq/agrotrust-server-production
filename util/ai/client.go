@@ -29,6 +29,7 @@ type IAiClientProvider interface {
 	ValidateProvideMealForChildTaskProof(req ValidateProvideMealForChildTaskProof, ctx context.Context) string
 	ValidateWithdrawProposal(req ValidateWithdrawProposal, ctx context.Context) string
 	ValidateChildSpecialNeedProposal(req ValidateChildSpecialNeedProposal, ctx context.Context) string
+	ValidatePoolCampaign(req ValidatePoolCampaign, ctx context.Context) string
 }
 
 func InitializeAiProvider(ctx context.Context, errLogger *log.Logger) IAiClientProvider {
@@ -164,6 +165,23 @@ func (a *aiClient) ValidateChildSpecialNeedProposal(req ValidateChildSpecialNeed
 	}
 
 	prompt = append(prompt, genai.Text("Label: Campaign Relevant Proof Image"), genai.ImageData("jpeg", req.ProofBytesImage))
+
+	return a.processPrompt(prompt, ctx)
+}
+
+// ValidatePoolCampaign implements IAiClientProvider.
+func (a *aiClient) ValidatePoolCampaign(req ValidatePoolCampaign, ctx context.Context) string {
+	if !a.geminiProvider.limiter.Allow() {
+		return ""
+	}
+
+	jsonData, _ := json.MarshalIndent(req, "", "  ")
+	var prompt = []genai.Part{
+		genai.Text(fmt.Sprintf("Case: %s", pool_campaign_validate_case)),
+		genai.Text(string(jsonData)),
+	}
+
+	prompt = append(prompt, genai.Text("Label: Pool Campaign Relevant Proof Image"), genai.ImageData("jpeg", req.ProofBytesImage))
 
 	return a.processPrompt(prompt, ctx)
 }

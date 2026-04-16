@@ -5,15 +5,20 @@ import (
 	"fmt"
 	"log"
 	"math"
+	"os"
+	"raise-child/constants/env"
 	"raise-child/constants/shared"
 	"raise-child/interfaces/business"
 	"raise-child/model/dtos/request"
 	"raise-child/model/dtos/response"
+	"raise-child/model/entities"
 	"raise-child/util"
 	"raise-child/util/cache"
+	on_chain "raise-child/util/on_chain"
 	"strings"
 	"time"
 
+	"github.com/block-vision/sui-go-sdk/constant"
 	"github.com/block-vision/sui-go-sdk/sui"
 )
 
@@ -108,71 +113,32 @@ func (s *donorService) GetDonors(req request.GetDonorsRequest, ctx context.Conte
 		return res, nil
 	}
 
-	// var client = s.clients[constant.SuiTestnet]
-	// manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-	// 	Client:    client,
-	// 	ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-	// 	ErrLogger: s.errLogger,
-	// }, ctx)
-	// if err != nil {
-	// 	return response.PaginationDataResponse{}, err
-	// }
+	var client = s.clients[constant.SuiTestnet]
+	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: s.errLogger,
+	}, ctx)
+	if err != nil {
+		return response.PaginationDataResponse{}, err
+	}
 
-	// donors, err := on_chain.GetOnChainObjects[entities.Donor](on_chain.GetOnChainObjectsRequest{
-	// 	Client:    client,
-	// 	ObjectIds: manageObj.DonorNfts,
-	// 	ErrLogger: s.errLogger,
-	// }, ctx)
-	// if err != nil {
-	// 	return response.PaginationDataResponse{}, err
-	// }
+	donors, err := on_chain.GetOnChainObjects[entities.Donor](on_chain.GetOnChainObjectsRequest{
+		Client:    client,
+		ObjectIds: manageObj.DonorNfts,
+		ErrLogger: s.errLogger,
+	}, ctx)
+	if err != nil {
+		return response.PaginationDataResponse{}, err
+	}
 
-	// if donors == nil {
-	// 	return response.PaginationDataResponse{}, nil
-	// }
+	if donors == nil {
+		return response.PaginationDataResponse{}, nil
+	}
 
-	// var filteredDonors []entities.Donor
-	// for i := len(donors) - 1; i >= 0; i++ {
-	// 	var donor entities.Donor = donors[i]
-
-	// 	if req.Gender != "" {
-	// 		if req.Gender != donor.Gender {
-	// 			continue
-	// 		}
-	// 	}
-
-	// 	if req.Keyword != "" {
-	// 		var firstName string = util.StanderizeString(donor.FirstName)
-	// 		var lastName string = util.StanderizeString(donor.LastName)
-	// 		var phoneNumber string = util.StanderizeString(donor.PhoneNumber)
-	// 		var email string = util.StanderizeString(donor.Email)
-	// 		if !strings.Contains(firstName, req.Keyword) && !strings.Contains(lastName, req.Keyword) && !strings.Contains(phoneNumber, req.Keyword) && !strings.Contains(email, req.Keyword) {
-	// 			continue
-	// 		}
-	// 	}
-
-	// 	filteredDonors = append(filteredDonors, donor)
-	// }
-
-	// var skippedRecords int = (req.Page - 1) * req.PageSize
-	// if len(filteredDonors) <= skippedRecords {
-	// 	return response.PaginationDataResponse{}, err
-	// }
-
-	// var data []response.DonorResponse
-	// for i := skippedRecords; i < len(filteredDonors); i++ {
-	// 	data = append(data, filteredDonors[i].ToDonorResponse())
-	// if len(data) == req.PageSize {
-	// 	break
-	// }
-	// }
-
-	///////////////////
-	// MOCK DATA
-	var filteredDonors []response.DonorResponse
-	var donors = mockDonors
+	var filteredDonors []entities.Donor
 	for i := len(donors) - 1; i >= 0; i++ {
-		var donor response.DonorResponse = donors[i]
+		var donor entities.Donor = donors[i]
 
 		if req.Gender != "" {
 			if req.Gender != donor.Gender {
@@ -195,16 +161,55 @@ func (s *donorService) GetDonors(req request.GetDonorsRequest, ctx context.Conte
 
 	var skippedRecords int = (req.Page - 1) * req.PageSize
 	if len(filteredDonors) <= skippedRecords {
-		return response.PaginationDataResponse{}, nil
+		return response.PaginationDataResponse{}, err
 	}
 
 	var data []response.DonorResponse
 	for i := skippedRecords; i < len(filteredDonors); i++ {
-		data = append(data, filteredDonors[i])
+		data = append(data, filteredDonors[i].ToDonorResponse())
 		if len(data) == req.PageSize {
 			break
 		}
 	}
+
+	// ///////////////////
+	// // MOCK DATA
+	// var filteredDonors []response.DonorResponse
+	// var donors = mockDonors
+	// for i := len(donors) - 1; i >= 0; i++ {
+	// 	var donor response.DonorResponse = donors[i]
+
+	// 	if req.Gender != "" {
+	// 		if req.Gender != donor.Gender {
+	// 			continue
+	// 		}
+	// 	}
+
+	// 	if req.Keyword != "" {
+	// 		var firstName string = util.StanderizeString(donor.FirstName)
+	// 		var lastName string = util.StanderizeString(donor.LastName)
+	// 		var phoneNumber string = util.StanderizeString(donor.PhoneNumber)
+	// 		var email string = util.StanderizeString(donor.Email)
+	// 		if !strings.Contains(firstName, req.Keyword) && !strings.Contains(lastName, req.Keyword) && !strings.Contains(phoneNumber, req.Keyword) && !strings.Contains(email, req.Keyword) {
+	// 			continue
+	// 		}
+	// 	}
+
+	// 	filteredDonors = append(filteredDonors, donor)
+	// }
+
+	// var skippedRecords int = (req.Page - 1) * req.PageSize
+	// if len(filteredDonors) <= skippedRecords {
+	// 	return response.PaginationDataResponse{}, nil
+	// }
+
+	// var data []response.DonorResponse
+	// for i := skippedRecords; i < len(filteredDonors); i++ {
+	// 	data = append(data, filteredDonors[i])
+	// 	if len(data) == req.PageSize {
+	// 		break
+	// 	}
+	// }
 
 	res = response.PaginationDataResponse{
 		Data:       data,

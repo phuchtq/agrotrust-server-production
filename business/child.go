@@ -33,9 +33,7 @@ import (
 	i_repository "raise-child/interfaces/repository"
 
 	"github.com/block-vision/sui-go-sdk/constant"
-	"github.com/block-vision/sui-go-sdk/models"
 	"github.com/block-vision/sui-go-sdk/sui"
-	"github.com/block-vision/sui-go-sdk/utils"
 	"github.com/payOSHQ/payos-lib-golang"
 )
 
@@ -146,23 +144,7 @@ func (c *childService) GetChild(id string, ctx context.Context) (response.ChildR
 
 	c.redisCache.Set(redisKey, res, time.Minute*5, ctx)
 
-	// return res, err
-
-	////////////////////////
-	// // MOCK DATA
-	// var res response.ChildResponse
-	// var redisKey string = c.getGetChildRediskey(id)
-	// if c.redisCache.Get(redisKey, &res, ctx) {
-	// 	return res, nil
-	// }
-	// for _, child := range mockChildren {
-	// 	if child.ID == id {
-	// 		c.redisCache.Set(redisKey, child, time.Minute*5, ctx)
-	// 		return child, nil
-	// 	}
-	// }
-
-	return res, nil
+	return res, err
 }
 
 // GetChilds implements business.IChildService.
@@ -202,8 +184,16 @@ func (c *childService) GetChildren(req request.GetChildrenRequest, ctx context.C
 		return response.PaginationDataResponse{}, err
 	}
 
-	if children == nil || len(children) == 0 {
+	if children == nil {
 		return response.PaginationDataResponse{}, nil
+	}
+
+	if req.Page < 1 {
+		req.Page = 1
+	}
+
+	if req.PageSize < 1 {
+		req.PageSize = default_page_size
 	}
 
 	var keyword string = util.StanderizeString(req.Keyword)
@@ -266,69 +256,6 @@ func (c *childService) GetChildren(req request.GetChildrenRequest, ctx context.C
 		}
 	}
 
-	//////////////////
-	//// MOCK DATA
-
-	// var children = mockChildren
-	// var keyword string = util.StanderizeString(req.Keyword)
-	// var region string = util.StanderizeString(req.Region)
-	// var filteredChildren []response.ChildResponse
-	// for i := len(children) - 1; i >= 0; i-- {
-	// 	var child response.ChildResponse = children[i]
-
-	// 	if region != "" {
-	// 		if util.StanderizeString(child.Region) != region { // Not matched
-	// 			continue
-	// 		}
-	// 	}
-
-	// 	if req.Gender != "" {
-	// 		if child.Gender != req.Gender { // Not matched
-	// 			continue
-	// 		}
-	// 	}
-
-	// 	if req.YearOfBirth != nil {
-	// 		if child.DateOfBirth.Year() != *req.YearOfBirth { // Not matched
-	// 			continue
-	// 		}
-	// 	}
-
-	// 	if keyword != "" {
-	// 		var firstName string = util.StanderizeString(child.FirstName)
-	// 		var lastName string = util.StanderizeString(child.LastName)
-	// 		if !strings.Contains(firstName, keyword) && !strings.Contains(lastName, keyword) && !strings.Contains(child.IdentityCode, keyword) { // Not matched
-	// 			continue
-	// 		}
-	// 	}
-
-	// 	filteredChildren = append(filteredChildren, child)
-	// }
-
-	// sort.Slice(filteredChildren, func(i, j int) bool {
-	// 	var name1 string = filteredChildren[i].LastName + " " + filteredChildren[i].FirstName
-	// 	var name2 string = filteredChildren[j].LastName + " " + filteredChildren[j].FirstName
-
-	// 	if req.SortOrder == "ASC" {
-	// 		return name1 < name2
-	// 	}
-
-	// 	return name2 > name1
-	// })
-
-	// var skippedRecords int = (req.Page - 1) * req.PageSize
-	// if len(filteredChildren) <= skippedRecords {
-	// 	return response.PaginationDataResponse{}, nil
-	// }
-
-	// var data []response.ChildResponse
-	// for i := skippedRecords; i < len(filteredChildren); i++ {
-	// 	data = append(data, filteredChildren[i])
-	// 	if len(data) == req.PageSize {
-	// 		break
-	// 	}
-	// }
-
 	res = response.PaginationDataResponse{
 		Data:       data,
 		Amount:     len(data),
@@ -380,7 +307,7 @@ func (c *childService) UploadChild(req request.UploadChildRequest, ctx context.C
 
 // AddNumberMetada implements business.IChildService.
 func (c *childService) AddNumberMetada(id string, req request.AddChildNumberMetadaRequest, ctx context.Context) (response.BuildTransactionResponse, error) {
-	if !utils.IsValidSuiAddress(models.SuiAddress(id)) {
+	if !util.IsValidSuiAddressStrict(id) {
 		return response.BuildTransactionResponse{}, errors.New(noti.GENERIC_ERROR_WARN_MSG)
 	}
 
@@ -417,7 +344,7 @@ func (c *childService) AddNumberMetada(id string, req request.AddChildNumberMeta
 
 // AddStringMetada implements business.IChildService.
 func (c *childService) AddStringMetada(id string, req request.AddChildStringMetadaRequest, ctx context.Context) (response.BuildTransactionResponse, error) {
-	if !utils.IsValidSuiAddress(models.SuiAddress(id)) {
+	if !util.IsValidSuiAddressStrict(id) {
 		return response.BuildTransactionResponse{}, errors.New(noti.GENERIC_ERROR_WARN_MSG)
 	}
 
@@ -740,9 +667,13 @@ func (c *childService) CreateBooksNeedWithdrawProposalV2(req request.CreateNorma
 		return nil, err
 	}
 
+	if need == nil {
+		return nil, genericErr
+	}
+
 	// Already withdraw all
 	if len(need.Donations) == len(need.WithdrawsForNeed) {
-		return nil, errors.New("")
+		return nil, errors.New(noti.NEED_WITHDRAWN_MESSAGE)
 	}
 
 	child, err := on_chain.GetOnChainObject[entities.Child](on_chain.GetOnChainObjectRequest{
@@ -752,6 +683,10 @@ func (c *childService) CreateBooksNeedWithdrawProposalV2(req request.CreateNorma
 	}, ctx)
 	if err != nil {
 		return nil, err
+	}
+
+	if child == nil {
+		return nil, genericErr
 	}
 
 	var staffModule = on_chain.InitializeModuleStaff()
@@ -789,11 +724,28 @@ func (c *childService) CreateBooksNeedWithdrawProposalV2(req request.CreateNorma
 	}
 
 	var curTime time.Time = time.Now()
-	var index int = len(leaderNoti.ExpectedWithdrawPeriods) - 1
-	var expectedStartDate time.Time = util.RawDateToTime(leaderNoti.ExpectedWithdrawPeriods[index])
-	var expectedEndDate time.Time = expectedStartDate.AddDate(0, 0, 7)
+	var expectedStartDate time.Time
+	var index int = -1
+	for i := len(leaderNoti.ExpectedWithdrawPeriods) - 1; i >= 0; i-- {
+		var rawExpectedDate string = leaderNoti.ExpectedWithdrawPeriods[i]
+		var expectedDate time.Time = util.ToStartOfDate(util.RawDateToTime(rawExpectedDate))
+
+		if !curTime.Before(expectedDate) {
+			expectedStartDate = expectedDate
+			index = i
+			break
+		}
+	}
+
+	var notWithdrawDateErr error = errors.New(noti.NOT_WITHDRAW_EXPECTED_DATE_MESSAGE)
+	if index == -1 {
+		return nil, notWithdrawDateErr
+	}
+
+	var expectedEndDate time.Time = util.ToEndOfDate(expectedStartDate.AddDate(0, 0, 7))
 	if curTime.Before(expectedStartDate) || curTime.After(expectedEndDate) {
-		return nil, errors.New(noti.NOT_WITHDRAW_EXPECTED_DATE_MESSAGE)
+		c.errLogger.Println("Die at below")
+		return nil, notWithdrawDateErr
 	}
 
 	var description string = leaderNoti.Contents[index]
@@ -834,6 +786,7 @@ func (c *childService) CreateBooksNeedWithdrawProposalV2(req request.CreateNorma
 			break
 		}
 	}
+
 	var aiEvaluation string
 	if req.ProofBlobID != nil {
 		proofBytes, _ := c.walrusProvider.FetchBytesImage(*req.ProofBlobID)
@@ -885,9 +838,13 @@ func (c *childService) CreateHealthInsuranceNeedWithdrawProposalV2(req request.C
 		return nil, err
 	}
 
+	if need == nil {
+		return nil, genericErr
+	}
+
 	// Already withdraw all
 	if len(need.Donations) == len(need.WithdrawsForNeed) {
-		return nil, errors.New("")
+		return nil, errors.New(noti.NEED_WITHDRAWN_MESSAGE)
 	}
 
 	child, err := on_chain.GetOnChainObject[entities.Child](on_chain.GetOnChainObjectRequest{
@@ -897,6 +854,10 @@ func (c *childService) CreateHealthInsuranceNeedWithdrawProposalV2(req request.C
 	}, ctx)
 	if err != nil {
 		return nil, err
+	}
+
+	if child == nil {
+		return nil, genericErr
 	}
 
 	var staffModule = on_chain.InitializeModuleStaff()
@@ -1021,7 +982,7 @@ func (c *childService) SupportHealthInsuranceNeed(id string, ctx context.Context
 		return response.UrlAPIResponse{}, err
 	}
 
-	if profile.IdentityCode == nil {
+	if profile == nil || profile.IdentityCode == nil {
 		return response.UrlAPIResponse{}, errors.New(noti.PROFILE_EMPTY_MESSAGE)
 	}
 
@@ -1051,12 +1012,12 @@ func (c *childService) SupportHealthInsuranceNeed(id string, ctx context.Context
 	var paymentId string = util.GenerateId()
 	var orderCode int = util.GenerateNumber()
 	var callbackUrl string = os.Getenv(payment.PAYMENT_CALLBACK_URL) + paymentId
-	var description string = fmt.Sprintf("Support Health Insurance Need %s for child %s", need.Year, util.FormatAddress(need.ChildID))
+	var paymentDescription string = entities.HEALTH_INSRUANCE_PAYMENT_DESCRIPTION.GenerateSupportPaymentDescription()
 	amount, _ := strconv.ParseInt(need.Value, 10, 64)
 	data, err := payos.CreatePaymentLink(payos.CheckoutRequestType{
 		OrderCode:   int64(orderCode),
 		Amount:      int(amount),
-		Description: description,
+		Description: paymentDescription,
 		ReturnUrl:   callbackUrl,
 		CancelUrl:   callbackUrl,
 	})
@@ -1077,6 +1038,7 @@ func (c *childService) SupportHealthInsuranceNeed(id string, ctx context.Context
 		return response.UrlAPIResponse{}, err
 	}
 
+	var description string = fmt.Sprintf("Support Health Insurance Need %s for child %s", need.Year, util.FormatAddress(need.ChildID))
 	return response.UrlAPIResponse{
 			Url: data.CheckoutUrl,
 		}, c.paymentRepo.CreatePayment(entities.Payment{
@@ -1114,11 +1076,15 @@ func (c *childService) CreateMealNeedWithdrawProposalV2(req request.CreateNormal
 		return nil, err
 	}
 
+	if need == nil {
+		return nil, genericErr
+	}
+
 	totalSupportedMonths, _ := strconv.Atoi(need.TotalSupportedMonths)
 	var expectedDuration int = totalSupportedMonths - len(need.WithdrawsForNeed)
 	// Already withdraw all
 	if expectedDuration == 0 {
-		return nil, errors.New("")
+		return nil, errors.New(noti.NEED_WITHDRAWN_MESSAGE)
 	}
 
 	var previousDuration int = 0
@@ -1139,7 +1105,7 @@ func (c *childService) CreateMealNeedWithdrawProposalV2(req request.CreateNormal
 		var months int = totalDuration - expectedDuration
 		if months >= 0 {
 			var startDate = startPeriod.AddDate(0, months, 0)
-			expectedDate = startDate.AddDate(0, -3, 0)
+			expectedDate = startDate.AddDate(0, 0, -3)
 			break
 		}
 
@@ -1160,6 +1126,10 @@ func (c *childService) CreateMealNeedWithdrawProposalV2(req request.CreateNormal
 	}, ctx)
 	if err != nil {
 		return nil, err
+	}
+
+	if child == nil {
+		return nil, genericErr
 	}
 
 	var staffModule = on_chain.InitializeModuleStaff()
@@ -1196,11 +1166,17 @@ func (c *childService) CreateMealNeedWithdrawProposalV2(req request.CreateNormal
 		return nil, err
 	}
 
-	var rawExpectedDate string = util.TimeToRawDate(expectedDate)
+	//var rawExpectedDate string = util.TimeToRawDate(expectedDate)
 	var index int
 	for i := len(leaderNoti.ExpectedWithdrawPeriods) - 1; i >= 0; i-- {
+		// var rawDate string = leaderNoti.ExpectedWithdrawPeriods[i]
+		// if rawDate == rawExpectedDate {
+		// 	index = i
+		// 	break
+		// }
+
 		var rawDate string = leaderNoti.ExpectedWithdrawPeriods[i]
-		if rawDate == rawExpectedDate {
+		if !expectedDate.Before(util.ToStartOfDate(util.RawDateToTime(rawDate))) {
 			index = i
 			break
 		}
@@ -1379,13 +1355,14 @@ func (c *childService) CreateSpecialNeedWithdrawProposalV2(req request.CreateSpe
 		CreatedAt:      curTime,
 		UpdatedAt:      curTime,
 	}
+
 	return &res, c.pendingWithdrawProposalRepo.CreatePendingWithdrawProposal(res, ctx)
 }
 
 // ConfirmSpecialNeedProposal implements business.IChildService.
 func (c *childService) ConfirmSpecialNeedProposal(id string, ctx context.Context) (response.BuildTransactionResponse, error) {
 	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
-	if !utils.IsValidSuiAddress(models.SuiAddress(id)) {
+	if !util.IsValidSuiAddressStrict(id) {
 		return response.BuildTransactionResponse{}, genericErr
 	}
 
@@ -1855,7 +1832,7 @@ func (c *childService) SupportBooksNeed(id string, ctx context.Context) (respons
 		return response.UrlAPIResponse{}, err
 	}
 
-	if profile.IdentityCode == nil {
+	if profile == nil || profile.IdentityCode == nil {
 		return response.UrlAPIResponse{}, errors.New(noti.PROFILE_EMPTY_MESSAGE)
 	}
 
@@ -1885,12 +1862,12 @@ func (c *childService) SupportBooksNeed(id string, ctx context.Context) (respons
 	var paymentId string = util.GenerateId()
 	var orderCode int = util.GenerateNumber()
 	var callbackUrl string = os.Getenv(payment.PAYMENT_CALLBACK_URL) + paymentId
-	var description string = fmt.Sprintf("Support Books Need Semester %s - %s", need.Semster, need.Year)
 	amount, _ := strconv.ParseInt(need.Value, 10, 64)
+	var paymentDescription string = entities.BOOKS_NEED_PAYMENT_DESCRIPTION.GenerateSupportPaymentDescription()
 	data, err := payos.CreatePaymentLink(payos.CheckoutRequestType{
 		OrderCode:   int64(orderCode),
 		Amount:      int(amount),
-		Description: description,
+		Description: paymentDescription,
 		ReturnUrl:   callbackUrl,
 		CancelUrl:   callbackUrl,
 	})
@@ -1990,6 +1967,7 @@ func (c *childService) SupportBooksNeed(id string, ctx context.Context) (respons
 		return response.UrlAPIResponse{}, err
 	}
 
+	var description string = fmt.Sprintf("Support Books Need Semester %s - %s", need.Semster, need.Year)
 	return response.UrlAPIResponse{
 			Url: data.CheckoutUrl,
 		}, c.paymentRepo.CreatePayment(entities.Payment{
@@ -2017,7 +1995,7 @@ func (c *childService) SupportMealNeed(id string, req request.SupportMealNeadReq
 		return response.UrlAPIResponse{}, err
 	}
 
-	if profile.IdentityCode == nil {
+	if profile == nil || profile.IdentityCode == nil {
 		return response.UrlAPIResponse{}, errors.New(noti.PROFILE_EMPTY_MESSAGE)
 	}
 
@@ -2033,6 +2011,7 @@ func (c *childService) SupportMealNeed(id string, req request.SupportMealNeadReq
 		ErrLogger: c.errLogger,
 	}, ctx)
 	if err != nil {
+		c.errLogger.Println("Fail at get object")
 		return response.UrlAPIResponse{}, err
 	}
 
@@ -2056,6 +2035,11 @@ func (c *childService) SupportMealNeed(id string, req request.SupportMealNeadReq
 	var nextEndPeriod time.Time = nextStartPeriod.AddDate(0, req.Months, 0)
 	if nextEndPeriod.After(util.RawDateToTime(rawMaxSupportedEndPeriod)) {
 		// Support 6 months -> 16/1/2027 -> Deny
+		c.errLogger.Println("Raw last end period:", lastDuration.Fields.EndPeriod)
+		c.errLogger.Println("Last end period:", endPeriod)
+		c.errLogger.Println("Next year:", nextYear)
+		c.errLogger.Println("Next start period:", nextStartPeriod)
+		c.errLogger.Println("Next end period:", nextEndPeriod)
 		return response.UrlAPIResponse{}, errors.New(noti.MEAL_NEED_SUPPORT_DURATION_OUT_RANGE_MESSAGE)
 	}
 
@@ -2065,18 +2049,19 @@ func (c *childService) SupportMealNeed(id string, req request.SupportMealNeadReq
 	var paymentId string = util.GenerateId()
 	var orderCode int = util.GenerateNumber()
 	var callbackUrl string = os.Getenv(payment.PAYMENT_CALLBACK_URL) + paymentId
-	var description string = fmt.Sprintf("Support Meal Need %s - %s for child", rawExpectedStart, rawExpectedEnd)
 	value, _ := strconv.ParseInt(need.Value, 10, 64)
 	var amount int64 = value * int64(req.Months)
+	var paymentDescription string = entities.MEAL_NEED_PAYMENT_DESCRIPTION.GenerateSupportPaymentDescription()
 	data, err := payos.CreatePaymentLink(payos.CheckoutRequestType{
 		OrderCode:   int64(orderCode),
 		Amount:      int(amount),
-		Description: description,
+		Description: paymentDescription,
 		ReturnUrl:   callbackUrl,
 		CancelUrl:   callbackUrl,
 	})
 	if err != nil {
 		c.errLogger.Println("Err: ", err.Error())
+		c.errLogger.Println("Fail at create payos")
 		return response.UrlAPIResponse{}, errors.New(noti.INTERNALL_ERR_MSG)
 	}
 
@@ -2186,6 +2171,13 @@ func (c *childService) SupportMealNeed(id string, req request.SupportMealNeadReq
 	// }
 
 	var mealSupportDurationId string = util.GenerateId()
+	if err := c.mealDurationRepo.CreateMealSupportDuration(entities.OffChainMealSupportDuration{
+		ID:          mealSupportDurationId,
+		StartPeriod: rawExpectedStart,
+		EndPeriod:   rawExpectedEnd,
+	}, ctx); err != nil {
+		return response.UrlAPIResponse{}, err
+	}
 
 	var donationId string = util.GenerateId()
 	if err := c.donationRepo.CreateDonation(entities.OffChainDonation{
@@ -2198,6 +2190,7 @@ func (c *childService) SupportMealNeed(id string, req request.SupportMealNeadReq
 		return response.UrlAPIResponse{}, err
 	}
 
+	var description string = fmt.Sprintf("Support Meal Need %s - %s for child", rawExpectedStart, rawExpectedEnd)
 	return response.UrlAPIResponse{
 			Url: data.CheckoutUrl,
 		}, c.paymentRepo.CreatePayment(entities.Payment{
@@ -2225,7 +2218,7 @@ func (c *childService) SupportSpecialNeed(id string, req request.SupportSpecialN
 		return response.UrlAPIResponse{}, err
 	}
 
-	if profile.IdentityCode == nil {
+	if profile == nil || profile.IdentityCode == nil {
 		return response.UrlAPIResponse{}, errors.New(noti.PROFILE_EMPTY_MESSAGE)
 	}
 
@@ -2257,11 +2250,11 @@ func (c *childService) SupportSpecialNeed(id string, req request.SupportSpecialN
 	var paymentId string = util.GenerateId()
 	var orderCode int = util.GenerateNumber()
 	var callbackUrl string = os.Getenv(payment.PAYMENT_CALLBACK_URL) + paymentId
-	var description string = fmt.Sprintf("Support Special Need Campaign")
+	var paymentDescription string = entities.SPECIAL_NEED_CAMPAIGN_PAYMENT_DESCRIPTION.GenerateSupportPaymentDescription()
 	data, err := payos.CreatePaymentLink(payos.CheckoutRequestType{
 		OrderCode:   int64(orderCode),
 		Amount:      int(req.Amount),
-		Description: description,
+		Description: paymentDescription,
 		ReturnUrl:   callbackUrl,
 		CancelUrl:   callbackUrl,
 	})
@@ -2294,7 +2287,7 @@ func (c *childService) SupportSpecialNeed(id string, req request.SupportSpecialN
 			Currency:      shared.VIETNAMDONG_CURRENCY,
 			Status:        payment_pending_status,
 			Method:        shared.PAYMENT_PAYOS_METHOD,
-			Message:       req.Description,
+			Message:       strings.TrimSpace(req.Description),
 			ExpiredAt:     time.Unix(int64(*data.ExpiredAt), 0),
 			CreatedAt:     curTime,
 			UpdatedAt:     curTime,
@@ -2304,7 +2297,7 @@ func (c *childService) SupportSpecialNeed(id string, req request.SupportSpecialN
 // VoteSpecialNeedProposal implements business.IChildService.
 func (c *childService) VoteSpecialNeedProposal(id string, req request.VoteRequest, ctx context.Context) (response.BuildTransactionResponse, error) {
 	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
-	if !utils.IsValidSuiAddress(models.SuiAddress(id)) {
+	if !util.IsValidSuiAddressStrict(id) {
 		return response.BuildTransactionResponse{}, genericErr
 	}
 
@@ -2730,65 +2723,4 @@ func (c *childService) getGetChildrenRediskey(req request.GetChildrenRequest) st
 
 func (c *childService) getGetChildRediskey(id string) string {
 	return fmt.Sprintf("child:%s", id)
-}
-
-var mockChildren = getMockChildren()
-
-func getMockChildren() []response.ChildResponse {
-	now := time.Now()
-	children := make([]response.ChildResponse, 20)
-
-	firstNames := []string{"Hào", "Gia", "Bảo", "Minh", "Tuệ", "An", "Linh", "Khôi", "Diệp", "Thanh", "Đức", "Trí", "Ngọc", "Mai", "Lan", "Hùng", "Sơn", "Vinh", "Phúc", "Quý"}
-	lastNames := []string{"Nguyễn", "Trần", "Lê", "Phạm", "Hoàng", "Phan", "Vũ", "Đặng", "Bùi", "Đỗ"}
-
-	for i := 0; i < 20; i++ {
-		// idStr := string(rune('1' + i)) // Simple string ID "1", "2"...
-		// if i >= 9 {
-		// 	// Handle 2-digit IDs
-		// 	idStr = fmt.Sprintf("%d", i+1)
-		// }
-
-		children[i] = response.ChildResponse{
-			ID:           fmt.Sprintf("%d", i+1),
-			IdentityCode: fmt.Sprintf("CHILD-%06d", 100+i),
-			FirstName:    firstNames[i],
-			LastName:     lastNames[i%10],
-			Gender:       []string{"Male", "Female"}[i%2],
-			DateOfBirth:  time.Date(2015+i%5, time.Month(i%12+1), 1, 0, 0, 0, 0, time.UTC),
-			HomeAddress:  fmt.Sprintf("%d Đường số %d, Phường %d", i+10, i, i%10),
-			Region:       "TP.HCM ",
-			AvatarBlobId: fmt.Sprintf("avt-child-%d", i+1),
-			HomeBlobID:   fmt.Sprintf("home-child-%d", i+1),
-			FirstGuardian: request.ChildGuardianProfile{
-				FullName:           lastNames[i%10] + " Văn A",
-				PhoneNumber:        "0900000001",
-				Relation:           "Father",
-				IdentityCardBlobID: "id-card-g1",
-			},
-			SecondGuardian: &request.ChildGuardianProfile{
-				FullName:           lastNames[(i+1)%10] + " Thị B",
-				PhoneNumber:        "0900000002",
-				Relation:           "Mother",
-				IdentityCardBlobID: "id-card-g2",
-			},
-			ImageBlobIds:         []string{"img-1", "img-2"},
-			UploadImagePeriods:   []time.Time{now.Add(-24 * time.Hour), now},
-			DynamicFields:        []string{"height", "weight"},
-			BooksNeeds:           []string{fmt.Sprintf("%d", i+1), fmt.Sprintf("%d", i+1)},
-			HealthInsuranceNeed:  fmt.Sprintf("%d", i+1),
-			MealNeed:             fmt.Sprintf("%d", i+1),
-			SpecialNeedProposals: []string{fmt.Sprintf("%d", i+1), fmt.Sprintf("%d", i+1)},
-			SpecialNeedCampaigns: []string{fmt.Sprintf("%d", i+1), fmt.Sprintf("%d", i+1)},
-			Gifts:                []string{fmt.Sprintf("%d", i+1), fmt.Sprintf("%d", i+1)},
-			UploadedBy:           "admin-01",
-			UploadedAt:           now.Add(-48 * time.Hour),
-			UpdatedAt:            now,
-			DynamicValues: map[string]interface{}{
-				"height": 120 + i,
-				"weight": 25 + i,
-			},
-		}
-	}
-
-	return children
 }

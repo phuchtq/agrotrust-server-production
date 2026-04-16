@@ -453,15 +453,15 @@ func (r *registrationRequestService) GetRegistrationRequests(req request.GetRegi
 
 // GetWalletRegistrationRequests implements business.IRegistrationRequestService.
 func (r *registrationRequestService) GetWalletRegistrationRequests(id string, ctx context.Context) ([]entities.RegistrationRequest, error) {
-	// if !util.IsValidSuiAddressStrict(id) {
-	// 	return nil, errors.New(noti.GENERIC_ERROR_WARN_MSG)
-	// }
+	if !util.IsValidSuiAddressStrict(id) {
+		return nil, errors.New(noti.GENERIC_ERROR_WARN_MSG)
+	}
 
-	// return r.registrationRequestRepo.GetWalletRegistrationRequests(id, ctx)
+	return r.registrationRequestRepo.GetWalletRegistrationRequests(id, ctx)
 
 	///////////////////
-	// MOCK DATA
-	return mockRegistrationRequests, nil
+	// // MOCK DATA
+	// return mockRegistrationRequests, nil
 }
 
 // VoteRegistrationRequest implements business.IRegistrationRequestService.

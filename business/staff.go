@@ -2,19 +2,26 @@ package business
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"math"
+	"os"
+	"raise-child/constants/env"
+	"raise-child/constants/noti"
 	"raise-child/constants/shared"
 	"raise-child/interfaces/business"
 	"raise-child/model/dtos/request"
 	"raise-child/model/dtos/response"
+	"raise-child/model/entities"
 	"raise-child/util"
 	"raise-child/util/cache"
+	on_chain "raise-child/util/on_chain"
 	"sort"
 	"strings"
 	"time"
 
+	"github.com/block-vision/sui-go-sdk/constant"
 	"github.com/block-vision/sui-go-sdk/sui"
 )
 
@@ -42,58 +49,58 @@ const (
 
 // GetStaff implements business.IStaffService.
 func (s *staffService) GetStaff(id string, ctx context.Context) (response.StaffResponse, error) {
-	// if !util.IsValidSuiAddressStrict(id) {
-	// 	return response.StaffResponse{}, errors.New(noti.GENERIC_ERROR_WARN_MSG)
-	// }
+	if !util.IsValidSuiAddressStrict(id) {
+		return response.StaffResponse{}, errors.New(noti.GENERIC_ERROR_WARN_MSG)
+	}
 
-	// var client = s.clients[constant.SuiTestnet]
-	// staff, err := getOnChainObject[entities.Staff](client, id, s.errLogger, ctx)
-	// if err != nil {
-	// 	return response.StaffResponse{}, err
-	// }
+	var client = s.clients[constant.SuiTestnet]
+	staff, err := getOnChainObject[entities.Staff](client, id, s.errLogger, ctx)
+	if err != nil {
+		return response.StaffResponse{}, err
+	}
 
-	// var res response.StaffResponse = staff.ToStaffResponse()
+	var res response.StaffResponse = staff.ToStaffResponse()
 
-	// var module = on_chain.InitializeModuleStaff()
-	// if nfts, _ := on_chain.GetOnChainOwnedObjects[entities.StaffNft](on_chain.GetOnChainOwnedObjectsRequest{
-	// 	Client:       client,
-	// 	OwnerAddress: staff.User,
-	// 	StructType:   fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), module.GetModule(), module.GetStaffNftObjectStruct()),
-	// 	ErrLogger:    s.errLogger,
-	// }, ctx); nfts != nil {
-	// 	var nftsRes []response.StaffNftResponse
-	// 	for _, nft := range nfts {
-	// 		nftsRes = append(nftsRes, nft.ToStaffNftResponse())
-	// 	}
+	var module = on_chain.InitializeModuleStaff()
+	if nfts, _ := on_chain.GetOnChainOwnedObjects[entities.StaffNft](on_chain.GetOnChainOwnedObjectsRequest{
+		Client:       client,
+		OwnerAddress: staff.User,
+		StructType:   fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), module.GetModule(), module.GetStaffNftObjectStruct()),
+		ErrLogger:    s.errLogger,
+	}, ctx); nfts != nil {
+		var nftsRes []response.StaffNftResponse
+		for _, nft := range nfts {
+			nftsRes = append(nftsRes, nft.ToStaffNftResponse())
+		}
 
-	// 	res.Nfts = nftsRes
-	// }
+		res.Nfts = nftsRes
+	}
 
-	// return res, nil
+	return res, nil
 
 	/////////////////
-	// MOCK DATA
+	// // MOCK DATA
 
-	for _, staff := range mockStaffs {
-		if staff.ID == id {
-			return response.StaffResponse{
-				ID:           id,
-				Role:         staff.Role,
-				IdentityCode: staff.IdentityCode,
-				User:         staff.Owner,
-				AvatarBlobID: staff.AvatarBlobID,
-				Region:       staff.Region,
-				FirstName:    staff.FirstName,
-				LastName:     staff.LastName,
-				Gender:       staff.Gender,
-				DateOfBirth:  util.TimeToRawDate(staff.DateOfBirth),
-				PhoneNumber:  staff.PhoneNumber,
-				Email:        staff.Email,
-				UploadedAt:   staff.UploadedAt,
-			}, nil
-		}
-	}
-	return response.StaffResponse{}, nil
+	// for _, staff := range mockStaffs {
+	// 	if staff.ID == id {
+	// 		return response.StaffResponse{
+	// 			ID:           id,
+	// 			Role:         staff.Role,
+	// 			IdentityCode: staff.IdentityCode,
+	// 			User:         staff.Owner,
+	// 			AvatarBlobID: staff.AvatarBlobID,
+	// 			Region:       staff.Region,
+	// 			FirstName:    staff.FirstName,
+	// 			LastName:     staff.LastName,
+	// 			Gender:       staff.Gender,
+	// 			DateOfBirth:  util.TimeToRawDate(staff.DateOfBirth),
+	// 			PhoneNumber:  staff.PhoneNumber,
+	// 			Email:        staff.Email,
+	// 			UploadedAt:   staff.UploadedAt,
+	// 		}, nil
+	// 	}
+	// }
+	// return response.StaffResponse{}, nil
 }
 
 // GetStaffs implements business.IStaffService.

@@ -83,97 +83,35 @@ func (a *adminService) GetAdmins(req request.GetAdminsRequest, ctx context.Conte
 		return res, nil
 	}
 
-	// var client = a.clients[constant.SuiTestnet]
-	// manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-	// 	Client:    client,
-	// 	ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-	// 	ErrLogger: a.errLogger,
-	// }, ctx)
-	// if err != nil {
-	// 	return response.PaginationDataResponse{}, err
-	// }
+	var client = a.clients[constant.SuiTestnet]
+	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: a.errLogger,
+	}, ctx)
+	if err != nil {
+		return response.PaginationDataResponse{}, err
+	}
 
-	// admins, err := on_chain.GetOnChainObjects[entities.AdminNft](on_chain.GetOnChainObjectsRequest{
-	// 	Client:    client,
-	// 	ObjectIds: manageObj.AdminNfts,
-	// 	ErrLogger: a.errLogger,
-	// }, ctx)
-	// if err != nil {
-	// 	return response.PaginationDataResponse{}, err
-	// }
+	admins, err := on_chain.GetOnChainObjects[entities.AdminNft](on_chain.GetOnChainObjectsRequest{
+		Client:    client,
+		ObjectIds: manageObj.AdminNfts,
+		ErrLogger: a.errLogger,
+	}, ctx)
+	if err != nil {
+		return response.PaginationDataResponse{}, err
+	}
 
-	// if admins == nil || len(admins) == 0 {
-	// 	return response.PaginationDataResponse{
-	// 		Page:   req.Page,
-	// 		Amount: 0,
-	// 	}, nil
-	// }
+	if admins == nil || len(admins) == 0 {
+		return response.PaginationDataResponse{
+			Page:   req.Page,
+			Amount: 0,
+		}, nil
+	}
 
-	// var filteredAdmins []entities.AdminNft
-	// for i := len(admins) - 1; i >= 0; i-- {
-	// 	var admin entities.AdminNft = admins[i]
-
-	// 	if req.Keyword != "" {
-	// 		var firstName string = util.StanderizeString(admin.FirstName)
-	// 		var lastName string = util.StanderizeString(admin.LastName)
-	// 		if !strings.Contains(firstName, req.Keyword) && !strings.Contains(lastName, req.Keyword) && !strings.Contains(admin.IdentityCode, req.Keyword) && !strings.Contains(admin.PhoneNumber, req.Keyword) && !strings.Contains(admin.Email, req.Keyword) { // Not matched
-	// 			continue
-	// 		}
-	// 	}
-
-	// 	if req.Gender != "" {
-	// 		if admin.Gender != req.Gender { // Not matched
-	// 			continue
-	// 		}
-	// 	}
-
-	// 	if req.YearOfBirth != nil {
-	// 		var dob time.Time = util.RawDateToTime(admin.DateOfBirth)
-	// 		if dob.Year() != *req.YearOfBirth { // Not matched
-	// 			continue
-	// 		}
-	// 	}
-
-	// 	filteredAdmins = append(filteredAdmins, admin)
-	// }
-
-	// sort.Slice(filteredAdmins, func(i, j int) bool {
-	// 	if req.SortCriteria == "date_of_birth" {
-	// 		var dob1 time.Time = util.RawDateToTime(filteredAdmins[i].DateOfBirth)
-	// 		var dob2 time.Time = util.RawDateToTime(filteredAdmins[j].DateOfBirth)
-	// 		if req.SortOrder == "DESC" {
-	// 			return dob2.After(dob1)
-	// 		}
-
-	// 		return dob2.Before(dob1)
-	// 	}
-
-	// 	if req.SortOrder == "ASC" {
-	// 		return false
-	// 	}
-
-	// 	return true
-	// })
-
-	// var skippedRecords int = (req.Page - 1) * req.PageSize
-	// if len(filteredAdmins) <= skippedRecords {
-	// 	return response.PaginationDataResponse{}, nil
-	// }
-
-	//  var data []response.AdminNftResponse
-	//  for i := skippedRecords; i < len(filteredAdmins); i++ {
-	//  	data = append(data, filteredAdmins[i].ToAdminNftResponse())
-	// if len(data) == req.PageSize {
-	// 	break
-	// }
-	//  }
-
-	/////////////
-	// MOCK DATA
-	var admins = mockAdmins
-	var filteredAdmins []response.AdminNftResponse
+	var filteredAdmins []entities.AdminNft
 	for i := len(admins) - 1; i >= 0; i-- {
-		var admin response.AdminNftResponse = admins[i]
+		var admin entities.AdminNft = admins[i]
 
 		if req.Keyword != "" {
 			var firstName string = util.StanderizeString(admin.FirstName)
@@ -190,7 +128,8 @@ func (a *adminService) GetAdmins(req request.GetAdminsRequest, ctx context.Conte
 		}
 
 		if req.YearOfBirth != nil {
-			if admin.DateOfBirth.Year() != *req.YearOfBirth { // Not matched
+			var dob time.Time = util.RawDateToTime(admin.DateOfBirth)
+			if dob.Year() != *req.YearOfBirth { // Not matched
 				continue
 			}
 		}
@@ -200,8 +139,8 @@ func (a *adminService) GetAdmins(req request.GetAdminsRequest, ctx context.Conte
 
 	sort.Slice(filteredAdmins, func(i, j int) bool {
 		if req.SortCriteria == "date_of_birth" {
-			var dob1 time.Time = filteredAdmins[i].DateOfBirth
-			var dob2 time.Time = filteredAdmins[j].DateOfBirth
+			var dob1 time.Time = util.RawDateToTime(filteredAdmins[i].DateOfBirth)
+			var dob2 time.Time = util.RawDateToTime(filteredAdmins[j].DateOfBirth)
 			if req.SortOrder == "DESC" {
 				return dob2.After(dob1)
 			}
@@ -223,11 +162,72 @@ func (a *adminService) GetAdmins(req request.GetAdminsRequest, ctx context.Conte
 
 	var data []response.AdminNftResponse
 	for i := skippedRecords; i < len(filteredAdmins); i++ {
-		data = append(data, filteredAdmins[i])
+		data = append(data, filteredAdmins[i].ToAdminNftResponse())
 		if len(data) == req.PageSize {
 			break
 		}
 	}
+
+	// /////////////
+	// // MOCK DATA
+	// var admins = mockAdmins
+	// var filteredAdmins []response.AdminNftResponse
+	// for i := len(admins) - 1; i >= 0; i-- {
+	// 	var admin response.AdminNftResponse = admins[i]
+
+	// 	if req.Keyword != "" {
+	// 		var firstName string = util.StanderizeString(admin.FirstName)
+	// 		var lastName string = util.StanderizeString(admin.LastName)
+	// 		if !strings.Contains(firstName, req.Keyword) && !strings.Contains(lastName, req.Keyword) && !strings.Contains(admin.IdentityCode, req.Keyword) && !strings.Contains(admin.PhoneNumber, req.Keyword) && !strings.Contains(admin.Email, req.Keyword) { // Not matched
+	// 			continue
+	// 		}
+	// 	}
+
+	// 	if req.Gender != "" {
+	// 		if admin.Gender != req.Gender { // Not matched
+	// 			continue
+	// 		}
+	// 	}
+
+	// 	if req.YearOfBirth != nil {
+	// 		if admin.DateOfBirth.Year() != *req.YearOfBirth { // Not matched
+	// 			continue
+	// 		}
+	// 	}
+
+	// 	filteredAdmins = append(filteredAdmins, admin)
+	// }
+
+	// sort.Slice(filteredAdmins, func(i, j int) bool {
+	// 	if req.SortCriteria == "date_of_birth" {
+	// 		var dob1 time.Time = filteredAdmins[i].DateOfBirth
+	// 		var dob2 time.Time = filteredAdmins[j].DateOfBirth
+	// 		if req.SortOrder == "DESC" {
+	// 			return dob2.After(dob1)
+	// 		}
+
+	// 		return dob2.Before(dob1)
+	// 	}
+
+	// 	if req.SortOrder == "ASC" {
+	// 		return false
+	// 	}
+
+	// 	return true
+	// })
+
+	// var skippedRecords int = (req.Page - 1) * req.PageSize
+	// if len(filteredAdmins) <= skippedRecords {
+	// 	return response.PaginationDataResponse{}, nil
+	// }
+
+	// var data []response.AdminNftResponse
+	// for i := skippedRecords; i < len(filteredAdmins); i++ {
+	// 	data = append(data, filteredAdmins[i])
+	// 	if len(data) == req.PageSize {
+	// 		break
+	// 	}
+	// }
 
 	res = response.PaginationDataResponse{
 		Data:       data,
