@@ -272,12 +272,16 @@ func (r *regionService) GetRegionDetail(region string, req request.GetChildrenFr
 		}
 	}
 
+	var centerBlobId string
+	if center.ImageBlobIDs != nil && len(center.ImageBlobIDs) > 0 {
+		centerBlobId = center.ImageBlobIDs[len(center.ImageBlobIDs)-1]
+	}
 	res = response.RegionDetailResponse{
 		Region:            region,
 		PoolID:            poolId,
 		CenterPhoneNumber: center.CenterPhoneNumber,
 		CenterAddress:     center.CenterAddress,
-		CenterImageBlobID: center.ImageBlobIDs[len(center.ImageBlobIDs)-1],
+		CenterImageBlobID: centerBlobId,
 		TotalDonated:      total,
 		Children:          paginationChildrenResponse,
 	}
