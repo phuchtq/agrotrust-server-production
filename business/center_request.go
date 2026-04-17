@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"math"
 	"os"
 	"raise-child/constants/env"
 	"raise-child/constants/noti"
@@ -318,76 +317,39 @@ func (c *centerRequestService) CreateRequest(req request.CreateCenterRequest, ct
 
 // GetRequest implements business.ICenterRequestService.
 func (c *centerRequestService) GetRequest(id string, ctx context.Context) (*entities.CenterRequest, error) {
-	// var data entities.CenterRequest
-	// var redisKey string = c.getCenterRequestRedisKey(id)
-	// if c.redisCache.Get(redisKey, &data, ctx) {
-	// 	return &data, nil
-	// }
-
-	// res, err := c.centerRequestRepo.GetRequest(id, ctx)
-	// if err != nil {
-	// 	return nil, err
-	// }
-
-	// c.redisCache.Set(redisKey, *res, time.Minute, ctx)
-
-	// return res, nil
-
-	/////////////////////
-	// MOCK DATA
 	var data entities.CenterRequest
 	var redisKey string = c.getCenterRequestRedisKey(id)
 	if c.redisCache.Get(redisKey, &data, ctx) {
 		return &data, nil
 	}
 
-	for _, req := range mockCenterRequests {
-		if req.ID == id {
-			c.redisCache.Set(redisKey, req, time.Minute, ctx)
-			return &req, nil
-		}
+	res, err := c.centerRequestRepo.GetRequest(id, ctx)
+	if err != nil {
+		return nil, err
 	}
 
-	return nil, nil
+	return res, nil
+
+	// /////////////////////
+	// // MOCK DATA
+	// var data entities.CenterRequest
+	// var redisKey string = c.getCenterRequestRedisKey(id)
+	// if c.redisCache.Get(redisKey, &data, ctx) {
+	// 	return &data, nil
+	// }
+
+	// for _, req := range mockCenterRequests {
+	// 	if req.ID == id {
+	// 		c.redisCache.Set(redisKey, req, time.Minute, ctx)
+	// 		return &req, nil
+	// 	}
+	// }
+
+	// return nil, nil
 }
 
 // GetRequests implements business.ICenterRequestService.
 func (c *centerRequestService) GetRequests(req request.GetCenterRequests, ctx context.Context) (response.PaginationDataResponse, error) {
-	// if req.Page < 1 {
-	// 	req.Page = 1
-	// }
-
-	// if req.PageSize < 1 {
-	// 	req.PageSize = default_page_size
-	// }
-
-	// var res response.PaginationDataResponse
-	// var redisKey string = c.getGetCenterRequestsRedisKey(req)
-	// if c.redisCache.Get(redisKey, &res, ctx) {
-	// 	return res, nil
-	// }
-
-	// data, pages, err := c.centerRequestRepo.GetRegistrationRequests(req, ctx)
-	// var amount int
-	// if data == nil || len(data) == 0 {
-	// 	amount = 0
-	// } else {
-	// 	amount = len(data)
-	// }
-
-	// res = response.PaginationDataResponse{
-	// 	Data:       data,
-	// 	Amount:     amount,
-	// 	Page:       req.Page,
-	// 	TotalPages: pages,
-	// }
-
-	// c.redisCache.Set(redisKey, res, time.Minute*5, ctx)
-
-	// return res, err
-
-	//////////////////
-	// MOCK DATA
 	if req.Page < 1 {
 		req.Page = 1
 	}
@@ -402,58 +364,93 @@ func (c *centerRequestService) GetRequests(req request.GetCenterRequests, ctx co
 		return res, nil
 	}
 
-	var data []entities.CenterRequest = mockCenterRequests[(req.Page-1)*req.PageSize : req.Page*req.PageSize]
+	data, pages, err := c.centerRequestRepo.GetRegistrationRequests(req, ctx)
+	var amount int
+	if data == nil || len(data) == 0 {
+		amount = 0
+	} else {
+		amount = len(data)
+	}
+
 	res = response.PaginationDataResponse{
 		Data:       data,
-		Amount:     len(data),
+		Amount:     amount,
 		Page:       req.Page,
-		TotalPages: int(math.Ceil(float64(len(mockCenterRequests)) / float64(req.PageSize))),
+		TotalPages: pages,
 	}
 
 	c.redisCache.Set(redisKey, res, time.Minute*5, ctx)
 
-	return res, nil
-}
+	return res, err
 
-// GetWalletRequests implements business.ICenterRequestService.
-func (c *centerRequestService) GetWalletRequests(id string, ctx context.Context) ([]entities.CenterRequest, error) {
-	// if !util.IsValidSuiAddressStrict(id) {
-	// 	return nil, errors.New(noti.GENERIC_ERROR_WARN_MSG)
+	// //////////////////
+	// // MOCK DATA
+	// if req.Page < 1 {
+	// 	req.Page = 1
 	// }
 
-	// var res []entities.CenterRequest
-	// var redisKey string = c.getGetWalletCenterRequestsRedisKey(id)
+	// if req.PageSize < 1 {
+	// 	req.PageSize = default_page_size
+	// }
+
+	// var res response.PaginationDataResponse
+	// var redisKey string = c.getGetCenterRequestsRedisKey(req)
 	// if c.redisCache.Get(redisKey, &res, ctx) {
 	// 	return res, nil
 	// }
 
-	// var errRes error
-	// res, errRes = c.centerRequestRepo.GetWalletRegistrationRequests(id, ctx)
-	// if errRes != nil {
-	// 	return nil, errRes
+	// var data []entities.CenterRequest = mockCenterRequests[(req.Page-1)*req.PageSize : req.Page*req.PageSize]
+	// res = response.PaginationDataResponse{
+	// 	Data:       data,
+	// 	Amount:     len(data),
+	// 	Page:       req.Page,
+	// 	TotalPages: int(math.Ceil(float64(len(mockCenterRequests)) / float64(req.PageSize))),
 	// }
 
 	// c.redisCache.Set(redisKey, res, time.Minute*5, ctx)
 
-	// return res, errRes
+	// return res, nil
+}
 
-	//////////////////
-	// MOCK DATA
+// GetWalletRequests implements business.ICenterRequestService.
+func (c *centerRequestService) GetWalletRequests(id string, ctx context.Context) ([]entities.CenterRequest, error) {
+	if !util.IsValidSuiAddressStrict(id) {
+		return nil, errors.New(noti.GENERIC_ERROR_WARN_MSG)
+	}
+
 	var res []entities.CenterRequest
 	var redisKey string = c.getGetWalletCenterRequestsRedisKey(id)
 	if c.redisCache.Get(redisKey, &res, ctx) {
 		return res, nil
 	}
 
-	for _, req := range mockCenterRequests {
-		if id == req.CreatedBy {
-			res = append(res, req)
-		}
+	var errRes error
+	res, errRes = c.centerRequestRepo.GetWalletRegistrationRequests(id, ctx)
+	if errRes != nil {
+		return nil, errRes
 	}
 
 	c.redisCache.Set(redisKey, res, time.Minute*5, ctx)
 
-	return res, nil
+	return res, errRes
+
+	//////////////////
+	// // MOCK DATA
+	// var res []entities.CenterRequest
+	// var redisKey string = c.getGetWalletCenterRequestsRedisKey(id)
+	// if c.redisCache.Get(redisKey, &res, ctx) {
+	// 	return res, nil
+	// }
+
+	// for _, req := range mockCenterRequests {
+	// 	if id == req.CreatedBy {
+	// 		res = append(res, req)
+	// 	}
+	// }
+
+	// c.redisCache.Set(redisKey, res, time.Minute*5, ctx)
+
+	// return res, nil
 }
 
 // VoteRequest implements business.ICenterRequestService.
