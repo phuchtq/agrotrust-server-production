@@ -201,7 +201,7 @@ func (c *childService) GetChildren(req request.GetChildrenRequest, ctx context.C
 		var child entities.Child = children[i]
 
 		if req.Region != "" {
-			if util.StandardizeString(child.Region) != req.Region { // Not matched
+			if child.Region != req.Region { // Not matched
 				continue
 			}
 		}
