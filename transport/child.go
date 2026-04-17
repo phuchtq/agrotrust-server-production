@@ -110,20 +110,20 @@ func UploadChild(ctx *gin.Context) {
 }
 
 // AddChildStringMetadata godoc
-// @Summary      Add a new string metadata to a child object
+// @Summary      Add a new string Metadata to a child object
 // @Description  Prepares and builds a transaction for adding new field information to a child information (e.g., height, weight) on-chain
 // @Tags         children
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Param        request  body      request.AddChildStringMetadaRequest   true  "Add child string metadata details (e.g., key, value)"
+// @Param        request  body      request.AddChildStringMetadataRequest   true  "Add child string Metadata details (e.g., key, value)"
 // @Success      200      {object}  response.BuildTransactionResponse
 // @Failure      400      {object}  response.MessageAPIResponse "Invalid data. Please try again."
 // @Failure      401      {object}  response.MessageAPIResponse "You have no rights to access this action."
 // @Failure      500      {object}  response.MessageAPIResponse "There is something wrong in the system during the process. Please try again later."
-// @Router       /children/metadata/string/{id} [put]
+// @Router       /children/Metadata/string/{id} [put]
 func AddChildStringMetadata(ctx *gin.Context) {
-	var request request.AddChildStringMetadaRequest
+	var request request.AddChildStringMetadataRequest
 	if ctx.ShouldBindJSON(&request) != nil {
 		util.ProcessResponse(util.GenerateInvalidRequestAndSystemProblemModel(ctx, nil))
 		return
@@ -135,7 +135,7 @@ func AddChildStringMetadata(ctx *gin.Context) {
 		return
 	}
 
-	res, err := service.AddStringMetada(ctx.Param("id"), request, ctx)
+	res, err := service.AddStringMetadata(ctx.Param("id"), request, ctx)
 
 	util.ProcessResponse(response.APIResponse{
 		Data1:    res,
@@ -147,20 +147,20 @@ func AddChildStringMetadata(ctx *gin.Context) {
 }
 
 // AddChildNumberMetadata godoc
-// @Summary      Add a new number metadata to a child object
+// @Summary      Add a new number Metadata to a child object
 // @Description  Prepares and builds a transaction for adding new field information to a child information (e.g., height, weight) on-chain
 // @Tags         children
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Param        request  body      request.AddChildStringMetadaRequest   true  "Add child number metadata details (e.g., key, value)"
+// @Param        request  body      request.AddChildStringMetadataRequest   true  "Add child number Metadata details (e.g., key, value)"
 // @Success      200      {object}  response.BuildTransactionResponse
 // @Failure      400      {object}  response.MessageAPIResponse "Invalid data. Please try again."
 // @Failure      401      {object}  response.MessageAPIResponse "You have no rights to access this action."
 // @Failure      500      {object}  response.MessageAPIResponse "There is something wrong in the system during the process. Please try again later."
-// @Router       /children/metadata/number/{id} [put]
+// @Router       /children/Metadata/number/{id} [put]
 func AddChildNumberMetadata(ctx *gin.Context) {
-	var request request.AddChildNumberMetadaRequest
+	var request request.AddChildNumberMetadataRequest
 	if ctx.ShouldBindJSON(&request) != nil {
 		util.ProcessResponse(util.GenerateInvalidRequestAndSystemProblemModel(ctx, nil))
 		return
@@ -172,7 +172,7 @@ func AddChildNumberMetadata(ctx *gin.Context) {
 		return
 	}
 
-	res, err := service.AddNumberMetada(ctx.Param("id"), request, ctx)
+	res, err := service.AddNumberMetadata(ctx.Param("id"), request, ctx)
 
 	util.ProcessResponse(response.APIResponse{
 		Data1:    res,

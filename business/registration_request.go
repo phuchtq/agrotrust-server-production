@@ -27,9 +27,7 @@ import (
 	"time"
 
 	"github.com/block-vision/sui-go-sdk/constant"
-	"github.com/block-vision/sui-go-sdk/models"
 	"github.com/block-vision/sui-go-sdk/sui"
-	"github.com/block-vision/sui-go-sdk/utils"
 )
 
 const (
@@ -242,8 +240,8 @@ func (r *registrationRequestService) ConfirmRegistrationRequest(id string, ctx c
 	}, ctx)
 
 	return response.BuildTransactionResponse{
-		TxBytes:        txBytes,
-		RegistraionReq: id,
+		TxBytes:         txBytes,
+		RegistrationReq: id,
 	}, err
 }
 
@@ -309,10 +307,10 @@ func (r *registrationRequestService) CreateRegistrationRequest(req request.Creat
 		if req.Region != "" {
 			return nil, genericErr
 		}
-	}
-
-	if !isRegionExist(req.Region) {
-		return nil, genericErr
+	} else {
+		if !isRegionExist(req.Region) {
+			return nil, genericErr
+		}
 	}
 
 	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
@@ -333,10 +331,11 @@ func (r *registrationRequestService) CreateRegistrationRequest(req request.Creat
 	identityCardBytes, _ := r.walrusProvider.FetchBytesImage(req.IdentityCardBlobID)
 	avatarBytes, _ := r.walrusProvider.FetchBytesImage(req.AvatarBlobID)
 	if identityCardBytes == nil || avatarBytes == nil {
+		r.errLogger.Println("Err at walrus")
 		return nil, genericErr
 	}
 
-	var identityCode string = util.StanderizeString(*profile.IdentityCode)
+	var identityCode string = util.StandardizeString(*profile.IdentityCode)
 	var firstName string = strings.TrimSpace(*profile.FirstName)
 	var lastName string = strings.TrimSpace(*profile.LastName)
 
@@ -370,26 +369,16 @@ func (r *registrationRequestService) CreateRegistrationRequest(req request.Creat
 
 // GetRegistrationRequest implements business.IRegistrationRequestService.
 func (r *registrationRequestService) GetRegistrationRequest(id string, ctx context.Context) (*entities.RegistrationRequest, error) {
-	// if id == "" {
-	// 	return nil, errors.New(noti.GENERIC_ERROR_WARN_MSG)
-	// }
+	if id == "" {
+		return nil, errors.New(noti.GENERIC_ERROR_WARN_MSG)
+	}
 
 	return r.registrationRequestRepo.GetRegistrationRequest(id, ctx)
-
-	////////////
-	// // MOCK DATA
-	// for _, req := range mockRegistrationRequests {
-	// 	if req.ID == id {
-	// 		return &req, nil
-	// 	}
-	// }
-
-	// return nil, nil
 }
 
 // GetRegistrationRequests implements business.IRegistrationRequestService.
 func (r *registrationRequestService) GetRegistrationRequests(req request.GetRegistrationRequests, ctx context.Context) (response.PaginationDataResponse, error) {
-	req.SortOrder = util.StanderizeSortOrder(req.SortOrder)
+	req.SortOrder = util.StandardizeSortOrder(req.SortOrder)
 	if req.Page < 1 {
 		req.Page = 1
 	}
@@ -422,33 +411,6 @@ func (r *registrationRequestService) GetRegistrationRequests(req request.GetRegi
 	r.redisCache.Set(redisKey, res, time.Minute*5, ctx)
 
 	return res, err
-
-	// req.SortOrder = util.StanderizeSortOrder(req.SortOrder)
-	// if req.Page < 1 {
-	// 	req.Page = 1
-	// }
-
-	// if req.PageSize < 1 {
-	// 	req.PageSize = default_page_size
-	// }
-
-	// var res response.PaginationDataResponse
-	// var redisKey string = r.getGetRegistrationRequestsRedisKey(req)
-	// if r.redisCache.Get(redisKey, &res, ctx) {
-	// 	return res, nil
-	// }
-
-	// var data []entities.RegistrationRequest = mockRegistrationRequests[(req.Page-1)*req.PageSize : req.Page*req.PageSize]
-	// res = response.PaginationDataResponse{
-	// 	Data:       data,
-	// 	Amount:     len(data),
-	// 	Page:       req.Page,
-	// 	TotalPages: int(math.Ceil(float64(len(mockRegistrationRequests)) / float64(req.PageSize))),
-	// }
-
-	// r.redisCache.Set(redisKey, res, time.Minute*5, ctx)
-
-	// return res, nil
 }
 
 // GetWalletRegistrationRequests implements business.IRegistrationRequestService.
@@ -458,26 +420,16 @@ func (r *registrationRequestService) GetWalletRegistrationRequests(id string, ct
 	}
 
 	return r.registrationRequestRepo.GetWalletRegistrationRequests(id, ctx)
-
-	///////////////////
-	// // MOCK DATA
-	// return mockRegistrationRequests, nil
 }
 
 // VoteRegistrationRequest implements business.IRegistrationRequestService.
 func (r *registrationRequestService) VoteRegistrationRequest(id string, req request.VoteRequest, ctx context.Context) error {
-	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
-
-	var voter string = ctx.Value("address").(string)
-	if !utils.IsValidSuiAddress(models.SuiAddress(voter)) {
-		return genericErr
-	}
-
 	request, err := r.registrationRequestRepo.GetRegistrationRequest(id, ctx)
 	if err != nil {
 		return err
 	}
 
+	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
 	if request == nil {
 		return genericErr
 	}
@@ -486,6 +438,7 @@ func (r *registrationRequestService) VoteRegistrationRequest(id string, req requ
 		return errors.New(noti.REQUEST_CLOSED_MESSAGE)
 	}
 
+	var voter string = ctx.Value("address").(string)
 	if voter == request.CreatedBy {
 		return errors.New(noti.OWNER_VOTE_WARN_MSG)
 	}
@@ -494,8 +447,9 @@ func (r *registrationRequestService) VoteRegistrationRequest(id string, req requ
 		return errors.New(noti.ALREADY_VOTE_MESSAGE)
 	}
 
+	var client = r.clients[constant.SuiTestnet]
 	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-		Client:    r.clients[constant.SuiTestnet],
+		Client:    client,
 		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
 		ErrLogger: r.errLogger,
 	}, ctx)
@@ -503,9 +457,43 @@ func (r *registrationRequestService) VoteRegistrationRequest(id string, req requ
 		return err
 	}
 
-	// Not admins or local leaders
-	if !slices.Contains(manageObj.AdminIds, voter) && !slices.Contains(manageObj.LocalLeaderIds, voter) {
-		return errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+	// Not admin
+	if !slices.Contains(manageObj.AdminIds, voter) {
+		var genericRightErr error = errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+		if request.RegisterRole == admin_role {
+			return genericRightErr
+		} else if request.RegisterRole == local_leader_role {
+			if !slices.Contains(manageObj.LocalLeaderIds, voter) {
+				return genericRightErr
+			}
+		} else {
+			var staffModule = on_chain.InitializeModuleStaff()
+			staffNfts, err := on_chain.GetOnChainOwnedObjects[entities.StaffNft](on_chain.GetOnChainOwnedObjectsRequest{
+				Client:       client,
+				OwnerAddress: voter,
+				StructType:   fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), staffModule.GetModule(), staffModule.GetStaffNftObjectStruct()),
+				ErrLogger:    r.errLogger,
+			}, ctx)
+			if err != nil {
+				return err
+			}
+
+			if staffNfts == nil || len(staffNfts) == 0 {
+				return genericRightErr
+			}
+
+			var isRegionLeader bool = false
+			for _, staffNft := range staffNfts {
+				if staffNft.Region == request.Region && staffNft.Role == local_leader_role {
+					isRegionLeader = true
+					break
+				}
+			}
+
+			if !isRegionLeader {
+				return genericRightErr
+			}
+		}
 	}
 
 	if req.IsVoteYes {
@@ -562,74 +550,4 @@ func (r *registrationRequestService) getGetRegistrationRequestsRedisKey(req requ
 
 	return fmt.Sprintf("registration_req:role:%s:available:%s:kw:%s:r:%s:g:%s:status:%s:closed:%s:o:%s:s:%d:p:%d",
 		role, isAvailable, keyword, region, gender, status, isClosed, req.SortOrder, req.PageSize, req.Page)
-}
-
-var mockRegistrationRequests = getMockRegistrationRequests()
-
-func getMockRegistrationRequests() []entities.RegistrationRequest {
-	requests := make([]entities.RegistrationRequest, 20)
-	now := time.Now()
-
-	// Dữ liệu mẫu để chọn ngẫu nhiên/xoay vòng
-	regions := []string{"Hà Nội", "TP.HCM", "Đà Nẵng", "Cần Thơ", "Hải Phòng"}
-	roles := []string{"Volunteer", "Donor"}
-	firstNames := []string{"Nguyễn", "Trần", "Lê", "Phạm", "Hoàng", "Huỳnh", "Phan", "Vũ"}
-	lastNames := []string{"An", "Bình", "Cường", "Dũng", "Em", "Hoa", "Lan", "Minh"}
-	genders := []string{"Male", "Female"}
-
-	for i := 0; i < 20; i++ {
-		id := fmt.Sprintf("%d", i+1)
-		role := roles[i%2]
-		region := regions[i%5]
-		fName := firstNames[i%8]
-		lName := lastNames[i%8]
-		gender := genders[i%2]
-
-		status := "Pending"
-		approvers := []string{}
-		refusers := []string{}
-		refuseReasons := []string{}
-		isAvailable := false
-		var closedAt time.Time
-
-		// Logic phân bổ trạng thái
-		if i%3 == 1 { // Các mục index 1, 4, 7... là Approved
-			status = "Approved"
-			approvers = []string{"Admin_Alpha", "Admin_Beta"}
-			isAvailable = true
-			closedAt = now
-		} else if i%3 == 2 { // Các mục index 2, 5, 8... là Refused
-			status = "Refused"
-			refusers = []string{"Admin_Gamma"}
-			refuseReasons = []string{"Thông tin định danh không trùng khớp với ảnh chụp."}
-			closedAt = now
-		}
-
-		requests[i] = entities.RegistrationRequest{
-			ID:                   id,
-			ProfileID:            "PROF-" + id,
-			RegisterRole:         role,
-			IdentityCode:         fmt.Sprintf("001090%06d", 123456+i),
-			IdentityCardBlobID:   "blob-id-card-" + id,
-			AvatarBlobID:         "blob-avatar-" + id,
-			Region:               region,
-			FirstName:            fName,
-			LastName:             lName,
-			Gender:               gender,
-			DateOfBirth:          "1990-01-01",
-			PhoneNumber:          fmt.Sprintf("090%07d", i),
-			Email:                fmt.Sprintf("user%s@example.com", id),
-			Approvers:            approvers,
-			Refusers:             refusers,
-			RefuseReasons:        refuseReasons,
-			Status:               status,
-			IsConfirmRegister:    false,
-			IsAvailableToConfirm: isAvailable,
-			CreatedBy:            "System",
-			CreatedAt:            now.Add(time.Duration(-i) * time.Hour),
-			UpdatedAt:            now,
-			ClosedAt:             closedAt,
-		}
-	}
-	return requests
 }

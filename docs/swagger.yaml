@@ -322,7 +322,7 @@ definitions:
     - last_name
     - region
     type: object
-  request.AddChildStringMetadaRequest:
+  request.AddChildStringMetadataRequest:
     properties:
       key:
         type: string
@@ -2394,6 +2394,82 @@ paths:
       summary: Confirm provide meal for child
       tags:
       - children
+  /children/Metadata/number/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Prepares and builds a transaction for adding new field information
+        to a child information (e.g., height, weight) on-chain
+      parameters:
+      - description: Add child number Metadata details (e.g., key, value)
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.AddChildStringMetadataRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.BuildTransactionResponse'
+        "400":
+          description: Invalid data. Please try again.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "401":
+          description: You have no rights to access this action.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "500":
+          description: There is something wrong in the system during the process.
+            Please try again later.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+      security:
+      - BearerAuth: []
+      summary: Add a new number Metadata to a child object
+      tags:
+      - children
+  /children/Metadata/string/{id}:
+    put:
+      consumes:
+      - application/json
+      description: Prepares and builds a transaction for adding new field information
+        to a child information (e.g., height, weight) on-chain
+      parameters:
+      - description: Add child string Metadata details (e.g., key, value)
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.AddChildStringMetadataRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.BuildTransactionResponse'
+        "400":
+          description: Invalid data. Please try again.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "401":
+          description: You have no rights to access this action.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "500":
+          description: There is something wrong in the system during the process.
+            Please try again later.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+      security:
+      - BearerAuth: []
+      summary: Add a new string Metadata to a child object
+      tags:
+      - children
   /children/books-need:
     put:
       consumes:
@@ -2734,82 +2810,6 @@ paths:
       security:
       - BearerAuth: []
       summary: Create meal need withdraw proposal
-      tags:
-      - children
-  /children/metadata/number/{id}:
-    put:
-      consumes:
-      - application/json
-      description: Prepares and builds a transaction for adding new field information
-        to a child information (e.g., height, weight) on-chain
-      parameters:
-      - description: Add child number metadata details (e.g., key, value)
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/request.AddChildStringMetadaRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.BuildTransactionResponse'
-        "400":
-          description: Invalid data. Please try again.
-          schema:
-            $ref: '#/definitions/response.MessageAPIResponse'
-        "401":
-          description: You have no rights to access this action.
-          schema:
-            $ref: '#/definitions/response.MessageAPIResponse'
-        "500":
-          description: There is something wrong in the system during the process.
-            Please try again later.
-          schema:
-            $ref: '#/definitions/response.MessageAPIResponse'
-      security:
-      - BearerAuth: []
-      summary: Add a new number metadata to a child object
-      tags:
-      - children
-  /children/metadata/string/{id}:
-    put:
-      consumes:
-      - application/json
-      description: Prepares and builds a transaction for adding new field information
-        to a child information (e.g., height, weight) on-chain
-      parameters:
-      - description: Add child string metadata details (e.g., key, value)
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/request.AddChildStringMetadaRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.BuildTransactionResponse'
-        "400":
-          description: Invalid data. Please try again.
-          schema:
-            $ref: '#/definitions/response.MessageAPIResponse'
-        "401":
-          description: You have no rights to access this action.
-          schema:
-            $ref: '#/definitions/response.MessageAPIResponse'
-        "500":
-          description: There is something wrong in the system during the process.
-            Please try again later.
-          schema:
-            $ref: '#/definitions/response.MessageAPIResponse'
-      security:
-      - BearerAuth: []
-      summary: Add a new string metadata to a child object
       tags:
       - children
   /children/special-need/{id}/support:
@@ -4415,6 +4415,72 @@ paths:
       security:
       - BearerAuth: []
       summary: Admin gets a list of supported region proposals
+      tags:
+      - regions
+  /regions/established:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of all established regions
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.RegionsResponse'
+        "400":
+          description: Invalid data. Please try again.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "500":
+          description: There is something wrong in the system during the process.
+            Please try again later.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+      summary: Get list of established regions
+      tags:
+      - regions
+  /regions/established/{region}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves an established region detail
+      parameters:
+      - description: Region
+        in: path
+        name: region
+        required: true
+        type: string
+      - in: query
+        name: keyword
+        type: string
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: page_size
+        type: integer
+      - in: query
+        name: sort_order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.RegionsResponse'
+        "400":
+          description: Invalid data. Please try again.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "500":
+          description: There is something wrong in the system during the process.
+            Please try again later.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+      summary: Get an established region detail
       tags:
       - regions
   /regions/supported-suggestions:

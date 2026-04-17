@@ -149,3 +149,17 @@ func (c Child) ToChildResponse() response.ChildResponse {
 		UpdatedAt:            util.MilliSecToTime(updatedAt),
 	}
 }
+
+func (c Child) ToChildCardMinimumResponse() response.ChildCardMinimumResponse {
+	if c.ID.ID == "" {
+		return response.ChildCardMinimumResponse{}
+	}
+
+	return response.ChildCardMinimumResponse{
+		ID:           c.ID.ID,
+		IdentityCode: c.IdentityCode,
+		FirstName:    c.FirstName,
+		LastName:     c.LastName,
+		Gender:       c.Gender,
+	}
+}

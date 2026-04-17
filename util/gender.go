@@ -2,8 +2,8 @@ package util
 
 import "slices"
 
-func StanderizeGender(gender string) string {
-	var res string = StanderizeString(gender)
+func StandardizeGender(gender string) string {
+	var res string = StandardizeString(gender)
 
 	var genders = []string{"nam", "nữ", "male", "female"}
 	if existed := slices.Contains(genders, res); !existed {

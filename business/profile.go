@@ -93,7 +93,7 @@ func (p *profileService) UploadProfile(id string, req request.UploadProfileReque
 		return response.PersonalProfileResponse{}, genericErr
 	}
 
-	var gender string = util.StanderizeGender(util.StanderizeString(req.Gender))
+	var gender string = util.StandardizeGender(util.StandardizeString(req.Gender))
 	if gender == "" {
 		return response.PersonalProfileResponse{}, errors.New(noti.UNDEFINED_GENDER_MESSAGE)
 	}
@@ -159,9 +159,9 @@ func (p *profileService) GetWalletPersonalProfile(id string, req request.GetTran
 		}
 	}
 
-	req.SortOrder = util.StanderizeSortOrder(req.SortOrder)
-	req.SortCriteria = util.StanderizeSortCriteria(req.SortCriteria)
-	req.Keyword = util.StanderizeString(req.Keyword)
+	req.SortOrder = util.StandardizeSortOrder(req.SortOrder)
+	req.SortCriteria = util.StandardizeSortCriteria(req.SortCriteria)
+	req.Keyword = util.StandardizeString(req.Keyword)
 	if req.Page < 1 {
 		req.Page = 1
 	}

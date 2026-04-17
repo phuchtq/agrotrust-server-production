@@ -682,12 +682,12 @@ func (m *moduleChild) GetFunctionUploadCenter() string {
 
 // GetFunctionUpdateNumberMetadata implements IModuleChild.
 func (m *moduleChild) GetFunctionUpdateNumberMetadata() string {
-	return sui.UPDATE_NUMBER_METADATA_FUNCTION
+	return sui.UPDATE_NUMBER_Metadata_FUNCTION
 }
 
 // GetFunctionUpdateStringMetadata implements IModuleChild.
 func (m *moduleChild) GetFunctionUpdateStringMetadata() string {
-	return sui.UPDATE_STRING_METADATA_FUNCTION
+	return sui.UPDATE_STRING_Metadata_FUNCTION
 }
 
 // GetChildObjectStruct implements IModuleChild.
@@ -702,12 +702,12 @@ func (m *moduleChild) GetFunctionAddChild() string {
 
 // GetFunctionAddNumberMetadata implements IModuleChild.
 func (m *moduleChild) GetFunctionAddNumberMetadata() string {
-	return sui.ADD_NUMBER_METADATA_FUNCTION
+	return sui.ADD_NUMBER_Metadata_FUNCTION
 }
 
 // GetFunctionAddStringMetadata implements IModuleChild.
 func (m *moduleChild) GetFunctionAddStringMetadata() string {
-	return sui.ADD_STRING_METADATA_FUNCTION
+	return sui.ADD_STRING_Metadata_FUNCTION
 }
 
 // GetModule implements IModuleChild.
