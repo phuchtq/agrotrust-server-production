@@ -10,6 +10,100 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// GetPayments godoc
+// @Summary      List Payments
+// @Description  Retrieves a list of Payments based on filter criteria
+// @Tags         payment
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        request  query     request.GetPaymentsRequest  true  "Filter Criteria"
+// @Success      200      {object}  response.PaginationDataResponse
+// @Failure      400      {object}  response.MessageAPIResponse "Invalid data. Please try again."
+// @Failure      401      {object}  response.MessageAPIResponse "You have no rights to access this action."
+// @Failure      500      {object}  response.MessageAPIResponse "There is something wrong in the system during the process. Please try again later."
+// @Router       /payments [get]
+func GetPayments(ctx *gin.Context) {
+	var request request.GetPaymentsRequest
+	if ctx.ShouldBindQuery(&request) != nil {
+		util.ProcessResponse(util.GenerateInvalidRequestAndSystemProblemModel(ctx, nil))
+		return
+	}
+
+	service, err := business.GeneratePaymentService()
+	if err != nil {
+		util.ProcessResponse(util.GenerateInvalidRequestAndSystemProblemModel(ctx, err))
+		return
+	}
+
+	res, err := service.GetPayments(request, ctx)
+	util.ProcessResponse(response.APIResponse{
+		Data1:    res,
+		Data2:    res,
+		ErrMsg:   err,
+		Context:  ctx,
+		PostType: action_type.NON_POST,
+	})
+}
+
+// ApprovePayment godoc
+// @Summary      Approve a Payment and upload to Sui Blockchain
+// @Description  Prepares and builds a transaction for approve and upload Payment on-chain
+// @Tags         payment
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      string  true  "Payment ID"
+// @Success      200      {object}  response.BuildTransactionResponse
+// @Failure      400      {object}  response.MessageAPIResponse "Invalid data. Please try again."
+// @Failure      401      {object}  response.MessageAPIResponse "You have no rights to access this action."
+// @Failure      500      {object}  response.MessageAPIResponse "There is something wrong in the system during the process. Please try again later."
+// @Router       /payments/{id}/approve [post]
+func ApprovePayment(ctx *gin.Context) {
+	service, err := business.GeneratePaymentService()
+	if err != nil {
+		util.ProcessResponse(util.GenerateInvalidRequestAndSystemProblemModel(ctx, err))
+		return
+	}
+
+	res, err := service.ApprovePayment(ctx.Param("id"), ctx)
+
+	util.ProcessResponse(response.APIResponse{
+		Data1:    res,
+		Data2:    res,
+		ErrMsg:   err,
+		Context:  ctx,
+		PostType: action_type.NON_POST,
+	})
+}
+
+// RefusePayment godoc
+// @Summary      Refuse Payment
+// @Description  Refuse Payment
+// @Tags         payment
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      string  true  "Payment ID"
+// @Success      200      {object}  response.MessageAPIResponse "Success"
+// @Failure      400      {object}  response.MessageAPIResponse "Invalid data. Please try again."
+// @Failure      401      {object}  response.MessageAPIResponse "You have no rights to access this action."
+// @Failure      500      {object}  response.MessageAPIResponse "There is something wrong in the system during the process. Please try again later."
+// @Router       /payments/{id}/refuse [post]
+func RefusePayment(ctx *gin.Context) {
+	service, err := business.GeneratePaymentService()
+	if err != nil {
+		util.ProcessResponse(util.GenerateInvalidRequestAndSystemProblemModel(ctx, err))
+		return
+	}
+
+	util.ProcessResponse(response.APIResponse{
+		ErrMsg:   service.RefusePayment(ctx.Param("id"), ctx),
+		Context:  ctx,
+		PostType: action_type.NON_POST,
+	})
+}
+
 // Donate godoc
 // @Summary      Process a donation
 // @Description  Initiates a donation process, binds the request JSON, and returns payment or redirect information.

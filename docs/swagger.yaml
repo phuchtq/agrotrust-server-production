@@ -3423,6 +3423,146 @@ paths:
       summary: List notifications of a user
       tags:
       - notification
+  /payments:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of Payments based on filter criteria
+      parameters:
+      - in: query
+        name: actor
+        type: string
+      - in: query
+        name: filter_prop
+        type: string
+      - in: query
+        name: is_donate_payment
+        type: boolean
+      - in: query
+        name: is_payment_expired
+        type: boolean
+      - in: query
+        name: keyword
+        type: string
+      - in: query
+        name: max_amount
+        type: integer
+      - in: query
+        name: method
+        type: string
+      - in: query
+        name: min_amount
+        type: integer
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: page_size
+        type: integer
+      - in: query
+        name: sort_order
+        type: string
+      - in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.PaginationDataResponse'
+        "400":
+          description: Invalid data. Please try again.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "401":
+          description: You have no rights to access this action.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "500":
+          description: There is something wrong in the system during the process.
+            Please try again later.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+      security:
+      - BearerAuth: []
+      summary: List Payments
+      tags:
+      - payment
+  /payments/{id}/approve:
+    post:
+      consumes:
+      - application/json
+      description: Prepares and builds a transaction for approve and upload Payment
+        on-chain
+      parameters:
+      - description: Payment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.BuildTransactionResponse'
+        "400":
+          description: Invalid data. Please try again.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "401":
+          description: You have no rights to access this action.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "500":
+          description: There is something wrong in the system during the process.
+            Please try again later.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+      security:
+      - BearerAuth: []
+      summary: Approve a Payment and upload to Sui Blockchain
+      tags:
+      - payment
+  /payments/{id}/refuse:
+    post:
+      consumes:
+      - application/json
+      description: Refuse Payment
+      parameters:
+      - description: Payment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "400":
+          description: Invalid data. Please try again.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "401":
+          description: You have no rights to access this action.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "500":
+          description: There is something wrong in the system during the process.
+            Please try again later.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+      security:
+      - BearerAuth: []
+      summary: Refuse Payment
+      tags:
+      - payment
   /payments/auth-callback/{id}:
     get:
       consumes:

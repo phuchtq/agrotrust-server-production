@@ -85,6 +85,15 @@ func (p *paymentRepo) GetPayments(req request.GetPaymentsRequest, ctx context.Co
 		isHavePreviosCondition = true
 	}
 
+	if req.Keyword != "" {
+		if isHavePreviosCondition {
+			queryCondition += " AND "
+		}
+
+		queryCondition += fmt.Sprintf("LOWER(message) LIKE LOWER('%s')", req.Keyword)
+		isHavePreviosCondition = true
+	}
+
 	if req.Method != "" {
 		if isHavePreviosCondition {
 			queryCondition += " AND "
@@ -101,6 +110,46 @@ func (p *paymentRepo) GetPayments(req request.GetPaymentsRequest, ctx context.Co
 
 		queryCondition += fmt.Sprintf("actor = '%s'", req.Actor)
 		isHavePreviosCondition = true
+	}
+
+	if req.MinAmount != nil {
+		if isHavePreviosCondition {
+			queryCondition += " AND "
+		}
+
+		queryCondition += fmt.Sprintf("amount >= %d", *req.MinAmount)
+		isHavePreviosCondition = true
+	}
+
+	if req.MaxAmount != nil {
+		if isHavePreviosCondition {
+			queryCondition += " AND "
+		}
+
+		queryCondition += fmt.Sprintf("amount <= %d", *req.MaxAmount)
+		isHavePreviosCondition = true
+	}
+
+	if req.IsDonatePayment != nil {
+		if isHavePreviosCondition {
+			queryCondition += " AND "
+		}
+
+		queryCondition += fmt.Sprintf("is_donate_tx = %v", req.IsDonatePayment)
+		isHavePreviosCondition = true
+	}
+
+	if req.IsPaymentExpired != nil {
+		if isHavePreviosCondition {
+			queryCondition += " AND "
+		}
+
+		var operation string = ">"
+		if *req.IsPaymentExpired {
+			operation = "<="
+		}
+
+		queryCondition += fmt.Sprintf("expired_at %s NOW()", operation)
 	}
 
 	var filterProp string = req.FilterProp

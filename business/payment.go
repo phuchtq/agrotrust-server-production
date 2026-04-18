@@ -17,6 +17,7 @@ import (
 	"raise-child/model/entities"
 	"raise-child/repository"
 	"raise-child/util"
+	"raise-child/util/cache"
 	"raise-child/util/db"
 	on_chain "raise-child/util/on_chain"
 	"time"
@@ -43,6 +44,7 @@ type paymentService struct {
 	profileRepo             i_repository.IProfileRepository
 	donationRepo            i_repository.IOffChainDonationRepository
 	withdrawRepo            i_repository.IOffChainWithdrawProposalRepository
+	redisCache              cache.IRedisCache
 	clients                 map[string]sui.ISuiAPI
 	errLogger               *log.Logger
 }
@@ -56,6 +58,7 @@ func initializePaymentService(
 	profileRepo i_repository.IProfileRepository,
 	donationRepo i_repository.IOffChainDonationRepository,
 	withdrawRepo i_repository.IOffChainWithdrawProposalRepository,
+	redisCache cache.IRedisCache,
 	clients map[string]sui.ISuiAPI,
 	errLogger *log.Logger,
 ) business.IPaymentService {
@@ -68,6 +71,7 @@ func initializePaymentService(
 		profileRepo:             profileRepo,
 		donationRepo:            donationRepo,
 		withdrawRepo:            withdrawRepo,
+		redisCache:              redisCache,
 		clients:                 clients,
 		errLogger:               errLogger,
 	}
@@ -90,9 +94,88 @@ func GeneratePaymentService() (business.IPaymentService, error) {
 		repository.InitializeProfileRepository(cnn, errLogger),
 		repository.InitializeOffChainDonationRepository(cnn, errLogger),
 		repository.InitializeOffChainWithdrawProposalRepository(cnn, errLogger),
+		cache.InitializeRedisCache(),
 		_networkAliases,
 		errLogger,
 	), nil
+}
+
+// ApprovePayment implements business.IPaymentService.
+func (p *paymentService) ApprovePayment(id string, ctx context.Context) (response.BuildTransactionResponse, error) {
+	panic("unimplemented")
+}
+
+// GetPayments implements business.IPaymentService.
+func (p *paymentService) GetPayments(req request.GetPaymentsRequest, ctx context.Context) (response.PaginationDataResponse, error) {
+	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
+	if req.Actor != "" {
+		if !util.IsValidSuiAddressStrict(req.Actor) {
+			return response.PaginationDataResponse{}, genericErr
+		}
+	}
+
+	if req.MaxAmount != nil {
+		if *req.MaxAmount < 0 {
+			return response.PaginationDataResponse{}, nil
+		}
+	}
+
+	if req.MinAmount != nil {
+		if req.MaxAmount != nil {
+			if *req.MinAmount > *req.MaxAmount {
+				return response.PaginationDataResponse{}, nil
+			}
+		} else {
+			if *req.MinAmount < 0 {
+				return response.PaginationDataResponse{}, nil
+			}
+		}
+	}
+
+	req.SortOrder = util.StandardizeSortOrder(req.SortOrder)
+	req.Keyword = util.StandardizeString(req.Keyword)
+	req.FilterProp = util.StandardizeSortCriteria(req.FilterProp)
+	if req.Page < 1 {
+		req.Page = 1
+	}
+
+	if req.PageSize < 1 {
+		req.PageSize = default_page_size
+	}
+
+	var res response.PaginationDataResponse
+	var redisKey string = p.getGetPaymentsRedisKey(req)
+	if p.redisCache.Get(redisKey, &res, ctx) {
+		return res, nil
+	}
+
+	data, pages, err := p.paymentRepo.GetPayments(req, ctx)
+	if err != nil {
+		return response.PaginationDataResponse{}, err
+	}
+
+	var amount int
+	if data == nil || len(data) == 0 {
+		amount = 0
+	} else {
+		amount = len(data)
+	}
+
+	res = response.PaginationDataResponse{
+		Data:       data,
+		Amount:     amount,
+		Page:       req.Page,
+		TotalPages: pages,
+	}
+
+	p.redisCache.Set(redisKey, res, time.Minute*2, ctx)
+
+	return res, nil
+}
+
+// RefusePayment implements business.IPaymentService.
+func (p *paymentService) RefusePayment(id string, ctx context.Context) error {
+	panic("unimplemented")
 }
 
 // ConfirmWithdrawProposal implements business.IPaymentService.
@@ -1377,4 +1460,54 @@ func (p *paymentService) CallbackWithAuth(id string, capturedImgBlobId string, c
 	}
 
 	return util.GeneratePaymentRedirectUrl(req), nil
+}
+
+func (p *paymentService) getGetPaymentsRedisKey(req request.GetPaymentsRequest) string {
+	var keyword string = "empty"
+	if req.Keyword != "" {
+		keyword = req.Keyword
+	}
+
+	var status string = "empty"
+	if req.Actor != "" {
+		status = req.Status
+	}
+
+	var method string = "empty"
+	if req.Actor != "" {
+		method = req.Method
+	}
+
+	var actor string = "empty"
+	if req.Actor != "" {
+		actor = req.Actor
+	}
+
+	var minAmount string = "empty"
+	if req.MinAmount != nil {
+		minAmount = fmt.Sprintf("%d", *req.MinAmount)
+	}
+
+	var maxAmount string = "empty"
+	if req.MaxAmount != nil {
+		maxAmount = fmt.Sprintf("%d", *req.MaxAmount)
+	}
+
+	var isDonateTx string = "empty"
+	if req.IsDonatePayment != nil {
+		isDonateTx = fmt.Sprintf("%v", *req.IsDonatePayment)
+	}
+
+	var isExpired string = "empty"
+	if req.IsPaymentExpired != nil {
+		isExpired = fmt.Sprintf("%v", *req.IsPaymentExpired)
+	}
+
+	var sortCriteria string = "empty"
+	if req.FilterProp != "" {
+		sortCriteria = req.FilterProp
+	}
+
+	return fmt.Sprintf("payment:kw:%s:status:%s:method:%s:of:%s:min:%s:max:%s:is_donate_tx:%s:expired:%s:sc:%s:o:%s:s:%d:p:%d",
+		keyword, status, method, actor, minAmount, maxAmount, isDonateTx, isExpired, sortCriteria, req.SortOrder, req.PageSize, req.Page)
 }
