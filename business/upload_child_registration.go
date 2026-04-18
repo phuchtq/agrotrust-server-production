@@ -85,13 +85,23 @@ func (u *uploadChildRequestService) ReviewUploadChildRequest(id string, req requ
 	}
 
 	var sender string = ctx.Value("address").(string)
-	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-		Client:    u.clients[constant.SuiTestnet],
-		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-		ErrLogger: u.errLogger,
-	}, ctx)
-	if err != nil {
-		return err
+	var manageObj *entities.Manage
+	u.redisCache.Get(manageObj.GetRedisKey(), manageObj, ctx)
+
+	if manageObj == nil {
+		var errRes error
+		manageObj, errRes = on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+			Client:    u.clients[constant.SuiTestnet],
+			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+			ErrLogger: u.errLogger,
+		}, ctx)
+		if errRes != nil {
+			return errRes
+		}
+
+		if manageObj != nil {
+			u.redisCache.Set(manageObj.GetRedisKey(), manageObj, time.Minute, ctx)
+		}
 	}
 
 	if !slices.Contains(manageObj.AdminIds, sender) {
@@ -210,13 +220,23 @@ func (u *uploadChildRequestService) CreateUploadChildRequest(req request.UploadC
 		return nil, errors.New(noti.CHILD_STILL_REQUESTED_MESSAGE)
 	}
 
-	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-		Client:    u.clients[constant.SuiTestnet],
-		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-		ErrLogger: u.errLogger,
-	}, ctx)
-	if err != nil {
-		return nil, err
+	var manageObj *entities.Manage
+	u.redisCache.Get(manageObj.GetRedisKey(), manageObj, ctx)
+
+	if manageObj == nil {
+		var errRes error
+		manageObj, errRes = on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+			Client:    u.clients[constant.SuiTestnet],
+			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+			ErrLogger: u.errLogger,
+		}, ctx)
+		if errRes != nil {
+			return nil, errRes
+		}
+
+		if manageObj != nil {
+			u.redisCache.Set(manageObj.GetRedisKey(), manageObj, time.Minute, ctx)
+		}
 	}
 
 	var region string = strings.TrimSpace(req.Region)
@@ -520,13 +540,23 @@ func (u *uploadChildRequestService) VoteUploadChildRequest(id string, req reques
 		return errors.New(noti.ALREADY_VOTE_MESSAGE)
 	}
 
-	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-		Client:    u.clients[constant.SuiTestnet],
-		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-		ErrLogger: u.errLogger,
-	}, ctx)
-	if err != nil {
-		return err
+	var manageObj *entities.Manage
+	u.redisCache.Get(manageObj.GetRedisKey(), manageObj, ctx)
+
+	if manageObj == nil {
+		var errRes error
+		manageObj, errRes = on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+			Client:    u.clients[constant.SuiTestnet],
+			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+			ErrLogger: u.errLogger,
+		}, ctx)
+		if errRes != nil {
+			return errRes
+		}
+
+		if manageObj != nil {
+			u.redisCache.Set(manageObj.GetRedisKey(), manageObj, time.Minute, ctx)
+		}
 	}
 
 	// Not admins or local leaders

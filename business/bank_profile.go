@@ -16,6 +16,7 @@ import (
 	"raise-child/model/entities"
 	"raise-child/repository"
 	"raise-child/util"
+	"raise-child/util/cache"
 	"raise-child/util/db"
 	on_chain "raise-child/util/on_chain"
 	"slices"
@@ -30,6 +31,7 @@ import (
 
 type bankProfileService struct {
 	bankProfileRepo i_repository.IBankProfileRepository
+	redisCache      cache.IRedisCache
 	clients         map[string]sui.ISuiAPI
 	errLogger       *log.Logger
 }
@@ -37,6 +39,7 @@ type bankProfileService struct {
 func initializeBankProfileService(bankProfileRepo i_repository.IBankProfileRepository, clients map[string]sui.ISuiAPI, errLogger *log.Logger) business.IBankProfileService {
 	return &bankProfileService{
 		bankProfileRepo: bankProfileRepo,
+		redisCache:      cache.InitializeRedisCache(),
 		clients:         clients,
 		errLogger:       errLogger,
 	}
@@ -146,13 +149,24 @@ func (b *bankProfileService) GetBankProfile(id string, ctx context.Context) (res
 
 	var address string = ctx.Value("address").(string)
 	if res.ProfileID != ctx.Value("sub").(string) || res.Owner != address {
-		manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-			Client:    b.clients[constant.SuiTestnet],
-			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-			ErrLogger: b.errLogger,
-		}, ctx)
-		if err != nil {
-			return response.BankProfileResponse{}, err
+		var manageObj *entities.Manage
+		b.redisCache.Get(manageObj.GetRedisKey(), manageObj, ctx)
+
+		var client = b.clients[constant.SuiTestnet]
+		if manageObj == nil {
+			var errRes error
+			manageObj, errRes = on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+				Client:    client,
+				ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+				ErrLogger: b.errLogger,
+			}, ctx)
+			if errRes != nil {
+				return response.BankProfileResponse{}, errRes
+			}
+
+			if manageObj != nil {
+				b.redisCache.Set(manageObj.GetRedisKey(), manageObj, time.Minute, ctx)
+			}
 		}
 
 		if !slices.Contains(manageObj.AdminIds, address) {
@@ -180,13 +194,24 @@ func (b *bankProfileService) GetBankProfileByOwner(id string, ctx context.Contex
 
 	var address string = ctx.Value("address").(string)
 	if res.ProfileID != ctx.Value("sub").(string) || res.Owner != address || id != address {
-		manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-			Client:    b.clients[constant.SuiTestnet],
-			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-			ErrLogger: b.errLogger,
-		}, ctx)
-		if err != nil {
-			return response.BankProfileResponse{}, err
+		var manageObj *entities.Manage
+		b.redisCache.Get(manageObj.GetRedisKey(), manageObj, ctx)
+
+		var client = b.clients[constant.SuiTestnet]
+		if manageObj == nil {
+			var errRes error
+			manageObj, errRes = on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+				Client:    client,
+				ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+				ErrLogger: b.errLogger,
+			}, ctx)
+			if errRes != nil {
+				return response.BankProfileResponse{}, errRes
+			}
+
+			if manageObj != nil {
+				b.redisCache.Set(manageObj.GetRedisKey(), manageObj, time.Minute, ctx)
+			}
 		}
 
 		if !slices.Contains(manageObj.AdminIds, address) {

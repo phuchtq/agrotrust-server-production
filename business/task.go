@@ -132,13 +132,23 @@ func (t *taskService) ClaimTask(id string, ctx context.Context) error {
 // CreateTask implements business.ITaskService.
 func (t *taskService) CreateTask(req request.CreateTaskRequest, ctx context.Context) (*entities.Task, error) {
 	var client = t.clients[constant.SuiTestnet]
-	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-		Client:    client,
-		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-		ErrLogger: t.errLogger,
-	}, ctx)
-	if err != nil {
-		return nil, err
+	var manageObj *entities.Manage
+	t.redisCache.Get(manageObj.GetRedisKey(), manageObj, ctx)
+
+	if manageObj == nil {
+		var errRes error
+		manageObj, errRes = on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+			Client:    client,
+			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+			ErrLogger: t.errLogger,
+		}, ctx)
+		if errRes != nil {
+			return nil, errRes
+		}
+
+		if manageObj != nil {
+			t.redisCache.Set(manageObj.GetRedisKey(), manageObj, time.Minute, ctx)
+		}
 	}
 
 	var isRegionEstablished bool = false
@@ -325,15 +335,24 @@ func (t *taskService) ReviewAssignedProfileOfTask(id string, req request.VoteReq
 	}
 
 	if !isLeaderOfRegion {
-		manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-			Client:    client,
-			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-			ErrLogger: t.errLogger,
-		}, ctx)
-		if err != nil {
-			return err
-		}
+		var manageObj *entities.Manage
+		t.redisCache.Get(manageObj.GetRedisKey(), manageObj, ctx)
 
+		if manageObj == nil {
+			var errRes error
+			manageObj, errRes = on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+				Client:    client,
+				ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+				ErrLogger: t.errLogger,
+			}, ctx)
+			if errRes != nil {
+				return errRes
+			}
+
+			if manageObj != nil {
+				t.redisCache.Set(manageObj.GetRedisKey(), manageObj, time.Minute, ctx)
+			}
+		}
 		if !slices.Contains(manageObj.AdminIds, sender) {
 			return genericRightErr
 		}

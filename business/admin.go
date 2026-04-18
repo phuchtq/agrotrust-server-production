@@ -83,14 +83,24 @@ func (a *adminService) GetAdmins(req request.GetAdminsRequest, ctx context.Conte
 		return res, nil
 	}
 
+	var manageObj *entities.Manage
+	a.redisCache.Get(manageObj.GetRedisKey(), manageObj, ctx)
+
 	var client = a.clients[constant.SuiTestnet]
-	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-		Client:    client,
-		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-		ErrLogger: a.errLogger,
-	}, ctx)
-	if err != nil {
-		return response.PaginationDataResponse{}, err
+	if manageObj == nil {
+		var errRes error
+		manageObj, errRes = on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+			Client:    client,
+			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+			ErrLogger: a.errLogger,
+		}, ctx)
+		if errRes != nil {
+			return response.PaginationDataResponse{}, errRes
+		}
+
+		if manageObj != nil {
+			a.redisCache.Set(manageObj.GetRedisKey(), manageObj, time.Minute, ctx)
+		}
 	}
 
 	admins, err := on_chain.GetOnChainObjects[entities.AdminNft](on_chain.GetOnChainObjectsRequest{

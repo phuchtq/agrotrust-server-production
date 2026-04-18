@@ -60,7 +60,7 @@ func (p *paymentRepo) GetPaymentById(id string, ctx context.Context) (*entities.
 	if err := p.db.QueryRowContext(ctx, query, id).Scan(
 		&res.ID, &res.Actor, &res.ProfileID, &res.ProposalID, &res.DonationID, &res.IsDonateTx, &res.TransactionId,
 		&res.Amount, &res.Currency, &res.Status, &res.Method, &res.CancelReason,
-		&res.Message, &res.ExpiredAt, &res.CreatedAt, &res.UpdatedAt); err != nil {
+		&res.Message, &res.ExpiredAt, &res.CreatedAt, &res.UpdatedAt, &res.ProofBlobID, &res.ReviewedBy, &res.ReviewStatus); err != nil {
 
 		if err == sql.ErrNoRows {
 			return nil, nil
@@ -187,7 +187,7 @@ func (p *paymentRepo) GetPayments(req request.GetPaymentsRequest, ctx context.Co
 		if err := rows.Scan(
 			&x.ID, &x.Actor, &x.ProfileID, &x.ProposalID, &x.DonationID, &x.IsDonateTx, &x.TransactionId,
 			&x.Amount, &x.Currency, &x.Status, &x.Method, &x.CancelReason,
-			&x.Message, &x.ExpiredAt, &x.CreatedAt, &x.UpdatedAt); err != nil {
+			&x.Message, &x.ExpiredAt, &x.CreatedAt, &x.UpdatedAt, &x.ProofBlobID, &x.ReviewedBy, &x.ReviewStatus); err != nil {
 
 			p.errLogger.Println(errLogMsg + err.Error())
 			return nil, 0, internalErr
@@ -206,9 +206,10 @@ func (p *paymentRepo) GetPayments(req request.GetPaymentsRequest, ctx context.Co
 // UpdatePayment implements repository.IPaymentRepository.
 func (p *paymentRepo) UpdatePayment(payment entities.Payment, ctx context.Context) error {
 	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.PAYMENT_REPOSITORY) + "UpdatePayment - "
-	var query string = "UPDATE " + payment_table + " SET status = $1, method = $2, cancel_reason = $3, updated_at = $4 WHERE id = $5"
+	var query string = "UPDATE " + payment_table + " SET status = $1, method = $2, cancel_reason = $3, updated_at = $4, proof_blob_id = $5, reviewed_by = $6, review_status = $7 WHERE id = $8"
 
-	res, err := p.db.ExecContext(ctx, query, payment.Status, payment.Method, payment.CancelReason, payment.UpdatedAt, payment.ID)
+	res, err := p.db.ExecContext(ctx, query, payment.Status, payment.Method, payment.CancelReason, payment.UpdatedAt,
+		payment.ProfileID, payment.ReviewedBy, payment.ReviewStatus, payment.ID)
 
 	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
 

@@ -156,13 +156,23 @@ func (c *centerRequestService) ConfirmRequest(id string, ctx context.Context) (r
 		return response.BuildTransactionResponse{}, genericErr
 	}
 
-	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-		Client:    client,
-		ObjectId:  os.Getenv(env.PACKAGE_ID),
-		ErrLogger: c.errLogger,
-	}, ctx)
-	if err != nil {
-		return response.BuildTransactionResponse{}, err
+	var manageObj *entities.Manage
+	c.redisCache.Get(manageObj.GetRedisKey(), manageObj, ctx)
+
+	if manageObj == nil {
+		var errRes error
+		manageObj, errRes = on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+			Client:    client,
+			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+			ErrLogger: c.errLogger,
+		}, ctx)
+		if errRes != nil {
+			return response.BuildTransactionResponse{}, errRes
+		}
+
+		if manageObj != nil {
+			c.redisCache.Set(manageObj.GetRedisKey(), manageObj, time.Minute, ctx)
+		}
 	}
 
 	var startIdx int
@@ -249,13 +259,23 @@ func (c *centerRequestService) CreateRequest(req request.CreateCenterRequest, ct
 		return nil, genericRightErr
 	}
 
-	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-		Client:    client,
-		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-		ErrLogger: c.errLogger,
-	}, ctx)
-	if err != nil {
-		return nil, err
+	var manageObj *entities.Manage
+	c.redisCache.Get(manageObj.GetRedisKey(), manageObj, ctx)
+
+	if manageObj == nil {
+		var errRes error
+		manageObj, errRes = on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+			Client:    client,
+			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+			ErrLogger: c.errLogger,
+		}, ctx)
+		if errRes != nil {
+			return nil, errRes
+		}
+
+		if manageObj != nil {
+			c.redisCache.Set(manageObj.GetRedisKey(), manageObj, time.Minute, ctx)
+		}
 	}
 
 	var isRegionHaveStaffs bool = false

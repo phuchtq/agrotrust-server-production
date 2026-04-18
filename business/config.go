@@ -14,6 +14,7 @@ import (
 	"raise-child/model/dtos/response"
 	"raise-child/model/entities"
 	"raise-child/util"
+	"raise-child/util/cache"
 	on_chain "raise-child/util/on_chain"
 	"slices"
 	"strings"
@@ -24,14 +25,16 @@ import (
 )
 
 type configService struct {
-	clients   map[string]sui.ISuiAPI
-	errLogger *log.Logger
+	redisCache cache.IRedisCache
+	clients    map[string]sui.ISuiAPI
+	errLogger  *log.Logger
 }
 
 func initializeConfigService(clients map[string]sui.ISuiAPI, errLogger *log.Logger) business.IConfigService {
 	return &configService{
-		clients:   clients,
-		errLogger: errLogger,
+		redisCache: cache.InitializeRedisCache(),
+		clients:    clients,
+		errLogger:  errLogger,
 	}
 }
 
@@ -43,13 +46,23 @@ func GenerateConfigService() (business.IConfigService, error) {
 // UpdateChildEditBooksNeedDates implements business.IConfigService.
 func (c *configService) UpdateChildEditBooksNeedDates(req request.UpdateChildEditNeedDatesRequest, ctx context.Context) (response.BuildTransactionResponse, error) {
 	var client = c.clients[constant.SuiTestnet]
-	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-		Client:    client,
-		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-		ErrLogger: c.errLogger,
-	}, ctx)
-	if err != nil {
-		return response.BuildTransactionResponse{}, err
+	var manageObj *entities.Manage
+	c.redisCache.Get(manageObj.GetRedisKey(), manageObj, ctx)
+
+	if manageObj == nil {
+		var errRes error
+		manageObj, errRes = on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+			Client:    client,
+			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+			ErrLogger: c.errLogger,
+		}, ctx)
+		if errRes != nil {
+			return response.BuildTransactionResponse{}, errRes
+		}
+
+		if manageObj != nil {
+			c.redisCache.Set(manageObj.GetRedisKey(), manageObj, time.Minute, ctx)
+		}
 	}
 
 	var sender string = ctx.Value("address").(string)
@@ -115,13 +128,23 @@ func (c *configService) UpdateChildEditBooksNeedDates(req request.UpdateChildEdi
 // UpdateChildEditHealthInsuranceNeedDates implements business.IConfigService.
 func (c *configService) UpdateChildEditHealthInsuranceNeedDates(req request.UpdateChildEditNeedDatesRequest, ctx context.Context) (response.BuildTransactionResponse, error) {
 	var client = c.clients[constant.SuiTestnet]
-	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-		Client:    client,
-		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-		ErrLogger: c.errLogger,
-	}, ctx)
-	if err != nil {
-		return response.BuildTransactionResponse{}, err
+	var manageObj *entities.Manage
+	c.redisCache.Get(manageObj.GetRedisKey(), manageObj, ctx)
+
+	if manageObj == nil {
+		var errRes error
+		manageObj, errRes = on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+			Client:    client,
+			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+			ErrLogger: c.errLogger,
+		}, ctx)
+		if errRes != nil {
+			return response.BuildTransactionResponse{}, errRes
+		}
+
+		if manageObj != nil {
+			c.redisCache.Set(manageObj.GetRedisKey(), manageObj, time.Minute, ctx)
+		}
 	}
 
 	var sender string = ctx.Value("address").(string)
@@ -187,13 +210,23 @@ func (c *configService) UpdateChildEditHealthInsuranceNeedDates(req request.Upda
 // UpdateChildEditMealNeedDates implements business.IConfigService.
 func (c *configService) UpdateChildEditMealNeedDates(req request.UpdateChildEditNeedDatesRequest, ctx context.Context) (response.BuildTransactionResponse, error) {
 	var client = c.clients[constant.SuiTestnet]
-	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-		Client:    client,
-		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-		ErrLogger: c.errLogger,
-	}, ctx)
-	if err != nil {
-		return response.BuildTransactionResponse{}, err
+	var manageObj *entities.Manage
+	c.redisCache.Get(manageObj.GetRedisKey(), manageObj, ctx)
+
+	if manageObj == nil {
+		var errRes error
+		manageObj, errRes = on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+			Client:    client,
+			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+			ErrLogger: c.errLogger,
+		}, ctx)
+		if errRes != nil {
+			return response.BuildTransactionResponse{}, errRes
+		}
+
+		if manageObj != nil {
+			c.redisCache.Set(manageObj.GetRedisKey(), manageObj, time.Minute, ctx)
+		}
 	}
 
 	var sender string = ctx.Value("address").(string)

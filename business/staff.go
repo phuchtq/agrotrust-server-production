@@ -105,125 +105,6 @@ func (s *staffService) GetStaff(id string, ctx context.Context) (response.StaffR
 
 // GetStaffs implements business.IStaffService.
 func (s *staffService) GetStaffs(req request.GetStaffsRequest, ctx context.Context) (response.PaginationDataResponse, error) {
-	// req.Keyword = util.StandardizeString(req.Keyword)
-	// req.Region = util.StandardizeString(req.Region)
-	// req.SortOrder = util.StandardizeSortOrder(req.SortOrder)
-	// if req.Page < 1 {
-	// 	req.Page = 1
-	// }
-
-	// if req.PageSize < 1 {
-	// 	req.PageSize = default_page_size
-	// }
-
-	// var res response.PaginationDataResponse
-	// var redisKey string = s.getGetStaffsRedisKey(req)
-	// if s.redisCache.Get(redisKey, &res, ctx) {
-	// 	return res, nil
-	// }
-
-	// var client = s.clients[constant.SuiTestnet]
-	// manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-	// 	Client:    client,
-	// 	ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-	// 	ErrLogger: s.errLogger,
-	// }, ctx)
-
-	// if err != nil {
-	// 	return response.PaginationDataResponse{}, err
-	// }
-
-	// staffs, err := on_chain.GetOnChainObjects[entities.StaffNft](on_chain.GetOnChainObjectsRequest{
-	// 	Client:    client,
-	// 	ObjectIds: manageObj.ChildIds,
-	// 	ErrLogger: s.errLogger,
-	// }, ctx)
-
-	// if err != nil {
-	// 	return response.PaginationDataResponse{}, err
-	// }
-
-	// if staffs == nil {
-	// 	return response.PaginationDataResponse{}, nil
-	// }
-
-	// var filteredStaffs []entities.StaffNft
-	// for i := len(staffs) - 1; i >= 0; i-- {
-	// 	var staff entities.StaffNft = staffs[i]
-
-	// 	if req.Role != "" {
-	// 		if util.StandardizeString(staff.Role) != util.StandardizeString(req.Role) { // Not matched
-	// 			continue
-	// 		}
-	// 	}
-
-	// 	if req.Region != "" {
-	// 		if util.StandardizeString(staff.Region) != req.Region { // Not matched
-	// 			continue
-	// 		}
-	// 	}
-
-	// 	if req.Gender != "" {
-	// 		if staff.Gender != req.Gender { // Not matched
-	// 			continue
-	// 		}
-	// 	}
-
-	// 	if req.YearOfBirth != nil {
-	// 		var dob time.Time = util.RawDateToTime(staff.DateOfBirth)
-	// 		if dob.Year() != *req.YearOfBirth { // Not matched
-	// 			continue
-	// 		}
-	// 	}
-
-	// 	if req.Keyword != "" {
-	// 		var firstName string = util.StandardizeString(staff.FirstName)
-	// 		var lastName string = util.StandardizeString(staff.LastName)
-	// 		if !strings.Contains(firstName, req.Keyword) && !strings.Contains(lastName, req.Keyword) && !strings.Contains(staff.IdentityCode, req.Keyword) && !strings.Contains(staff.PhoneNumber, req.Keyword) && !strings.Contains(staff.Email, req.Keyword) { // Not matched
-	// 			continue
-	// 		}
-	// 	}
-
-	// 	filteredStaffs = append(filteredStaffs, staff)
-	// }
-
-	// sort.Slice(filteredStaffs, func(i, j int) bool {
-	// 	var name1 string = filteredStaffs[i].LastName + " " + filteredStaffs[i].FirstName
-	// 	var name2 string = filteredStaffs[j].LastName + " " + filteredStaffs[j].FirstName
-
-	// 	if req.SortOrder == "ASC" {
-	// 		return name1 < name2
-	// 	}
-
-	// 	return name2 > name1
-	// })
-
-	// var skippedRecords int = (req.Page - 1) * req.PageSize
-	// if len(filteredStaffs) <= skippedRecords {
-	// 	return response.PaginationDataResponse{}, err
-	// }
-
-	// var data []response.StaffNftResponse
-	// for i := skippedRecords; i < len(filteredStaffs); i++ {
-	// 	data = append(data, filteredStaffs[i].ToStaffNftResponse())
-	// 	if len(data) == req.PageSize {
-	// 		break
-	// 	}
-	// }
-
-	// res = response.PaginationDataResponse{
-	// 	Data:       data,
-	// 	Amount:     len(data),
-	// 	Page:       req.Page,
-	// 	TotalPages: int(math.Ceil(float64(len(filteredStaffs)) / float64(req.PageSize))),
-	// }
-
-	// s.redisCache.Set(redisKey, res, time.Minute*5, ctx)
-
-	// return res, nil
-
-	//////////////////////////
-	// MOCK DATA
 	req.Keyword = util.StandardizeString(req.Keyword)
 	req.Region = util.StandardizeString(req.Region)
 	req.SortOrder = util.StandardizeSortOrder(req.SortOrder)
@@ -241,10 +122,43 @@ func (s *staffService) GetStaffs(req request.GetStaffsRequest, ctx context.Conte
 		return res, nil
 	}
 
-	var staffs = mockStaffs
-	var filteredStaffs []response.StaffNftResponse
+	var client = s.clients[constant.SuiTestnet]
+	var manageObj *entities.Manage
+	s.redisCache.Get(manageObj.GetRedisKey(), manageObj, ctx)
+
+	if manageObj == nil {
+		var errRes error
+		manageObj, errRes = on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+			Client:    client,
+			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+			ErrLogger: s.errLogger,
+		}, ctx)
+		if errRes != nil {
+			return response.PaginationDataResponse{}, errRes
+		}
+
+		if manageObj != nil {
+			s.redisCache.Set(manageObj.GetRedisKey(), manageObj, time.Minute, ctx)
+		}
+	}
+
+	staffs, err := on_chain.GetOnChainObjects[entities.StaffNft](on_chain.GetOnChainObjectsRequest{
+		Client:    client,
+		ObjectIds: manageObj.ChildIds,
+		ErrLogger: s.errLogger,
+	}, ctx)
+
+	if err != nil {
+		return response.PaginationDataResponse{}, err
+	}
+
+	if staffs == nil {
+		return response.PaginationDataResponse{}, nil
+	}
+
+	var filteredStaffs []entities.StaffNft
 	for i := len(staffs) - 1; i >= 0; i-- {
-		var staff response.StaffNftResponse = staffs[i]
+		var staff entities.StaffNft = staffs[i]
 
 		if req.Role != "" {
 			if util.StandardizeString(staff.Role) != util.StandardizeString(req.Role) { // Not matched
@@ -265,7 +179,8 @@ func (s *staffService) GetStaffs(req request.GetStaffsRequest, ctx context.Conte
 		}
 
 		if req.YearOfBirth != nil {
-			if staff.DateOfBirth.Year() != *req.YearOfBirth { // Not matched
+			var dob time.Time = util.RawDateToTime(staff.DateOfBirth)
+			if dob.Year() != *req.YearOfBirth { // Not matched
 				continue
 			}
 		}
@@ -294,12 +209,12 @@ func (s *staffService) GetStaffs(req request.GetStaffsRequest, ctx context.Conte
 
 	var skippedRecords int = (req.Page - 1) * req.PageSize
 	if len(filteredStaffs) <= skippedRecords {
-		return response.PaginationDataResponse{}, nil
+		return response.PaginationDataResponse{}, err
 	}
 
 	var data []response.StaffNftResponse
 	for i := skippedRecords; i < len(filteredStaffs); i++ {
-		data = append(data, filteredStaffs[i])
+		data = append(data, filteredStaffs[i].ToStaffNftResponse())
 		if len(data) == req.PageSize {
 			break
 		}
@@ -315,6 +230,100 @@ func (s *staffService) GetStaffs(req request.GetStaffsRequest, ctx context.Conte
 	s.redisCache.Set(redisKey, res, time.Minute*5, ctx)
 
 	return res, nil
+
+	// //////////////////////////
+	// // MOCK DATA
+	// req.Keyword = util.StandardizeString(req.Keyword)
+	// req.Region = util.StandardizeString(req.Region)
+	// req.SortOrder = util.StandardizeSortOrder(req.SortOrder)
+	// if req.Page < 1 {
+	// 	req.Page = 1
+	// }
+
+	// if req.PageSize < 1 {
+	// 	req.PageSize = default_page_size
+	// }
+
+	// var res response.PaginationDataResponse
+	// var redisKey string = s.getGetStaffsRedisKey(req)
+	// if s.redisCache.Get(redisKey, &res, ctx) {
+	// 	return res, nil
+	// }
+
+	// var staffs = mockStaffs
+	// var filteredStaffs []response.StaffNftResponse
+	// for i := len(staffs) - 1; i >= 0; i-- {
+	// 	var staff response.StaffNftResponse = staffs[i]
+
+	// 	if req.Role != "" {
+	// 		if util.StandardizeString(staff.Role) != util.StandardizeString(req.Role) { // Not matched
+	// 			continue
+	// 		}
+	// 	}
+
+	// 	if req.Region != "" {
+	// 		if util.StandardizeString(staff.Region) != req.Region { // Not matched
+	// 			continue
+	// 		}
+	// 	}
+
+	// 	if req.Gender != "" {
+	// 		if staff.Gender != req.Gender { // Not matched
+	// 			continue
+	// 		}
+	// 	}
+
+	// 	if req.YearOfBirth != nil {
+	// 		if staff.DateOfBirth.Year() != *req.YearOfBirth { // Not matched
+	// 			continue
+	// 		}
+	// 	}
+
+	// 	if req.Keyword != "" {
+	// 		var firstName string = util.StandardizeString(staff.FirstName)
+	// 		var lastName string = util.StandardizeString(staff.LastName)
+	// 		if !strings.Contains(firstName, req.Keyword) && !strings.Contains(lastName, req.Keyword) && !strings.Contains(staff.IdentityCode, req.Keyword) && !strings.Contains(staff.PhoneNumber, req.Keyword) && !strings.Contains(staff.Email, req.Keyword) { // Not matched
+	// 			continue
+	// 		}
+	// 	}
+
+	// 	filteredStaffs = append(filteredStaffs, staff)
+	// }
+
+	// sort.Slice(filteredStaffs, func(i, j int) bool {
+	// 	var name1 string = filteredStaffs[i].LastName + " " + filteredStaffs[i].FirstName
+	// 	var name2 string = filteredStaffs[j].LastName + " " + filteredStaffs[j].FirstName
+
+	// 	if req.SortOrder == "ASC" {
+	// 		return name1 < name2
+	// 	}
+
+	// 	return name2 > name1
+	// })
+
+	// var skippedRecords int = (req.Page - 1) * req.PageSize
+	// if len(filteredStaffs) <= skippedRecords {
+	// 	return response.PaginationDataResponse{}, nil
+	// }
+
+	// var data []response.StaffNftResponse
+	// for i := skippedRecords; i < len(filteredStaffs); i++ {
+	// 	data = append(data, filteredStaffs[i])
+	// 	if len(data) == req.PageSize {
+	// 		break
+	// 	}
+	// }
+
+	// res = response.PaginationDataResponse{
+	// 	Data:       data,
+	// 	Amount:     len(data),
+	// 	Page:       req.Page,
+	// 	TotalPages: int(math.Ceil(float64(len(filteredStaffs)) / float64(req.PageSize))),
+	// }
+
+	// s.redisCache.Set(redisKey, res, time.Minute*5, ctx)
+
+	// return res, nil
 }
 
 // GetStaffsV2 implements business.IStaffService.

@@ -88,13 +88,23 @@ func (w *withdrawProposalService) CreateWithdrawProposal(req request.CreateWithd
 	// }
 
 	var client = w.clients[constant.SuiTestnet]
-	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-		Client:    client,
-		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-		ErrLogger: w.errLogger,
-	}, ctx)
-	if err != nil {
-		return response.BuildTransactionResponse{}, err
+	var manageObj *entities.Manage
+	w.redisCache.Get(manageObj.GetRedisKey(), manageObj, ctx)
+
+	if manageObj == nil {
+		var errRes error
+		manageObj, errRes = on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+			Client:    client,
+			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+			ErrLogger: w.errLogger,
+		}, ctx)
+		if errRes != nil {
+			return response.BuildTransactionResponse{}, errRes
+		}
+
+		if manageObj != nil {
+			w.redisCache.Set(manageObj.GetRedisKey(), manageObj, time.Minute, ctx)
+		}
 	}
 
 	var sender string = ctx.Value("address").(string)

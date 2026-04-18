@@ -19,6 +19,9 @@ type Payment struct {
 	ExpiredAt     time.Time `json:"expired_at"`
 	CreatedAt     time.Time `json:"created_at"`
 	UpdatedAt     time.Time `json:"updated_at"`
+	ProofBlobID   *string   `json:"proof_blob_id"`
+	ReviewedBy    *string   `json:"reviewed_by"`
+	ReviewStatus  string    `json:"review_status"`
 }
 
 type Purpose string

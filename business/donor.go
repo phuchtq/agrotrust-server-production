@@ -114,13 +114,23 @@ func (s *donorService) GetDonors(req request.GetDonorsRequest, ctx context.Conte
 	}
 
 	var client = s.clients[constant.SuiTestnet]
-	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-		Client:    client,
-		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-		ErrLogger: s.errLogger,
-	}, ctx)
-	if err != nil {
-		return response.PaginationDataResponse{}, err
+	var manageObj *entities.Manage
+	s.redisCache.Get(manageObj.GetRedisKey(), manageObj, ctx)
+
+	if manageObj == nil {
+		var errRes error
+		manageObj, errRes = on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+			Client:    client,
+			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+			ErrLogger: s.errLogger,
+		}, ctx)
+		if errRes != nil {
+			return response.PaginationDataResponse{}, errRes
+		}
+
+		if manageObj != nil {
+			s.redisCache.Set(manageObj.GetRedisKey(), manageObj, time.Minute, ctx)
+		}
 	}
 
 	donors, err := on_chain.GetOnChainObjects[entities.Donor](on_chain.GetOnChainObjectsRequest{

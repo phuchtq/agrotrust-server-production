@@ -303,13 +303,23 @@ func (g *giftService) CreateGift(req request.CreateGiftRequest, ctx context.Cont
 
 	// Gift for child
 	if child != nil {
-		manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-			Client:    client,
-			ObjectId:  os.Getenv(env.PACKAGE_ID),
-			ErrLogger: g.errLogger,
-		}, ctx)
-		if err != nil {
-			return response.BuildTransactionResponse{}, err
+		var manageObj *entities.Manage
+		g.redisCache.Get(manageObj.GetRedisKey(), manageObj, ctx)
+
+		if manageObj == nil {
+			var errRes error
+			manageObj, errRes = on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+				Client:    client,
+				ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+				ErrLogger: g.errLogger,
+			}, ctx)
+			if errRes != nil {
+				return response.BuildTransactionResponse{}, errRes
+			}
+
+			if manageObj != nil {
+				g.redisCache.Set(manageObj.GetRedisKey(), manageObj, time.Minute, ctx)
+			}
 		}
 
 		var centerId string
@@ -552,13 +562,23 @@ func (g *giftService) GetGiftsOfRegion(region string, req request.GetGiftsReques
 	}
 
 	var client = g.clients[constant.SuiTestnet]
-	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-		Client:    client,
-		ObjectId:  os.Getenv(env.PACKAGE_ID),
-		ErrLogger: g.errLogger,
-	}, ctx)
-	if err != nil {
-		return response.PaginationDataResponse{}, err
+	var manageObj *entities.Manage
+	g.redisCache.Get(manageObj.GetRedisKey(), manageObj, ctx)
+
+	if manageObj == nil {
+		var errRes error
+		manageObj, errRes = on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+			Client:    client,
+			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+			ErrLogger: g.errLogger,
+		}, ctx)
+		if errRes != nil {
+			return response.PaginationDataResponse{}, errRes
+		}
+
+		if manageObj != nil {
+			g.redisCache.Set(manageObj.GetRedisKey(), manageObj, time.Minute, ctx)
+		}
 	}
 
 	var centerId string
