@@ -1037,6 +1037,13 @@ func (c *childService) SupportHealthInsuranceNeed(id string, ctx context.Context
 	}
 
 	var description string = fmt.Sprintf("Support Health Insurance Need %s for child %s", need.Year, util.FormatAddress(need.ChildID))
+	var expiredAt time.Time
+	if data.ExpiredAt != nil {
+		expiredAt = time.Unix(int64(*data.ExpiredAt), 0)
+	} else {
+		expiredAt = time.Now().Add(15 * time.Minute) // Default 15p nếu PayOS ko trả về
+	}
+
 	return response.UrlAPIResponse{
 			Url: data.CheckoutUrl,
 		}, c.paymentRepo.CreatePayment(entities.Payment{
@@ -1051,7 +1058,7 @@ func (c *childService) SupportHealthInsuranceNeed(id string, ctx context.Context
 			Status:        payment_pending_status,
 			Method:        shared.PAYMENT_PAYOS_METHOD,
 			Message:       description,
-			ExpiredAt:     time.Unix(int64(*data.ExpiredAt), 0),
+			ExpiredAt:     expiredAt,
 			CreatedAt:     curTime,
 			UpdatedAt:     curTime,
 		}, ctx)
@@ -1966,6 +1973,13 @@ func (c *childService) SupportBooksNeed(id string, ctx context.Context) (respons
 	}
 
 	var description string = fmt.Sprintf("Support Books Need Semester %s - %s", need.Semster, need.Year)
+	var expiredAt time.Time
+	if data.ExpiredAt != nil {
+		expiredAt = time.Unix(int64(*data.ExpiredAt), 0)
+	} else {
+		expiredAt = time.Now().Add(15 * time.Minute) // Default 15p nếu PayOS ko trả về
+	}
+
 	return response.UrlAPIResponse{
 			Url: data.CheckoutUrl,
 		}, c.paymentRepo.CreatePayment(entities.Payment{
@@ -1980,7 +1994,7 @@ func (c *childService) SupportBooksNeed(id string, ctx context.Context) (respons
 			Status:        payment_pending_status,
 			Method:        shared.PAYMENT_PAYOS_METHOD,
 			Message:       description,
-			ExpiredAt:     time.Unix(int64(*data.ExpiredAt), 0),
+			ExpiredAt:     expiredAt,
 			CreatedAt:     curTime,
 			UpdatedAt:     curTime,
 		}, ctx)
@@ -2189,6 +2203,13 @@ func (c *childService) SupportMealNeed(id string, req request.SupportMealNeadReq
 	}
 
 	var description string = fmt.Sprintf("Support Meal Need %s - %s for child", rawExpectedStart, rawExpectedEnd)
+	var expiredAt time.Time
+	if data.ExpiredAt != nil {
+		expiredAt = time.Unix(int64(*data.ExpiredAt), 0)
+	} else {
+		expiredAt = time.Now().Add(15 * time.Minute) // Default 15p nếu PayOS ko trả về
+	}
+
 	return response.UrlAPIResponse{
 			Url: data.CheckoutUrl,
 		}, c.paymentRepo.CreatePayment(entities.Payment{
@@ -2203,7 +2224,7 @@ func (c *childService) SupportMealNeed(id string, req request.SupportMealNeadReq
 			Status:        payment_pending_status,
 			Method:        shared.PAYMENT_PAYOS_METHOD,
 			Message:       description,
-			ExpiredAt:     time.Unix(int64(*data.ExpiredAt), 0),
+			ExpiredAt:     expiredAt,
 			CreatedAt:     curTime,
 			UpdatedAt:     curTime,
 		}, ctx)
@@ -2272,6 +2293,13 @@ func (c *childService) SupportSpecialNeed(id string, req request.SupportSpecialN
 		return response.UrlAPIResponse{}, err
 	}
 
+	var expiredAt time.Time
+	if data.ExpiredAt != nil {
+		expiredAt = time.Unix(int64(*data.ExpiredAt), 0)
+	} else {
+		expiredAt = time.Now().Add(15 * time.Minute) // Default 15p nếu PayOS ko trả về
+	}
+
 	return response.UrlAPIResponse{
 			Url: data.CheckoutUrl,
 		}, c.paymentRepo.CreatePayment(entities.Payment{
@@ -2286,7 +2314,7 @@ func (c *childService) SupportSpecialNeed(id string, req request.SupportSpecialN
 			Status:        payment_pending_status,
 			Method:        shared.PAYMENT_PAYOS_METHOD,
 			Message:       strings.TrimSpace(req.Description),
-			ExpiredAt:     time.Unix(int64(*data.ExpiredAt), 0),
+			ExpiredAt:     expiredAt,
 			CreatedAt:     curTime,
 			UpdatedAt:     curTime,
 		}, ctx)

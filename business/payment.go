@@ -260,6 +260,13 @@ func (p *paymentService) Donate(req request.DonateRequest, ctx context.Context) 
 		return response.UrlAPIResponse{}, err
 	}
 
+	var expiredAt time.Time
+	if data.ExpiredAt != nil {
+		expiredAt = time.Unix(int64(*data.ExpiredAt), 0)
+	} else {
+		expiredAt = time.Now().Add(15 * time.Minute) // Default 15p nếu PayOS ko trả về
+	}
+
 	return response.UrlAPIResponse{
 			Url: data.CheckoutUrl,
 		}, p.paymentRepo.CreatePayment(entities.Payment{
@@ -274,7 +281,7 @@ func (p *paymentService) Donate(req request.DonateRequest, ctx context.Context) 
 			Status:        payment_pending_status,
 			Method:        shared.PAYMENT_PAYOS_METHOD,
 			Message:       description,
-			ExpiredAt:     time.Unix(int64(*data.ExpiredAt), 0),
+			ExpiredAt:     expiredAt,
 			CreatedAt:     curTime,
 			UpdatedAt:     curTime,
 		}, ctx)

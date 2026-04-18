@@ -111,7 +111,7 @@ func (t *taskRepo) GetTasks(req request.GetTasksRequest, ctx context.Context) ([
 			queryCondition += " AND "
 		}
 
-		queryCondition += fmt.Sprintf("reviewed_by = '%%%%%s%%%%'", req.ReviewedBy)
+		queryCondition += fmt.Sprintf("reviewed_by = '%s'", req.ReviewedBy)
 		isHavePreviosCondition = true
 	}
 

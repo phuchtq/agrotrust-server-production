@@ -111,7 +111,7 @@ func (u *uploadChildRepo) GetUploadChildRequests(req request.GetUploadChildReque
 	var queryCondition string
 	var isHavePreviosCondition bool = false
 	if req.Keyword != "" {
-		queryCondition += fmt.Sprintf("(identity_code LIKE '%s' OR LOWER(first_name) LIKE LOWER('%%%%%s%%%%') OR LOWER(last_name) LIKE LOWER('%%%%%s%%%%') OR date_of_birth LIKE '%%%%%s%%%%' OR LOWER(home_address) LIKE LOWER('%%%%%s%%%%') OR LOWER(first_guardian_name) LIKE LOWER('%%%%%s%%%%')  OR LOWER(first_guardian_phone) LIKE LOWER('%%%%%s%%%%') LOWER(second_guardian_name) LIKE LOWER('%%%%%s%%%%') OR LOWER(second_guardian_phone) LIKE LOWER('%%%%%s%%%%'))",
+		queryCondition += fmt.Sprintf("(identity_code LIKE '%s' OR LOWER(first_name) LIKE LOWER('%s') OR LOWER(last_name) LIKE LOWER('%s') OR date_of_birth LIKE '%s' OR LOWER(home_address) LIKE LOWER('%s') OR LOWER(first_guardian_name) LIKE LOWER('%s')  OR LOWER(first_guardian_phone) LIKE LOWER('%s') LOWER(second_guardian_name) LIKE LOWER('%s') OR LOWER(second_guardian_phone) LIKE LOWER('%s'))",
 			req.Keyword, req.Keyword, req.Keyword, req.Keyword, req.Keyword, req.Keyword, req.Keyword, req.Keyword)
 		isHavePreviosCondition = true
 	}
@@ -121,7 +121,7 @@ func (u *uploadChildRepo) GetUploadChildRequests(req request.GetUploadChildReque
 			queryCondition += " AND "
 		}
 
-		queryCondition += fmt.Sprintf("LOWER(region) = LOWER('%%%%%s%%%%')", req.Region)
+		queryCondition += fmt.Sprintf("LOWER(region) = LOWER('%s')", req.Region)
 		isHavePreviosCondition = true
 	}
 
@@ -130,7 +130,7 @@ func (u *uploadChildRepo) GetUploadChildRequests(req request.GetUploadChildReque
 			queryCondition += " AND "
 		}
 
-		queryCondition += fmt.Sprintf("LOWER(gender) = LOWER('%%%%%s%%%%')", req.Gender)
+		queryCondition += fmt.Sprintf("LOWER(gender) = LOWER('%s')", req.Gender)
 		isHavePreviosCondition = true
 	}
 
@@ -139,7 +139,7 @@ func (u *uploadChildRepo) GetUploadChildRequests(req request.GetUploadChildReque
 			queryCondition += " AND "
 		}
 
-		queryCondition += fmt.Sprintf("LOWER(status) = LOWER('%%%%%s%%%%')", req.Status)
+		queryCondition += fmt.Sprintf("LOWER(status) = LOWER('%s')", req.Status)
 		isHavePreviosCondition = true
 	}
 
@@ -150,7 +150,7 @@ func (u *uploadChildRepo) GetUploadChildRequests(req request.GetUploadChildReque
 
 		var operation string = ">"
 		if *req.IsClosed {
-			operation = "<"
+			operation = "<="
 		}
 
 		queryCondition += fmt.Sprintf("closed_at %s NOW()", operation)
@@ -355,6 +355,10 @@ func (u *uploadChildRepo) GetPendingRequests(ctx context.Context) ([]entities.Ba
 
 // SetApprovedStatuses implements repository.IUploadChildRequestRepository.
 func (u *uploadChildRepo) SetApprovedStatuses(reqs []entities.BackgroundRecord, ctx context.Context) error {
+	if reqs == nil || len(reqs) == 0 {
+		return nil
+	}
+
 	var query string = "UPDATE " + upload_child_request_table + " SET status = 'Approved', is_available_to_confirm = true, updated_at = $1 WHERE "
 	for i, req := range reqs {
 		query += fmt.Sprintf("id = '%s'", req.ID)
@@ -373,6 +377,10 @@ func (u *uploadChildRepo) SetApprovedStatuses(reqs []entities.BackgroundRecord, 
 
 // SetRefusedStatuses implements repository.IUploadChildRequestRepository.
 func (u *uploadChildRepo) SetRefusedStatuses(reqs []entities.BackgroundRecord, ctx context.Context) error {
+	if reqs == nil || len(reqs) == 0 {
+		return nil
+	}
+
 	var query string = "UPDATE " + upload_child_request_table + " SET status = 'Refused', updated_at = $1 WHERE "
 	for i, req := range reqs {
 		query += fmt.Sprintf("id = '%s'", req.ID)

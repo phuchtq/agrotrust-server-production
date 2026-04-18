@@ -81,7 +81,7 @@ func (p *paymentRepo) GetPayments(req request.GetPaymentsRequest, ctx context.Co
 	var queryCondition string
 	var isHavePreviosCondition bool = false
 	if req.Status != "" {
-		queryCondition += fmt.Sprintf("status = %s", req.Status)
+		queryCondition += fmt.Sprintf("status = '%s'", req.Status)
 		isHavePreviosCondition = true
 	}
 
@@ -90,7 +90,7 @@ func (p *paymentRepo) GetPayments(req request.GetPaymentsRequest, ctx context.Co
 			queryCondition += " AND "
 		}
 
-		queryCondition += fmt.Sprintf("method = %s", req.Method)
+		queryCondition += fmt.Sprintf("method = '%s'", req.Method)
 		isHavePreviosCondition = true
 	}
 
@@ -99,7 +99,7 @@ func (p *paymentRepo) GetPayments(req request.GetPaymentsRequest, ctx context.Co
 			queryCondition += " AND "
 		}
 
-		queryCondition += fmt.Sprintf("actor = %s", req.Actor)
+		queryCondition += fmt.Sprintf("actor = '%s'", req.Actor)
 		isHavePreviosCondition = true
 	}
 

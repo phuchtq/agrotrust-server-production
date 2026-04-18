@@ -82,7 +82,7 @@ func (s *supportedRegionProposalRepo) GetSupportedRegionSuggestions(req request.
 			queryCondition += " AND "
 		}
 
-		queryCondition += fmt.Sprintf("(LOWER(region) LIKE LOWER('%%%%%s%%%%') OR LOWER(content) LIKE LOWER('%%%%%s%%%%'))", req.Keyword, req.Keyword)
+		queryCondition += fmt.Sprintf("(LOWER(region) LIKE LOWER('%s') OR LOWER(content) LIKE LOWER('%s'))", req.Keyword, req.Keyword)
 		isHavePreviosCondition = true
 	}
 
@@ -91,7 +91,7 @@ func (s *supportedRegionProposalRepo) GetSupportedRegionSuggestions(req request.
 			queryCondition += " AND "
 		}
 
-		queryCondition += fmt.Sprintf("created_by = %s", req.CreatedBy)
+		queryCondition += fmt.Sprintf("created_by = '%s'", req.CreatedBy)
 		isHavePreviosCondition = true
 	}
 

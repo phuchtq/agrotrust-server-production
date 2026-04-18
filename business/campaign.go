@@ -438,6 +438,13 @@ func (c *campaignService) SupportCampaign(id string, req request.SupportCampaign
 		return response.UrlAPIResponse{}, err
 	}
 
+	var expiredAt time.Time
+	if data.ExpiredAt != nil {
+		expiredAt = time.Unix(int64(*data.ExpiredAt), 0)
+	} else {
+		expiredAt = time.Now().Add(15 * time.Minute) // Default 15p nếu PayOS ko trả về
+	}
+
 	return response.UrlAPIResponse{
 			Url: data.CheckoutUrl,
 		}, c.paymentRepo.CreatePayment(entities.Payment{
@@ -452,7 +459,7 @@ func (c *campaignService) SupportCampaign(id string, req request.SupportCampaign
 			Status:        payment_pending_status,
 			Method:        shared.PAYMENT_PAYOS_METHOD,
 			Message:       strings.TrimSpace(req.Description),
-			ExpiredAt:     time.Unix(int64(*data.ExpiredAt), 0),
+			ExpiredAt:     expiredAt,
 			CreatedAt:     curTime,
 			UpdatedAt:     curTime,
 		}, ctx)
