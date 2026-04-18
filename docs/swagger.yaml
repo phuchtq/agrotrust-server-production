@@ -1658,7 +1658,7 @@ paths:
       summary: Get bank profile owned by a wallet
       tags:
       - banks
-  /centers:
+  /center-reqs:
     get:
       consumes:
       - application/json
@@ -1706,7 +1706,7 @@ paths:
             $ref: '#/definitions/response.MessageAPIResponse'
       summary: Get a list of center requests
       tags:
-      - center
+      - center-reqs
     post:
       consumes:
       - application/json
@@ -1742,8 +1742,8 @@ paths:
       - BearerAuth: []
       summary: Create a new center request
       tags:
-      - center
-  /centers/{id}:
+      - center-reqs
+  /center-reqs/{id}:
     get:
       consumes:
       - application/json
@@ -1773,8 +1773,8 @@ paths:
             $ref: '#/definitions/response.MessageAPIResponse'
       summary: Get center request details
       tags:
-      - center
-  /centers/{id}/confirm:
+      - center-reqs
+  /center-reqs/{id}/confirm:
     post:
       consumes:
       - application/json
@@ -1810,8 +1810,8 @@ paths:
       - BearerAuth: []
       summary: Confirm and upload center information to Sui Blockhain
       tags:
-      - center
-  /centers/{id}/vote:
+      - center-reqs
+  /center-reqs/{id}/vote:
     post:
       consumes:
       - application/json
@@ -1852,8 +1852,8 @@ paths:
       - BearerAuth: []
       summary: Vote on a center request
       tags:
-      - center
-  /centers/user/{id}:
+      - center-reqs
+  /center-reqs/user/{id}:
     get:
       consumes:
       - application/json
@@ -1883,7 +1883,44 @@ paths:
             $ref: '#/definitions/response.MessageAPIResponse'
       summary: Get Center requests by a wallet
       tags:
-      - center
+      - center-reqs
+  /centers:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of centers based on filter criteria
+      parameters:
+      - in: query
+        name: keyword
+        type: string
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: page_size
+        type: integer
+      - in: query
+        name: sort_order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.PaginationDataResponse'
+        "400":
+          description: Invalid data. Please try again.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "500":
+          description: There is something wrong in the system during the process.
+            Please try again later.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+      summary: List centers
+      tags:
+      - centers
   /child-needs/books-need/{id}:
     get:
       consumes:

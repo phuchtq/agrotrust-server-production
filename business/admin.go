@@ -137,6 +137,11 @@ func (a *adminService) GetAdmins(req request.GetAdminsRequest, ctx context.Conte
 		filteredAdmins = append(filteredAdmins, admin)
 	}
 
+	var skippedRecords int = (req.Page - 1) * req.PageSize
+	if len(filteredAdmins) <= skippedRecords {
+		return response.PaginationDataResponse{}, nil
+	}
+
 	sort.Slice(filteredAdmins, func(i, j int) bool {
 		if req.SortCriteria == "date_of_birth" {
 			var dob1 time.Time = util.RawDateToTime(filteredAdmins[i].DateOfBirth)
@@ -154,11 +159,6 @@ func (a *adminService) GetAdmins(req request.GetAdminsRequest, ctx context.Conte
 
 		return true
 	})
-
-	var skippedRecords int = (req.Page - 1) * req.PageSize
-	if len(filteredAdmins) <= skippedRecords {
-		return response.PaginationDataResponse{}, nil
-	}
 
 	var data []response.AdminNftResponse
 	for i := skippedRecords; i < len(filteredAdmins); i++ {

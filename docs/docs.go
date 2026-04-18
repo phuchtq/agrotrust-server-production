@@ -529,7 +529,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/centers": {
+        "/center-reqs": {
             "get": {
                 "description": "Retrieve center requests with filtering based on query parameters",
                 "consumes": [
@@ -539,7 +539,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "center"
+                    "center-reqs"
                 ],
                 "summary": "Get a list of center requests",
                 "parameters": [
@@ -619,7 +619,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "center"
+                    "center-reqs"
                 ],
                 "summary": "Create a new center request",
                 "parameters": [
@@ -661,7 +661,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/centers/user/{id}": {
+        "/center-reqs/user/{id}": {
             "get": {
                 "description": "Retrieve specific center requests associated with a unique wallet address",
                 "consumes": [
@@ -671,7 +671,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "center"
+                    "center-reqs"
                 ],
                 "summary": "Get Center requests by a wallet",
                 "parameters": [
@@ -705,7 +705,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/centers/{id}": {
+        "/center-reqs/{id}": {
             "get": {
                 "description": "Retrieve the full details of a single Center request by its unique ID",
                 "consumes": [
@@ -715,7 +715,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "center"
+                    "center-reqs"
                 ],
                 "summary": "Get center request details",
                 "parameters": [
@@ -749,7 +749,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/centers/{id}/confirm": {
+        "/center-reqs/{id}/confirm": {
             "post": {
                 "security": [
                     {
@@ -764,7 +764,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "center"
+                    "center-reqs"
                 ],
                 "summary": "Confirm and upload center information to Sui Blockhain",
                 "parameters": [
@@ -804,7 +804,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/centers/{id}/vote": {
+        "/center-reqs/{id}/vote": {
             "post": {
                 "security": [
                     {
@@ -819,7 +819,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "center"
+                    "center-reqs"
                 ],
                 "summary": "Vote on a center request",
                 "parameters": [
@@ -855,6 +855,63 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "You have no rights to access this action.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "There is something wrong in the system during the process. Please try again later.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/centers": {
+            "get": {
+                "description": "Retrieves a list of centers based on filter criteria",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "centers"
+                ],
+                "summary": "List centers",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "name": "keyword",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "sort_order",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.PaginationDataResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid data. Please try again.",
                         "schema": {
                             "$ref": "#/definitions/response.MessageAPIResponse"
                         }
