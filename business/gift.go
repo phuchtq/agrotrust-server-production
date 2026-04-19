@@ -303,22 +303,20 @@ func (g *giftService) CreateGift(req request.CreateGiftRequest, ctx context.Cont
 
 	// Gift for child
 	if child != nil {
-		var manageObj *entities.Manage
-		g.redisCache.Get(manageObj.GetRedisKey(), manageObj, ctx)
-
-		if manageObj == nil {
-			var errRes error
-			manageObj, errRes = on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		var manageObj entities.Manage
+		if !g.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
+			res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
 				Client:    client,
 				ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
 				ErrLogger: g.errLogger,
 			}, ctx)
-			if errRes != nil {
-				return response.BuildTransactionResponse{}, errRes
+			if err != nil {
+				return response.BuildTransactionResponse{}, err
 			}
 
-			if manageObj != nil {
-				g.redisCache.Set(manageObj.GetRedisKey(), manageObj, time.Minute, ctx)
+			if res != nil {
+				g.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
+				manageObj = *res
 			}
 		}
 
@@ -562,22 +560,20 @@ func (g *giftService) GetGiftsOfRegion(region string, req request.GetGiftsReques
 	}
 
 	var client = g.clients[constant.SuiTestnet]
-	var manageObj *entities.Manage
-	g.redisCache.Get(manageObj.GetRedisKey(), manageObj, ctx)
-
-	if manageObj == nil {
-		var errRes error
-		manageObj, errRes = on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+	var manageObj entities.Manage
+	if !g.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
+		res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
 			Client:    client,
 			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
 			ErrLogger: g.errLogger,
 		}, ctx)
-		if errRes != nil {
-			return response.PaginationDataResponse{}, errRes
+		if err != nil {
+			return response.PaginationDataResponse{}, err
 		}
 
-		if manageObj != nil {
-			g.redisCache.Set(manageObj.GetRedisKey(), manageObj, time.Minute, ctx)
+		if res != nil {
+			g.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
+			manageObj = *res
 		}
 	}
 

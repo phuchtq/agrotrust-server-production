@@ -149,23 +149,20 @@ func (b *bankProfileService) GetBankProfile(id string, ctx context.Context) (res
 
 	var address string = ctx.Value("address").(string)
 	if res.ProfileID != ctx.Value("sub").(string) || res.Owner != address {
-		var manageObj *entities.Manage
-		b.redisCache.Get(manageObj.GetRedisKey(), manageObj, ctx)
-
-		var client = b.clients[constant.SuiTestnet]
-		if manageObj == nil {
-			var errRes error
-			manageObj, errRes = on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-				Client:    client,
+		var manageObj entities.Manage
+		if !b.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
+			res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+				Client:    b.clients[constant.SuiTestnet],
 				ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
 				ErrLogger: b.errLogger,
 			}, ctx)
-			if errRes != nil {
-				return response.BankProfileResponse{}, errRes
+			if err != nil {
+				return response.BankProfileResponse{}, err
 			}
 
-			if manageObj != nil {
-				b.redisCache.Set(manageObj.GetRedisKey(), manageObj, time.Minute, ctx)
+			if res != nil {
+				b.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
+				manageObj = *res
 			}
 		}
 
@@ -194,23 +191,20 @@ func (b *bankProfileService) GetBankProfileByOwner(id string, ctx context.Contex
 
 	var address string = ctx.Value("address").(string)
 	if res.ProfileID != ctx.Value("sub").(string) || res.Owner != address || id != address {
-		var manageObj *entities.Manage
-		b.redisCache.Get(manageObj.GetRedisKey(), manageObj, ctx)
-
-		var client = b.clients[constant.SuiTestnet]
-		if manageObj == nil {
-			var errRes error
-			manageObj, errRes = on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-				Client:    client,
+		var manageObj entities.Manage
+		if !b.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
+			res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+				Client:    b.clients[constant.SuiTestnet],
 				ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
 				ErrLogger: b.errLogger,
 			}, ctx)
-			if errRes != nil {
-				return response.BankProfileResponse{}, errRes
+			if err != nil {
+				return response.BankProfileResponse{}, err
 			}
 
-			if manageObj != nil {
-				b.redisCache.Set(manageObj.GetRedisKey(), manageObj, time.Minute, ctx)
+			if res != nil {
+				b.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
+				manageObj = *res
 			}
 		}
 

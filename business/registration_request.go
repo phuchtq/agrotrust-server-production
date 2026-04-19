@@ -313,22 +313,20 @@ func (r *registrationRequestService) CreateRegistrationRequest(req request.Creat
 		}
 	}
 
-	var manageObj *entities.Manage
-	r.redisCache.Get(manageObj.GetRedisKey(), manageObj, ctx)
-
-	if manageObj == nil {
-		var errRes error
-		manageObj, errRes = on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-			Client:    client,
+	var manageObj entities.Manage
+	if !r.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
+		res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+			Client:    r.clients[constant.SuiTestnet],
 			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
 			ErrLogger: r.errLogger,
 		}, ctx)
-		if errRes != nil {
-			return nil, errRes
+		if err != nil {
+			return nil, err
 		}
 
-		if manageObj != nil {
-			r.redisCache.Set(manageObj.GetRedisKey(), manageObj, time.Minute, ctx)
+		if res != nil {
+			r.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
+			manageObj = *res
 		}
 	}
 
@@ -458,22 +456,20 @@ func (r *registrationRequestService) VoteRegistrationRequest(id string, req requ
 	}
 
 	var client = r.clients[constant.SuiTestnet]
-	var manageObj *entities.Manage
-	r.redisCache.Get(manageObj.GetRedisKey(), manageObj, ctx)
-
-	if manageObj == nil {
-		var errRes error
-		manageObj, errRes = on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+	var manageObj entities.Manage
+	if !r.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
+		res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
 			Client:    client,
 			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
 			ErrLogger: r.errLogger,
 		}, ctx)
-		if errRes != nil {
-			return errRes
+		if err != nil {
+			return err
 		}
 
-		if manageObj != nil {
-			r.redisCache.Set(manageObj.GetRedisKey(), manageObj, time.Minute, ctx)
+		if res != nil {
+			r.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
+			manageObj = *res
 		}
 	}
 

@@ -18,6 +18,6 @@ type Manage struct {
 	TransactionRecords    []string `json:"transaction_records"`
 }
 
-func (m Manage) GetRedisKey() string {
+func (m *Manage) GetRedisKey() string {
 	return "manage"
 }

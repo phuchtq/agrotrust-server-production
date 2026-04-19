@@ -123,22 +123,20 @@ func (s *staffService) GetStaffs(req request.GetStaffsRequest, ctx context.Conte
 	}
 
 	var client = s.clients[constant.SuiTestnet]
-	var manageObj *entities.Manage
-	s.redisCache.Get(manageObj.GetRedisKey(), manageObj, ctx)
-
-	if manageObj == nil {
-		var errRes error
-		manageObj, errRes = on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-			Client:    client,
+	var manageObj entities.Manage
+	if !s.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
+		res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+			Client:    s.clients[constant.SuiTestnet],
 			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
 			ErrLogger: s.errLogger,
 		}, ctx)
-		if errRes != nil {
-			return response.PaginationDataResponse{}, errRes
+		if err != nil {
+			return response.PaginationDataResponse{}, err
 		}
 
-		if manageObj != nil {
-			s.redisCache.Set(manageObj.GetRedisKey(), manageObj, time.Minute, ctx)
+		if res != nil {
+			s.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
+			manageObj = *res
 		}
 	}
 

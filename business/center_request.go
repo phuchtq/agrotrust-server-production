@@ -156,22 +156,20 @@ func (c *centerRequestService) ConfirmRequest(id string, ctx context.Context) (r
 		return response.BuildTransactionResponse{}, genericErr
 	}
 
-	var manageObj *entities.Manage
-	c.redisCache.Get(manageObj.GetRedisKey(), manageObj, ctx)
-
-	if manageObj == nil {
-		var errRes error
-		manageObj, errRes = on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+	var manageObj entities.Manage
+	if !c.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
+		res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
 			Client:    client,
 			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
 			ErrLogger: c.errLogger,
 		}, ctx)
-		if errRes != nil {
-			return response.BuildTransactionResponse{}, errRes
+		if err != nil {
+			return response.BuildTransactionResponse{}, err
 		}
 
-		if manageObj != nil {
-			c.redisCache.Set(manageObj.GetRedisKey(), manageObj, time.Minute, ctx)
+		if res != nil {
+			c.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
+			manageObj = *res
 		}
 	}
 
@@ -259,22 +257,20 @@ func (c *centerRequestService) CreateRequest(req request.CreateCenterRequest, ct
 		return nil, genericRightErr
 	}
 
-	var manageObj *entities.Manage
-	c.redisCache.Get(manageObj.GetRedisKey(), manageObj, ctx)
-
-	if manageObj == nil {
-		var errRes error
-		manageObj, errRes = on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+	var manageObj entities.Manage
+	if !c.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
+		res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
 			Client:    client,
 			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
 			ErrLogger: c.errLogger,
 		}, ctx)
-		if errRes != nil {
-			return nil, errRes
+		if err != nil {
+			return nil, err
 		}
 
-		if manageObj != nil {
-			c.redisCache.Set(manageObj.GetRedisKey(), manageObj, time.Minute, ctx)
+		if res != nil {
+			c.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
+			manageObj = *res
 		}
 	}
 

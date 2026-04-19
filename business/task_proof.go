@@ -166,22 +166,20 @@ func (t *taskProofService) ApproveTaskProof(id string, ctx context.Context) (res
 			// Other cases in future if have
 		}
 	} else {
-		var manageObj *entities.Manage
-		t.redisCache.Get(manageObj.GetRedisKey(), manageObj, ctx)
-
-		if manageObj == nil {
-			var errRes error
-			manageObj, errRes = on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-				Client:    client,
+		var manageObj entities.Manage
+		if !t.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
+			res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+				Client:    t.clients[constant.SuiTestnet],
 				ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
 				ErrLogger: t.errLogger,
 			}, ctx)
-			if errRes != nil {
-				return response.BuildTransactionResponse{}, errRes
+			if err != nil {
+				return response.BuildTransactionResponse{}, err
 			}
 
-			if manageObj != nil {
-				t.redisCache.Set(manageObj.GetRedisKey(), manageObj, time.Minute, ctx)
+			if res != nil {
+				t.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
+				manageObj = *res
 			}
 		}
 

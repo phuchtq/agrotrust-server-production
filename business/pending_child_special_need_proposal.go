@@ -78,22 +78,20 @@ func (p *pendingChildSpecialNeedProposalService) ApprovePendingChildSpecialNeedP
 
 	var client = p.clients[constant.SuiTestnet]
 	var reviewer string = ctx.Value("address").(string)
-	var manageObj *entities.Manage
-	p.redisCache.Get(manageObj.GetRedisKey(), manageObj, ctx)
-
-	if manageObj == nil {
-		var errRes error
-		manageObj, errRes = on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-			Client:    client,
+	var manageObj entities.Manage
+	if !p.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
+		res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+			Client:    p.clients[constant.SuiTestnet],
 			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
 			ErrLogger: p.errLogger,
 		}, ctx)
-		if errRes != nil {
-			return response.BuildTransactionResponse{}, errRes
+		if err != nil {
+			return response.BuildTransactionResponse{}, err
 		}
 
-		if manageObj != nil {
-			p.redisCache.Set(manageObj.GetRedisKey(), manageObj, time.Minute, ctx)
+		if res != nil {
+			p.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
+			manageObj = *res
 		}
 	}
 
@@ -179,22 +177,20 @@ func (p *pendingChildSpecialNeedProposalService) GetPendingChildSpecialNeedPropo
 
 	var sender string = ctx.Value("address").(string)
 	if res.ActorAddress != sender {
-		var manageObj *entities.Manage
-		p.redisCache.Get(manageObj.GetRedisKey(), manageObj, ctx)
-
-		if manageObj == nil {
-			var errRes error
-			manageObj, errRes = on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		var manageObj entities.Manage
+		if !p.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
+			res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
 				Client:    p.clients[constant.SuiTestnet],
 				ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
 				ErrLogger: p.errLogger,
 			}, ctx)
-			if errRes != nil {
-				return nil, errRes
+			if err != nil {
+				return nil, err
 			}
 
-			if manageObj != nil {
-				p.redisCache.Set(manageObj.GetRedisKey(), manageObj, time.Minute, ctx)
+			if res != nil {
+				p.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
+				manageObj = *res
 			}
 		}
 
@@ -224,22 +220,20 @@ func (p *pendingChildSpecialNeedProposalService) GetPendingChildSpecialNeedPropo
 
 	var sender string = ctx.Value("address").(string)
 	if sender != req.Creator {
-		var manageObj *entities.Manage
-		p.redisCache.Get(manageObj.GetRedisKey(), manageObj, ctx)
-
-		if manageObj == nil {
-			var errRes error
-			manageObj, errRes = on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		var manageObj entities.Manage
+		if !p.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
+			res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
 				Client:    p.clients[constant.SuiTestnet],
 				ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
 				ErrLogger: p.errLogger,
 			}, ctx)
-			if errRes != nil {
-				return response.PaginationDataResponse{}, errRes
+			if err != nil {
+				return response.PaginationDataResponse{}, err
 			}
 
-			if manageObj != nil {
-				p.redisCache.Set(manageObj.GetRedisKey(), manageObj, time.Minute, ctx)
+			if res != nil {
+				p.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
+				manageObj = *res
 			}
 		}
 
@@ -326,22 +320,20 @@ func (p *pendingChildSpecialNeedProposalService) RefusePendingChildSpecialNeedPr
 
 	var client = p.clients[constant.SuiTestnet]
 	var reviewer string = ctx.Value("address").(string)
-	var manageObj *entities.Manage
-	p.redisCache.Get(manageObj.GetRedisKey(), manageObj, ctx)
-
-	if manageObj == nil {
-		var errRes error
-		manageObj, errRes = on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+	var manageObj entities.Manage
+	if !p.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
+		res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
 			Client:    client,
 			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
 			ErrLogger: p.errLogger,
 		}, ctx)
-		if errRes != nil {
-			return errRes
+		if err != nil {
+			return err
 		}
 
-		if manageObj != nil {
-			p.redisCache.Set(manageObj.GetRedisKey(), manageObj, time.Minute, ctx)
+		if res != nil {
+			p.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
+			manageObj = *res
 		}
 	}
 

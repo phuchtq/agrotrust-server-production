@@ -132,22 +132,20 @@ func (t *taskService) ClaimTask(id string, ctx context.Context) error {
 // CreateTask implements business.ITaskService.
 func (t *taskService) CreateTask(req request.CreateTaskRequest, ctx context.Context) (*entities.Task, error) {
 	var client = t.clients[constant.SuiTestnet]
-	var manageObj *entities.Manage
-	t.redisCache.Get(manageObj.GetRedisKey(), manageObj, ctx)
-
-	if manageObj == nil {
-		var errRes error
-		manageObj, errRes = on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+	var manageObj entities.Manage
+	if !t.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
+		res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
 			Client:    client,
 			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
 			ErrLogger: t.errLogger,
 		}, ctx)
-		if errRes != nil {
-			return nil, errRes
+		if err != nil {
+			return nil, err
 		}
 
-		if manageObj != nil {
-			t.redisCache.Set(manageObj.GetRedisKey(), manageObj, time.Minute, ctx)
+		if res != nil {
+			t.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
+			manageObj = *res
 		}
 	}
 
@@ -335,24 +333,23 @@ func (t *taskService) ReviewAssignedProfileOfTask(id string, req request.VoteReq
 	}
 
 	if !isLeaderOfRegion {
-		var manageObj *entities.Manage
-		t.redisCache.Get(manageObj.GetRedisKey(), manageObj, ctx)
-
-		if manageObj == nil {
-			var errRes error
-			manageObj, errRes = on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-				Client:    client,
+		var manageObj entities.Manage
+		if !t.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
+			res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+				Client:    t.clients[constant.SuiTestnet],
 				ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
 				ErrLogger: t.errLogger,
 			}, ctx)
-			if errRes != nil {
-				return errRes
+			if err != nil {
+				return err
 			}
 
-			if manageObj != nil {
-				t.redisCache.Set(manageObj.GetRedisKey(), manageObj, time.Minute, ctx)
+			if res != nil {
+				t.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
+				manageObj = *res
 			}
 		}
+
 		if !slices.Contains(manageObj.AdminIds, sender) {
 			return genericRightErr
 		}
