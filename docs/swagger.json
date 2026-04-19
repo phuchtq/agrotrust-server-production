@@ -1832,7 +1832,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.UrlAPIResponse"
+                            "$ref": "#/definitions/response.PaymentUrlResponse"
                         }
                     },
                     "400": {
@@ -2001,7 +2001,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.UrlAPIResponse"
+                            "$ref": "#/definitions/response.PaymentUrlResponse"
                         }
                     },
                     "400": {
@@ -2179,7 +2179,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.UrlAPIResponse"
+                            "$ref": "#/definitions/response.PaymentUrlResponse"
                         }
                     },
                     "400": {
@@ -2476,7 +2476,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.UrlAPIResponse"
+                            "$ref": "#/definitions/response.PaymentUrlResponse"
                         }
                     },
                     "400": {
@@ -4748,7 +4748,7 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.UrlAPIResponse"
+                            "$ref": "#/definitions/response.PaymentUrlResponse"
                         }
                     },
                     "400": {
@@ -8748,6 +8748,17 @@
                 },
                 "total_pages": {
                     "type": "integer"
+                }
+            }
+        },
+        "response.PaymentUrlResponse": {
+            "type": "object",
+            "properties": {
+                "payment_id": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
                 }
             }
         },

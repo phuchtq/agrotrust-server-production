@@ -1157,6 +1157,13 @@ definitions:
       total_pages:
         type: integer
     type: object
+  response.PaymentUrlResponse:
+    properties:
+      payment_id:
+        type: string
+      url:
+        type: string
+    type: object
   response.PersonalProfileResponse:
     properties:
       date_of_birth:
@@ -2617,7 +2624,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.UrlAPIResponse'
+            $ref: '#/definitions/response.PaymentUrlResponse'
         "400":
           description: Invalid data. Please try again.
           schema:
@@ -2729,7 +2736,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.UrlAPIResponse'
+            $ref: '#/definitions/response.PaymentUrlResponse'
         "400":
           description: Invalid data. Please try again.
           schema:
@@ -2847,7 +2854,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.UrlAPIResponse'
+            $ref: '#/definitions/response.PaymentUrlResponse'
         "400":
           description: Invalid data. Please try again.
           schema:
@@ -2927,7 +2934,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.UrlAPIResponse'
+            $ref: '#/definitions/response.PaymentUrlResponse'
         "400":
           description: Invalid data. Please try again.
           schema:
@@ -4461,7 +4468,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.UrlAPIResponse'
+            $ref: '#/definitions/response.PaymentUrlResponse'
         "400":
           description: Invalid data. Please try again.
           schema:

@@ -191,7 +191,7 @@ func AddChildNumberMetadata(ctx *gin.Context) {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        id   path      string  true  "Books Need ID"
-// @Success      200      {object}  response.UrlAPIResponse
+// @Success      200      {object}  response.PaymentUrlResponse
 // @Failure      400      {object}  response.MessageAPIResponse "Invalid data. Please try again."
 // @Failure      401      {object}  response.MessageAPIResponse "You have no rights to access this action."
 // @Failure      500      {object}  response.MessageAPIResponse "There is something wrong in the system during the process. Please try again later."
@@ -222,7 +222,7 @@ func SupportBooksNeed(ctx *gin.Context) {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        id   path      string  true  "Health Insurance Need ID"
-// @Success      200      {object}  response.UrlAPIResponse
+// @Success      200      {object}  response.PaymentUrlResponse
 // @Failure      400      {object}  response.MessageAPIResponse "Invalid data. Please try again."
 // @Failure      401      {object}  response.MessageAPIResponse "You have no rights to access this action."
 // @Failure      500      {object}  response.MessageAPIResponse "There is something wrong in the system during the process. Please try again later."
@@ -254,7 +254,7 @@ func SupportHealthInsuranceNeed(ctx *gin.Context) {
 // @Security     BearerAuth
 // @Param        id   path      string  true  "Meal Need ID"
 // @Param        request  body      request.SupportMealNeadRequest   true  "Support Child Meal Need Detail"
-// @Success      200      {object}  response.UrlAPIResponse
+// @Success      200      {object}  response.PaymentUrlResponse
 // @Failure      400      {object}  response.MessageAPIResponse "Invalid data. Please try again."
 // @Failure      401      {object}  response.MessageAPIResponse "You have no rights to access this action."
 // @Failure      500      {object}  response.MessageAPIResponse "There is something wrong in the system during the process. Please try again later."
@@ -292,7 +292,7 @@ func SupportMealNeed(ctx *gin.Context) {
 // @Security     BearerAuth
 // @Param        id   path      string  true  "Campaign ID"
 // @Param        request  body      request.SupportSpecialNeedRequest   true  "Support Child Special Need Campaign Detail"
-// @Success      200      {object}  response.UrlAPIResponse
+// @Success      200      {object}  response.PaymentUrlResponse
 // @Failure      400      {object}  response.MessageAPIResponse "Invalid data. Please try again."
 // @Failure      401      {object}  response.MessageAPIResponse "You have no rights to access this action."
 // @Failure      500      {object}  response.MessageAPIResponse "There is something wrong in the system during the process. Please try again later."

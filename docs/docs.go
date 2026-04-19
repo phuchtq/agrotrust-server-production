@@ -1835,7 +1835,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.UrlAPIResponse"
+                            "$ref": "#/definitions/response.PaymentUrlResponse"
                         }
                     },
                     "400": {
@@ -2004,7 +2004,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.UrlAPIResponse"
+                            "$ref": "#/definitions/response.PaymentUrlResponse"
                         }
                     },
                     "400": {
@@ -2182,7 +2182,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.UrlAPIResponse"
+                            "$ref": "#/definitions/response.PaymentUrlResponse"
                         }
                     },
                     "400": {
@@ -2479,7 +2479,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.UrlAPIResponse"
+                            "$ref": "#/definitions/response.PaymentUrlResponse"
                         }
                     },
                     "400": {
@@ -4751,7 +4751,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.UrlAPIResponse"
+                            "$ref": "#/definitions/response.PaymentUrlResponse"
                         }
                     },
                     "400": {
@@ -8751,6 +8751,17 @@ const docTemplate = `{
                 },
                 "total_pages": {
                     "type": "integer"
+                }
+            }
+        },
+        "response.PaymentUrlResponse": {
+            "type": "object",
+            "properties": {
+                "payment_id": {
+                    "type": "string"
+                },
+                "url": {
+                    "type": "string"
                 }
             }
         },
