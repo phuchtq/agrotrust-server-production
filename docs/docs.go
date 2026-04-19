@@ -3183,11 +3183,6 @@ const docTemplate = `{
         },
         "/payments": {
             "get": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
                 "description": "Retrieves a list of Payments based on filter criteria",
                 "consumes": [
                     "application/json"
@@ -3274,12 +3269,6 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.MessageAPIResponse"
                         }
                     },
-                    "401": {
-                        "description": "You have no rights to access this action.",
-                        "schema": {
-                            "$ref": "#/definitions/response.MessageAPIResponse"
-                        }
-                    },
                     "500": {
                         "description": "There is something wrong in the system during the process. Please try again later.",
                         "schema": {
@@ -3290,13 +3279,13 @@ const docTemplate = `{
             }
         },
         "/payments/auth-callback/{id}": {
-            "get": {
+            "post": {
                 "security": [
                     {
                         "BearerAuth": []
                     }
                 ],
-                "description": "Handles the transaction callback/webhook from the payment provider to update transaction status by ID and build on-chain transaction.",
+                "description": "Process payment callback with authorization",
                 "consumes": [
                     "application/json"
                 ],
@@ -3316,22 +3305,30 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "type": "string",
-                        "description": "Captured Image Blob ID",
-                        "name": "imageBlobId",
-                        "in": "query",
-                        "required": true
+                        "description": "Auth Payment Callback Detail",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.PaymentAuthCallbackRequest"
+                        }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Success",
                         "schema": {
-                            "$ref": "#/definitions/response.BuildTransactionResponse"
+                            "$ref": "#/definitions/response.MessageAPIResponse"
                         }
                     },
                     "400": {
                         "description": "Invalid data. Please try again.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "You have no rights to access this action.",
                         "schema": {
                             "$ref": "#/definitions/response.MessageAPIResponse"
                         }
@@ -3347,7 +3344,7 @@ const docTemplate = `{
         },
         "/payments/callback/{id}": {
             "get": {
-                "description": "Handles the transaction callback/webhook from the payment provider to update transaction status by ID and build on-chain transaction.",
+                "description": "Process payment callback",
                 "consumes": [
                     "application/json"
                 ],
@@ -3369,9 +3366,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Success",
                         "schema": {
-                            "$ref": "#/definitions/response.BuildTransactionResponse"
+                            "$ref": "#/definitions/response.MessageAPIResponse"
                         }
                     },
                     "400": {
@@ -3446,9 +3443,9 @@ const docTemplate = `{
                 }
             }
         },
-        "/payments/fake-callback": {
+        "/payments/{id}": {
             "get": {
-                "description": "Fake callback",
+                "description": "Retrieve a payment",
                 "consumes": [
                     "application/json"
                 ],
@@ -3458,8 +3455,36 @@ const docTemplate = `{
                 "tags": [
                     "payment"
                 ],
-                "summary": "Fake callback",
-                "responses": {}
+                "summary": "Retrieve a payment",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Payment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/entities.Payment"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid data. Please try again.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "There is something wrong in the system during the process. Please try again later.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    }
+                }
             }
         },
         "/payments/{id}/approve": {
@@ -7138,6 +7163,77 @@ const docTemplate = `{
                 }
             }
         },
+        "entities.Payment": {
+            "type": "object",
+            "properties": {
+                "actor": {
+                    "type": "string"
+                },
+                "amount": {
+                    "type": "integer"
+                },
+                "cancel_reason": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "currency": {
+                    "description": "e.g. \"VND\"",
+                    "type": "string"
+                },
+                "donation_id": {
+                    "type": "string"
+                },
+                "expired_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "is_donate_tx": {
+                    "type": "boolean"
+                },
+                "is_transferred": {
+                    "type": "boolean"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "method": {
+                    "description": "e.g. \"VNPay\", \"Momo\", \"Payos\"",
+                    "type": "string"
+                },
+                "profile_id": {
+                    "type": "string"
+                },
+                "proof_blob_id": {
+                    "type": "string"
+                },
+                "proposal_id": {
+                    "type": "string"
+                },
+                "review_status": {
+                    "type": "string"
+                },
+                "reviewed_by": {
+                    "type": "string"
+                },
+                "status": {
+                    "description": "e.g. \"Pending\", \"Cancel\", \"Success\"",
+                    "type": "string"
+                },
+                "transaction_id": {
+                    "type": "string"
+                },
+                "transferred_at": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                }
+            }
+        },
         "entities.PendingCampaign": {
             "type": "object",
             "properties": {
@@ -7896,6 +7992,17 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "sub": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.PaymentAuthCallbackRequest": {
+            "type": "object",
+            "required": [
+                "proof_blob_id"
+            ],
+            "properties": {
+                "proof_blob_id": {
                     "type": "string"
                 }
             }

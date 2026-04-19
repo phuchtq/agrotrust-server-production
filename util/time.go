@@ -25,11 +25,11 @@ func MilliSecToTime(milliseconds int64) time.Time {
 }
 
 func GetRequestDuration() time.Time {
-	return time.Now().Add(request_duration)
+	return time.Now().Add(time.Minute)
 }
 
 func GetBankTransactionDuration() time.Time {
-	return time.Now().Add(bank_request_duration)
+	return time.Now().Add(time.Minute)
 }
 
 func ToStartOfDate(date time.Time) time.Time {

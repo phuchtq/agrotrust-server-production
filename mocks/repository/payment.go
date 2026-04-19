@@ -13,6 +13,11 @@ type paymentMockRepo struct {
 	mock.Mock
 }
 
+// GetPayment implements repository.IPaymentRepository.
+func (p *paymentMockRepo) GetPayment(id string, ctx context.Context) (*entities.Payment, error) {
+	panic("unimplemented")
+}
+
 func InializePaymentMockRepo() repository.IPaymentRepository {
 	return &paymentMockRepo{}
 }

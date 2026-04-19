@@ -80,6 +80,54 @@ definitions:
       relation:
         type: string
     type: object
+  entities.Payment:
+    properties:
+      actor:
+        type: string
+      amount:
+        type: integer
+      cancel_reason:
+        type: string
+      created_at:
+        type: string
+      currency:
+        description: e.g. "VND"
+        type: string
+      donation_id:
+        type: string
+      expired_at:
+        type: string
+      id:
+        type: string
+      is_donate_tx:
+        type: boolean
+      is_transferred:
+        type: boolean
+      message:
+        type: string
+      method:
+        description: e.g. "VNPay", "Momo", "Payos"
+        type: string
+      profile_id:
+        type: string
+      proof_blob_id:
+        type: string
+      proposal_id:
+        type: string
+      review_status:
+        type: string
+      reviewed_by:
+        type: string
+      status:
+        description: e.g. "Pending", "Cancel", "Success"
+        type: string
+      transaction_id:
+        type: string
+      transferred_at:
+        type: string
+      updated_at:
+        type: string
+    type: object
   entities.PendingCampaign:
     properties:
       actor_address:
@@ -599,6 +647,13 @@ definitions:
     required:
     - address
     - sub
+    type: object
+  request.PaymentAuthCallbackRequest:
+    properties:
+      proof_blob_id:
+        type: string
+    required:
+    - proof_blob_id
     type: object
   request.SupportCampaignRequest:
     properties:
@@ -3476,8 +3531,34 @@ paths:
           description: Invalid data. Please try again.
           schema:
             $ref: '#/definitions/response.MessageAPIResponse'
-        "401":
-          description: You have no rights to access this action.
+        "500":
+          description: There is something wrong in the system during the process.
+            Please try again later.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+      summary: List Payments
+      tags:
+      - payment
+  /payments/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a payment
+      parameters:
+      - description: Payment ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/entities.Payment'
+        "400":
+          description: Invalid data. Please try again.
           schema:
             $ref: '#/definitions/response.MessageAPIResponse'
         "500":
@@ -3485,9 +3566,7 @@ paths:
             Please try again later.
           schema:
             $ref: '#/definitions/response.MessageAPIResponse'
-      security:
-      - BearerAuth: []
-      summary: List Payments
+      summary: Retrieve a payment
       tags:
       - payment
   /payments/{id}/approve:
@@ -3564,31 +3643,35 @@ paths:
       tags:
       - payment
   /payments/auth-callback/{id}:
-    get:
+    post:
       consumes:
       - application/json
-      description: Handles the transaction callback/webhook from the payment provider
-        to update transaction status by ID and build on-chain transaction.
+      description: Process payment callback with authorization
       parameters:
       - description: Payment ID
         in: path
         name: id
         required: true
         type: string
-      - description: Captured Image Blob ID
-        in: query
-        name: imageBlobId
+      - description: Auth Payment Callback Detail
+        in: body
+        name: request
         required: true
-        type: string
+        schema:
+          $ref: '#/definitions/request.PaymentAuthCallbackRequest'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Success
           schema:
-            $ref: '#/definitions/response.BuildTransactionResponse'
+            $ref: '#/definitions/response.MessageAPIResponse'
         "400":
           description: Invalid data. Please try again.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "401":
+          description: You have no rights to access this action.
           schema:
             $ref: '#/definitions/response.MessageAPIResponse'
         "500":
@@ -3605,8 +3688,7 @@ paths:
     get:
       consumes:
       - application/json
-      description: Handles the transaction callback/webhook from the payment provider
-        to update transaction status by ID and build on-chain transaction.
+      description: Process payment callback
       parameters:
       - description: Payment ID
         in: path
@@ -3617,9 +3699,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Success
           schema:
-            $ref: '#/definitions/response.BuildTransactionResponse'
+            $ref: '#/definitions/response.MessageAPIResponse'
         "400":
           description: Invalid data. Please try again.
           schema:
@@ -3668,17 +3750,6 @@ paths:
       security:
       - BearerAuth: []
       summary: Process a donation
-      tags:
-      - payment
-  /payments/fake-callback:
-    get:
-      consumes:
-      - application/json
-      description: Fake callback
-      produces:
-      - application/json
-      responses: {}
-      summary: Fake callback
       tags:
       - payment
   /pending-pool-campaigns:

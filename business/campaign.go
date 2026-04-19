@@ -442,7 +442,7 @@ func (c *campaignService) SupportCampaign(id string, req request.SupportCampaign
 	if data.ExpiredAt != nil {
 		expiredAt = time.Unix(int64(*data.ExpiredAt), 0)
 	} else {
-		expiredAt = time.Now().Add(15 * time.Minute) // Default 15p nếu PayOS ko trả về
+		expiredAt = time.Now().Add(1 * time.Minute) // Default 15p nếu PayOS ko trả về
 	}
 
 	return response.UrlAPIResponse{

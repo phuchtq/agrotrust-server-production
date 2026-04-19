@@ -20,3 +20,7 @@ type DonateRequest struct {
 	Amount  int64  `json:"amount" validate:"required,min=2000"`
 	Message string `json:"message"`
 }
+
+type PaymentAuthCallbackRequest struct {
+	ProofBlobID string `json:"proof_blob_id" validate:"required"`
+}

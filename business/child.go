@@ -1049,7 +1049,7 @@ func (c *childService) SupportHealthInsuranceNeed(id string, ctx context.Context
 	if data.ExpiredAt != nil {
 		expiredAt = time.Unix(int64(*data.ExpiredAt), 0)
 	} else {
-		expiredAt = time.Now().Add(15 * time.Minute) // Default 15p nếu PayOS ko trả về
+		expiredAt = time.Now().Add(1 * time.Minute) // Default 15p nếu PayOS ko trả về
 	}
 
 	return response.UrlAPIResponse{
@@ -1985,7 +1985,7 @@ func (c *childService) SupportBooksNeed(id string, ctx context.Context) (respons
 	if data.ExpiredAt != nil {
 		expiredAt = time.Unix(int64(*data.ExpiredAt), 0)
 	} else {
-		expiredAt = time.Now().Add(15 * time.Minute) // Default 15p nếu PayOS ko trả về
+		expiredAt = time.Now().Add(1 * time.Minute) // Default 15p nếu PayOS ko trả về
 	}
 
 	return response.UrlAPIResponse{
@@ -2215,7 +2215,7 @@ func (c *childService) SupportMealNeed(id string, req request.SupportMealNeadReq
 	if data.ExpiredAt != nil {
 		expiredAt = time.Unix(int64(*data.ExpiredAt), 0)
 	} else {
-		expiredAt = time.Now().Add(15 * time.Minute) // Default 15p nếu PayOS ko trả về
+		expiredAt = time.Now().Add(1 * time.Minute) // Default 15p nếu PayOS ko trả về
 	}
 
 	return response.UrlAPIResponse{
@@ -2305,7 +2305,7 @@ func (c *childService) SupportSpecialNeed(id string, req request.SupportSpecialN
 	if data.ExpiredAt != nil {
 		expiredAt = time.Unix(int64(*data.ExpiredAt), 0)
 	} else {
-		expiredAt = time.Now().Add(15 * time.Minute) // Default 15p nếu PayOS ko trả về
+		expiredAt = time.Now().Add(1 * time.Minute) // Default 15p nếu PayOS ko trả về
 	}
 
 	return response.UrlAPIResponse{
