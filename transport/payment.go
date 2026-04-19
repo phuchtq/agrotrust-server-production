@@ -1,6 +1,7 @@
 package transport
 
 import (
+	"net/http"
 	"raise-child/business"
 	action_type "raise-child/constants/action_type"
 	"raise-child/model/dtos/request"
@@ -168,6 +169,17 @@ func CallbackTransaction(ctx *gin.Context) {
 		Context:  ctx,
 		PostType: action_type.REDIRECT,
 	})
+}
+
+// CallbackFake godoc
+// @Summary      Fake callback
+// @Description  Fake callback
+// @Tags         payment
+// @Accept       json
+// @Produce      json
+// @Router       /payments/fake-callback [get]
+func CallbackFake(ctx *gin.Context) {
+	ctx.Redirect(http.StatusSeeOther, "raisechild://payment/callback")
 }
 
 // CallbackWithAuthTransaction godoc

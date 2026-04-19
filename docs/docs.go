@@ -3446,6 +3446,22 @@ const docTemplate = `{
                 }
             }
         },
+        "/payments/fake-callback": {
+            "get": {
+                "description": "Fake callback",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "payment"
+                ],
+                "summary": "Fake callback",
+                "responses": {}
+            }
+        },
         "/payments/{id}/approve": {
             "post": {
                 "security": [

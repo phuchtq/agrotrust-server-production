@@ -3670,6 +3670,17 @@ paths:
       summary: Process a donation
       tags:
       - payment
+  /payments/fake-callback:
+    get:
+      consumes:
+      - application/json
+      description: Fake callback
+      produces:
+      - application/json
+      responses: {}
+      summary: Fake callback
+      tags:
+      - payment
   /pending-pool-campaigns:
     get:
       consumes:
