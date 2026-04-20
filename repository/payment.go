@@ -60,7 +60,7 @@ func (p *paymentRepo) GetPaymentById(id string, ctx context.Context) (*entities.
 	if err := p.db.QueryRowContext(ctx, query, id).Scan(
 		&res.ID, &res.Actor, &res.ProfileID, &res.ProposalID, &res.DonationID, &res.IsDonateTx, &res.TransactionId,
 		&res.Amount, &res.Currency, &res.Status, &res.Method, &res.CancelReason, &res.Message, &res.ExpiredAt,
-		&res.CreatedAt, &res.UpdatedAt, &res.ProofBlobID, &res.ReviewedBy, &res.ReviewStatus, &res.IsTransferred); err != nil {
+		&res.CreatedAt, &res.UpdatedAt, &res.ProofBlobID, &res.ReviewedBy, &res.ReviewStatus, &res.IsTransferred, &res.TransferredAt); err != nil {
 
 		if err == sql.ErrNoRows {
 			return nil, nil
