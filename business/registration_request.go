@@ -254,6 +254,7 @@ func (r *registrationRequestService) CreateRegistrationRequest(req request.Creat
 
 	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
 	if profile == nil {
+		r.errLogger.Println("Error profile nil!!!")
 		return nil, genericErr
 	}
 
@@ -297,6 +298,7 @@ func (r *registrationRequestService) CreateRegistrationRequest(req request.Creat
 	if reqs != nil && len(reqs) > 0 {
 		for _, req := range reqs {
 			if req.RegisterRole == role && (req.Status == request_pending_status || req.Status == request_approved_status) {
+				r.errLogger.Println("Error previous reqs!!!")
 				return nil, genericErr
 			}
 		}
@@ -305,10 +307,12 @@ func (r *registrationRequestService) CreateRegistrationRequest(req request.Creat
 	// Admin registration request not contain region
 	if role == admin_role {
 		if req.Region != "" {
+			r.errLogger.Println("Error Admin Has Region!!!")
 			return nil, genericErr
 		}
 	} else {
 		if !isRegionExist(req.Region) {
+			r.errLogger.Println("Error not exist region!!!")
 			return nil, genericErr
 		}
 	}
