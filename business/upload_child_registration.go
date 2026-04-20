@@ -361,59 +361,11 @@ func (u *uploadChildRequestService) CreateUploadChildRequest(req request.UploadC
 
 // GetUploadChildRequest implements business.IUploadChildRequestService.
 func (u *uploadChildRequestService) GetUploadChildRequest(id string, ctx context.Context) (*entities.UploadChildRequest, error) {
-	//return u.uploadChildRequestRepo.GetUploadChildRequest(id, ctx)
-
-	for _, req := range mockUploadChildReqs {
-		if req.ID == id {
-			return &req, nil
-		}
-	}
-
-	return nil, nil
+	return u.uploadChildRequestRepo.GetUploadChildRequest(id, ctx)
 }
 
 // GetUploadChildRequests implements business.IUploadChildRequestService.
 func (u *uploadChildRequestService) GetUploadChildRequests(req request.GetUploadChildRequests, ctx context.Context) (response.PaginationDataResponse, error) {
-	// req.SortOrder = util.StandardizeSortOrder(req.SortOrder)
-	// if req.Page < 1 {
-	// 	req.Page = 1
-	// }
-
-	// if req.PageSize < 1 {
-	// 	req.PageSize = default_page_size
-	// }
-
-	// var res response.PaginationDataResponse
-	// var redisKey string = u.getGetUploadChildRequestsRedisKey(req)
-	// if u.redisCache.Get(redisKey, &res, ctx) {
-	// 	return res, nil
-	// }
-
-	// data, pages, err := u.uploadChildRequestRepo.GetUploadChildRequests(req, ctx)
-	// if err != nil {
-	// 	return response.PaginationDataResponse{}, err
-	// }
-
-	// var amount int
-	// if data == nil || len(data) == 0 {
-	// 	amount = 0
-	// } else {
-	// 	amount = len(data)
-	// }
-
-	// res = response.PaginationDataResponse{
-	// 	Data:       data,
-	// 	Amount:     amount,
-	// 	Page:       req.Page,
-	// 	TotalPages: pages,
-	// }
-
-	// u.redisCache.Set(redisKey, res, time.Minute*5, ctx)
-
-	// return res, nil
-
-	/////////////////////
-	// MOCK DATA
 	req.SortOrder = util.StandardizeSortOrder(req.SortOrder)
 	if req.Page < 1 {
 		req.Page = 1
@@ -429,17 +381,57 @@ func (u *uploadChildRequestService) GetUploadChildRequests(req request.GetUpload
 		return res, nil
 	}
 
-	var data []entities.UploadChildRequest = mockUploadChildReqs[(req.Page-1)*req.PageSize : req.Page*req.PageSize]
+	data, pages, err := u.uploadChildRequestRepo.GetUploadChildRequests(req, ctx)
+	if err != nil {
+		return response.PaginationDataResponse{}, err
+	}
+
+	var amount int
+	if data == nil || len(data) == 0 {
+		amount = 0
+	} else {
+		amount = len(data)
+	}
+
 	res = response.PaginationDataResponse{
 		Data:       data,
-		Amount:     len(data),
+		Amount:     amount,
 		Page:       req.Page,
-		TotalPages: int(math.Ceil(float64(len(mockUploadChildReqs)) / float64(req.PageSize))),
+		TotalPages: pages,
 	}
 
 	u.redisCache.Set(redisKey, res, time.Minute*5, ctx)
 
 	return res, nil
+
+	// /////////////////////
+	// // MOCK DATA
+	// req.SortOrder = util.StandardizeSortOrder(req.SortOrder)
+	// if req.Page < 1 {
+	// 	req.Page = 1
+	// }
+
+	// if req.PageSize < 1 {
+	// 	req.PageSize = default_page_size
+	// }
+
+	// var res response.PaginationDataResponse
+	// var redisKey string = u.getGetUploadChildRequestsRedisKey(req)
+	// if u.redisCache.Get(redisKey, &res, ctx) {
+	// 	return res, nil
+	// }
+
+	// var data []entities.UploadChildRequest = mockUploadChildReqs[(req.Page-1)*req.PageSize : req.Page*req.PageSize]
+	// res = response.PaginationDataResponse{
+	// 	Data:       data,
+	// 	Amount:     len(data),
+	// 	Page:       req.Page,
+	// 	TotalPages: int(math.Ceil(float64(len(mockUploadChildReqs)) / float64(req.PageSize))),
+	// }
+
+	// u.redisCache.Set(redisKey, res, time.Minute*5, ctx)
+
+	// return res, nil
 }
 
 // GetWalletUploadChildRequests implements business.IUploadChildRequestService.
