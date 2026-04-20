@@ -18,6 +18,7 @@ import (
 	"raise-child/model/entities"
 	"raise-child/repository"
 	"raise-child/util"
+	"raise-child/util/cache"
 	"raise-child/util/db"
 	on_chain "raise-child/util/on_chain"
 	"raise-child/util/security"
@@ -31,13 +32,15 @@ import (
 
 type authService struct {
 	profileRepo i_repo.IProfileRepository
+	redisCache  cache.IRedisCache
 	clients     map[string]sui.ISuiAPI
 	errLogger   *log.Logger
 }
 
-func InitializeAuthService(db *sql.DB, errLogger *log.Logger) business.IAuthService {
+func InitializeAuthService(db *sql.DB, errLogger *log.Logger, redisCache cache.IRedisCache) business.IAuthService {
 	return &authService{
 		profileRepo: repository.InitializeProfileRepository(db, errLogger),
+		redisCache:  redisCache,
 		clients:     _networkAliases,
 		errLogger:   errLogger,
 	}
@@ -51,7 +54,7 @@ func GenerateAuthService() (business.IAuthService, error) {
 		return nil, err
 	}
 
-	return InitializeAuthService(cnn, errLogger), nil
+	return InitializeAuthService(cnn, errLogger, cache.InitializeRedisCache()), nil
 }
 
 // LoginV2 implements business.IAuthService.
@@ -61,14 +64,25 @@ func (a *authService) LoginV2(req request.LoginRequestV2, ctx context.Context) (
 	on_chain.FaucetTestnetBalance(client, address, a.errLogger, ctx)
 
 	var sub string = strings.TrimSpace(req.Sub)
-	manageObj, _ := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-		Client:    client,
-		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-		ErrLogger: a.errLogger,
-	}, ctx)
+	var manageObj entities.Manage
+	if !a.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
+		res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+			Client:    a.clients[constant.SuiTestnet],
+			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+			ErrLogger: a.errLogger,
+		}, ctx)
+		if err != nil {
+			return response.LoginResponse{}, err
+		}
+
+		if res != nil {
+			a.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
+			manageObj = *res
+		}
+	}
 
 	var roles []string
-	if manageObj != nil {
+	if manageObj.ID.ID != "" {
 		if slices.Contains(manageObj.AdminIds, address) {
 			roles = append(roles, admin_role)
 		}

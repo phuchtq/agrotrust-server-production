@@ -403,7 +403,8 @@ func (w *withdrawProposalService) ConfirmWithdrawProposal(id string, ctx context
 			}
 
 			paymentMethod = shared.PAYMENT_PAYOS_METHOD
-			res["checkout_url"] = data.CheckoutUrl
+			res["url"] = data.CheckoutUrl
+			res["payment_id"] = paymentId
 		}
 	}
 
