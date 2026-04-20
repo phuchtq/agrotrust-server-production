@@ -28,7 +28,7 @@ func Execute() {
 	var wg sync.WaitGroup
 
 	// Run background services
-	//setupBackgroundService(ctx, &wg)
+	setupBackgroundService(ctx, &wg)
 
 	// Initialize gin server for API
 	var server = gin.Default()
