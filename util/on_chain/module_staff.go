@@ -45,7 +45,8 @@ type RegisterLeaderArguments struct {
 }
 
 type RegisterNormalStaffArguments struct {
-	Region string
+	LocalPoolID string
+	Region      string
 	RegisterAdminArguments
 }
 
@@ -130,9 +131,28 @@ func (m *moduleStaff) ToRegisterVolunteerArguments(args RegisterVolunteerArgumen
 
 // ToRegisterNormalStaffArguments implements IModuleStaff.
 func (m *moduleStaff) ToRegisterNormalStaffArguments(args RegisterNormalStaffArguments) []interface{} {
+	if args.LocalPoolID == "" {
+		return []interface{}{
+			os.Getenv(env.MANAGE_OBJECT_ID),
+			args.CapID,
+			args.IdentityCode,
+			args.IdentityCardBlobID,
+			args.AvatarBlobID,
+			args.Region,
+			args.FirstName,
+			args.LastName,
+			args.Gender,
+			args.DateOfBirth,
+			args.PhoneNumber,
+			args.Email,
+			sui.CLOCK_OBJECT_ID,
+		}
+	}
+
 	return []interface{}{
 		os.Getenv(env.MANAGE_OBJECT_ID),
 		args.CapID,
+		args.LocalPoolID,
 		args.IdentityCode,
 		args.IdentityCardBlobID,
 		args.AvatarBlobID,
@@ -151,6 +171,7 @@ func (m *moduleStaff) ToRegisterNormalStaffArguments(args RegisterNormalStaffArg
 func (m *moduleStaff) ToRegisterStaffArguments(args RegisterStaffArguments) []interface{} {
 	return []interface{}{
 		os.Getenv(env.MANAGE_OBJECT_ID),
+
 		os.Getenv(env.POOL_ID),
 		args.IdentityCode,
 		args.IdentityCardBlobID,

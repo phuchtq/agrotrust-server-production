@@ -165,6 +165,8 @@ func (r *registrationRequestService) ConfirmRegistrationRequest(id string, ctx c
 		capType = manageModule.GetRegisterVolunteerCapStruct()
 	}
 
+	r.errLogger.Println("Cap type:", capType)
+
 	caps, err := on_chain.GetOnChainOwnedObjects[entities.Cap](on_chain.GetOnChainOwnedObjectsRequest{
 		Client:       client,
 		OwnerAddress: sender,
@@ -194,9 +196,49 @@ func (r *registrationRequestService) ConfirmRegistrationRequest(id string, ctx c
 			Email:              req.Email,
 		})
 	case local_leader_role:
+		pool, err := on_chain.GetOnChainObject[entities.MainPool](on_chain.GetOnChainObjectRequest{
+			Client:    client,
+			ObjectId:  os.Getenv(env.POOL_ID),
+			ErrLogger: r.errLogger,
+		}, ctx)
+		if err != nil {
+			return response.BuildTransactionResponse{}, err
+		}
+
+		var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
+		if pool == nil {
+			return response.BuildTransactionResponse{}, internalErr
+		}
+
+		localPools, err := on_chain.GetOnChainObjects[entities.LocalPool](on_chain.GetOnChainObjectsRequest{
+			Client:    client,
+			ObjectIds: pool.LocalPools,
+			ErrLogger: r.errLogger,
+		}, ctx)
+		if err != nil {
+			return response.BuildTransactionResponse{}, err
+		}
+
+		if localPools == nil || len(localPools) == 0 {
+			return response.BuildTransactionResponse{}, internalErr
+		}
+
+		var localPoolId string
+		for _, localPool := range localPools {
+			if localPool.Region == req.Region {
+				localPoolId = localPool.ID.ID
+				break
+			}
+		}
+
+		if localPoolId == "" {
+			localPoolId = os.Getenv(env.SHARED_LOCAL_POOL_ID)
+		}
+
 		function = staffModule.GetFunctionRegisterLeader()
 		args = staffModule.ToRegisterNormalStaffArguments(on_chain.RegisterNormalStaffArguments{
-			Region: req.Region,
+			LocalPoolID: localPoolId,
+			Region:      req.Region,
 			RegisterAdminArguments: on_chain.RegisterAdminArguments{
 				CapID:              caps[0].ID.ID,
 				IdentityCode:       req.IdentityCode,
