@@ -68,7 +68,7 @@ func (u *uploadChildRepo) CreateUploadChildRequest(req entities.UploadChildReque
 
 // GetUploadChildRequest implements repository.IUploadChildRequestRepository.
 func (u *uploadChildRepo) GetUploadChildRequest(id string, ctx context.Context) (*entities.UploadChildRequest, error) {
-	var query string = "SELECT * FROM " + registraion_request_table + " WHERE id = $1"
+	var query string = "SELECT * FROM " + upload_child_request_table + " WHERE id = $1"
 	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.UPLOAD_CHILD_REQUEST_REPOSITORY) + "GetUploadChildRequest - "
 
 	var res entities.UploadChildRequest

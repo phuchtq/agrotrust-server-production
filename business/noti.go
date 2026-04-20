@@ -101,11 +101,11 @@ func (n *notiService) GetCurrentWalletNotis(wallet string, req request.GetNotisR
 		req.PageSize = default_page_size
 	}
 
-	var res response.PaginationDataResponse
-	var redisKey string = n.getGetCurrentWalletNotisRedisKey(wallet, req)
-	if n.redisCache.Get(redisKey, &res, ctx) {
-		return res, nil
-	}
+	// var res response.PaginationDataResponse
+	// var redisKey string = n.getGetCurrentWalletNotisRedisKey(wallet, req)
+	// if n.redisCache.Get(redisKey, &res, ctx) {
+	// 	return res, nil
+	// }
 
 	data, err := n.leaderNotiRepo.GetCurrentLeaderNotis(req, wallet, ctx)
 	var amount int

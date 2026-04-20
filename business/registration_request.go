@@ -396,10 +396,10 @@ func (r *registrationRequestService) GetRegistrationRequests(req request.GetRegi
 	}
 
 	var res response.PaginationDataResponse
-	var redisKey string = r.getGetRegistrationRequestsRedisKey(req)
-	if r.redisCache.Get(redisKey, &res, ctx) {
-		return res, nil
-	}
+	// var redisKey string = r.getGetRegistrationRequestsRedisKey(req)
+	// if r.redisCache.Get(redisKey, &res, ctx) {
+	// 	return res, nil
+	// }
 
 	data, pages, err := r.registrationRequestRepo.GetRegistrationRequests(req, ctx)
 	var amount int
@@ -416,7 +416,7 @@ func (r *registrationRequestService) GetRegistrationRequests(req request.GetRegi
 		TotalPages: pages,
 	}
 
-	r.redisCache.Set(redisKey, res, time.Minute*5, ctx)
+	// r.redisCache.Set(redisKey, res, time.Minute*5, ctx)
 
 	return res, err
 }

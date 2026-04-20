@@ -57,6 +57,10 @@ func GetOnChainObject[T any](req GetOnChainObjectRequest, ctx context.Context) (
 
 	res, err := req.Client.SuiGetObject(ctx, retrieveReq)
 	if err != nil {
+		if strings.Contains(err.Error(), "no result") {
+			return nil, nil
+		}
+
 		req.ErrLogger.Println(noti.RETRIEVE_ON_CHAIN_DATA_ERR_MSG + err.Error())
 		return nil, internalErr
 	}

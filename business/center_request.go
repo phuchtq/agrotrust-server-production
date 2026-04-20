@@ -375,10 +375,10 @@ func (c *centerRequestService) GetRequests(req request.GetCenterRequests, ctx co
 	}
 
 	var res response.PaginationDataResponse
-	var redisKey string = c.getGetCenterRequestsRedisKey(req)
-	if c.redisCache.Get(redisKey, &res, ctx) {
-		return res, nil
-	}
+	// var redisKey string = c.getGetCenterRequestsRedisKey(req)
+	// if c.redisCache.Get(redisKey, &res, ctx) {
+	// 	return res, nil
+	// }
 
 	data, pages, err := c.centerRequestRepo.GetRegistrationRequests(req, ctx)
 	var amount int
@@ -395,7 +395,7 @@ func (c *centerRequestService) GetRequests(req request.GetCenterRequests, ctx co
 		TotalPages: pages,
 	}
 
-	c.redisCache.Set(redisKey, res, time.Minute*5, ctx)
+	//c.redisCache.Set(redisKey, res, time.Minute*5, ctx)
 
 	return res, err
 
@@ -435,10 +435,10 @@ func (c *centerRequestService) GetWalletRequests(id string, ctx context.Context)
 	}
 
 	var res []entities.CenterRequest
-	var redisKey string = c.getGetWalletCenterRequestsRedisKey(id)
-	if c.redisCache.Get(redisKey, &res, ctx) {
-		return res, nil
-	}
+	// var redisKey string = c.getGetWalletCenterRequestsRedisKey(id)
+	// if c.redisCache.Get(redisKey, &res, ctx) {
+	// 	return res, nil
+	// }
 
 	var errRes error
 	res, errRes = c.centerRequestRepo.GetWalletRegistrationRequests(id, ctx)
@@ -446,7 +446,7 @@ func (c *centerRequestService) GetWalletRequests(id string, ctx context.Context)
 		return nil, errRes
 	}
 
-	c.redisCache.Set(redisKey, res, time.Minute*5, ctx)
+	//c.redisCache.Set(redisKey, res, time.Minute*5, ctx)
 
 	return res, errRes
 

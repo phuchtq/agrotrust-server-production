@@ -499,10 +499,10 @@ func (p *pendingWithdrawProposalService) GetPendingWithdrawProposals(req request
 	}
 
 	var res response.PaginationDataResponse
-	var redisKey string = p.getGetPendingWithdrawProposalsRedisKey(req)
-	if p.redisCache.Get(redisKey, &res, ctx) {
-		return res, nil
-	}
+	// var redisKey string = p.getGetPendingWithdrawProposalsRedisKey(req)
+	// if p.redisCache.Get(redisKey, &res, ctx) {
+	// 	return res, nil
+	// }
 
 	data, pages, err := p.pendingWithdrawProposalRepo.GetPendingWithdrawProposals(req, ctx)
 	if err != nil {
@@ -523,7 +523,7 @@ func (p *pendingWithdrawProposalService) GetPendingWithdrawProposals(req request
 		TotalPages: pages,
 	}
 
-	p.redisCache.Set(redisKey, res, time.Minute, ctx)
+	// p.redisCache.Set(redisKey, res, time.Minute, ctx)
 
 	return res, nil
 }

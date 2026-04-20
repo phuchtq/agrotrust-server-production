@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"math"
 	"os"
 	"raise-child/constants/env"
 	"raise-child/constants/noti"
@@ -223,73 +222,19 @@ func (t *taskProofService) ApproveTaskProof(id string, ctx context.Context) (res
 
 // GetTaskProof implements business.ITaskProofService.
 func (t *taskProofService) GetTaskProof(id string, ctx context.Context) (*entities.TaskProof, error) {
-	// return t.taskProofRepo.GetTaskProof(id, ctx)
+	return t.taskProofRepo.GetTaskProof(id, ctx)
 
-	for _, proof := range mockTaskProofs {
-		if proof.ID == id {
-			return &proof, nil
-		}
-	}
+	// for _, proof := range mockTaskProofs {
+	// 	if proof.ID == id {
+	// 		return &proof, nil
+	// 	}
+	// }
 
-	return nil, nil
+	// return nil, nil
 }
 
 // GetTaskProofs implements business.ITaskProofService.
 func (t *taskProofService) GetTaskProofs(req request.GetTaskProofsRequest, ctx context.Context) (response.PaginationDataResponse, error) {
-	// req.SortOrder = util.StandardizeSortOrder(req.SortOrder)
-	// req.Keyword = strings.TrimSpace(req.Keyword)
-	// if req.Page < 1 {
-	// 	req.Page = 1
-	// }
-
-	// if req.PageSize < 1 {
-	// 	req.PageSize = default_page_size
-	// }
-
-	// var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
-	// if req.ActorAddress != "" {
-	// 	if !util.IsValidSuiAddressStrict(req.ActorAddress) {
-	// 		return response.PaginationDataResponse{}, genericErr
-	// 	}
-	// }
-
-	// if req.ReviewedBy != "" {
-	// 	if !util.IsValidSuiAddressStrict(req.ReviewedBy) {
-	// 		return response.PaginationDataResponse{}, genericErr
-	// 	}
-	// }
-
-	// var res response.PaginationDataResponse
-	// var redisKey string = t.getGetTaskProofsRedisKey(req)
-	// if t.redisCache.Get(redisKey, &res, ctx) {
-	// 	return res, nil
-	// }
-
-	// data, pages, err := t.taskProofRepo.GetTaskProofs(req, ctx)
-	// if err != nil {
-	// 	return response.PaginationDataResponse{}, err
-	// }
-
-	// var amount int
-	// if data == nil || len(data) == 0 {
-	// 	amount = 0
-	// } else {
-	// 	amount = len(data)
-	// }
-
-	// res = response.PaginationDataResponse{
-	// 	Data:       data,
-	// 	Amount:     amount,
-	// 	Page:       req.Page,
-	// 	TotalPages: pages,
-	// }
-
-	// t.redisCache.Set(redisKey, res, time.Minute*5, ctx)
-
-	// return res, nil
-
-	////////////////////////
-	// MOCK DATA
 	req.SortOrder = util.StandardizeSortOrder(req.SortOrder)
 	req.Keyword = strings.TrimSpace(req.Keyword)
 	if req.Page < 1 {
@@ -300,23 +245,77 @@ func (t *taskProofService) GetTaskProofs(req request.GetTaskProofsRequest, ctx c
 		req.PageSize = default_page_size
 	}
 
-	var res response.PaginationDataResponse
-	var redisKey string = t.getGetTaskProofsRedisKey(req)
-	if t.redisCache.Get(redisKey, &res, ctx) {
-		return res, nil
+	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
+	if req.ActorAddress != "" {
+		if !util.IsValidSuiAddressStrict(req.ActorAddress) {
+			return response.PaginationDataResponse{}, genericErr
+		}
 	}
 
-	var data []entities.TaskProof = mockTaskProofs[(req.Page-1)*req.PageSize : req.Page*req.PageSize]
+	if req.ReviewedBy != "" {
+		if !util.IsValidSuiAddressStrict(req.ReviewedBy) {
+			return response.PaginationDataResponse{}, genericErr
+		}
+	}
+
+	var res response.PaginationDataResponse
+	// var redisKey string = t.getGetTaskProofsRedisKey(req)
+	// if t.redisCache.Get(redisKey, &res, ctx) {
+	// 	return res, nil
+	// }
+
+	data, pages, err := t.taskProofRepo.GetTaskProofs(req, ctx)
+	if err != nil {
+		return response.PaginationDataResponse{}, err
+	}
+
+	var amount int
+	if data == nil || len(data) == 0 {
+		amount = 0
+	} else {
+		amount = len(data)
+	}
+
 	res = response.PaginationDataResponse{
 		Data:       data,
-		Amount:     len(data),
+		Amount:     amount,
 		Page:       req.Page,
-		TotalPages: int(math.Ceil(float64(len(mockTaskProofs)) / float64(req.PageSize))),
+		TotalPages: pages,
 	}
 
-	t.redisCache.Set(redisKey, res, time.Minute*5, ctx)
+	//t.redisCache.Set(redisKey, res, time.Minute*5, ctx)
 
 	return res, nil
+
+	// ////////////////////////
+	// // MOCK DATA
+	// req.SortOrder = util.StandardizeSortOrder(req.SortOrder)
+	// req.Keyword = strings.TrimSpace(req.Keyword)
+	// if req.Page < 1 {
+	// 	req.Page = 1
+	// }
+
+	// if req.PageSize < 1 {
+	// 	req.PageSize = default_page_size
+	// }
+
+	// var res response.PaginationDataResponse
+	// var redisKey string = t.getGetTaskProofsRedisKey(req)
+	// if t.redisCache.Get(redisKey, &res, ctx) {
+	// 	return res, nil
+	// }
+
+	// var data []entities.TaskProof = mockTaskProofs[(req.Page-1)*req.PageSize : req.Page*req.PageSize]
+	// res = response.PaginationDataResponse{
+	// 	Data:       data,
+	// 	Amount:     len(data),
+	// 	Page:       req.Page,
+	// 	TotalPages: int(math.Ceil(float64(len(mockTaskProofs)) / float64(req.PageSize))),
+	// }
+
+	// t.redisCache.Set(redisKey, res, time.Minute*5, ctx)
+
+	// return res, nil
 }
 
 // RefuseTaskProof implements business.ITaskProofService.

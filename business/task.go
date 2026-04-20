@@ -257,10 +257,10 @@ func (t *taskService) GetTasks(req request.GetTasksRequest, ctx context.Context)
 	}
 
 	var res response.PaginationDataResponse
-	var redisKey string = t.getGetTasksRedisKey(req)
-	if t.redisCache.Get(redisKey, &res, ctx) {
-		return res, nil
-	}
+	// var redisKey string = t.getGetTasksRedisKey(req)
+	// if t.redisCache.Get(redisKey, &res, ctx) {
+	// 	return res, nil
+	// }
 
 	data, pages, err := t.taskRepo.GetTasks(req, ctx)
 	if err != nil {
@@ -281,7 +281,7 @@ func (t *taskService) GetTasks(req request.GetTasksRequest, ctx context.Context)
 		TotalPages: pages,
 	}
 
-	t.redisCache.Set(redisKey, res, time.Minute*5, ctx)
+	// t.redisCache.Set(redisKey, res, time.Minute*5, ctx)
 
 	return res, nil
 }

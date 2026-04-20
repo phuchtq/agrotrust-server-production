@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"math"
 	"os"
 	"raise-child/constants/env"
 	"raise-child/constants/noti"
@@ -376,10 +375,10 @@ func (u *uploadChildRequestService) GetUploadChildRequests(req request.GetUpload
 	}
 
 	var res response.PaginationDataResponse
-	var redisKey string = u.getGetUploadChildRequestsRedisKey(req)
-	if u.redisCache.Get(redisKey, &res, ctx) {
-		return res, nil
-	}
+	// var redisKey string = u.getGetUploadChildRequestsRedisKey(req)
+	// if u.redisCache.Get(redisKey, &res, ctx) {
+	// 	return res, nil
+	// }
 
 	data, pages, err := u.uploadChildRequestRepo.GetUploadChildRequests(req, ctx)
 	if err != nil {
@@ -400,7 +399,7 @@ func (u *uploadChildRequestService) GetUploadChildRequests(req request.GetUpload
 		TotalPages: pages,
 	}
 
-	u.redisCache.Set(redisKey, res, time.Minute*5, ctx)
+	// u.redisCache.Set(redisKey, res, time.Minute*5, ctx)
 
 	return res, nil
 
@@ -436,10 +435,45 @@ func (u *uploadChildRequestService) GetUploadChildRequests(req request.GetUpload
 
 // GetWalletUploadChildRequests implements business.IUploadChildRequestService.
 func (u *uploadChildRequestService) GetWalletUploadChildRequests(id string, page int, ctx context.Context) (response.PaginationDataResponse, error) {
-	// if !util.IsValidSuiAddressStrict(id) {
-	// 	return response.PaginationDataResponse{}, errors.New(noti.GENERIC_ERROR_WARN_MSG)
+	if !util.IsValidSuiAddressStrict(id) {
+		return response.PaginationDataResponse{}, errors.New(noti.GENERIC_ERROR_WARN_MSG)
+	}
+
+	if page < 1 {
+		page = 1
+	}
+
+	var res response.PaginationDataResponse
+	// var redisKey string = u.getGetUploadChildRequestsOfWalletRedisKey(id, page)
+	// if u.redisCache.Get(redisKey, &res, ctx) {
+	// 	return res, nil
 	// }
 
+	data, pages, err := u.uploadChildRequestRepo.GetWalletUploadChildRequests(id, page, ctx)
+	if err != nil {
+		return response.PaginationDataResponse{}, err
+	}
+
+	var amount int
+	if data == nil || len(data) == 0 {
+		amount = 0
+	} else {
+		amount = len(data)
+	}
+
+	res = response.PaginationDataResponse{
+		Data:       data,
+		Amount:     amount,
+		Page:       page,
+		TotalPages: pages,
+	}
+
+	// u.redisCache.Set(redisKey, res, time.Minute*5, ctx)
+
+	return res, nil
+
+	// ///////////////////
+	// // MOCK DATA
 	// if page < 1 {
 	// 	page = 1
 	// }
@@ -450,52 +484,17 @@ func (u *uploadChildRequestService) GetWalletUploadChildRequests(id string, page
 	// 	return res, nil
 	// }
 
-	// data, pages, err := u.uploadChildRequestRepo.GetWalletUploadChildRequests(id, page, ctx)
-	// if err != nil {
-	// 	return response.PaginationDataResponse{}, err
-	// }
-
-	// var amount int
-	// if data == nil || len(data) == 0 {
-	// 	amount = 0
-	// } else {
-	// 	amount = len(data)
-	// }
-
+	// var data []entities.CenterRequest = mockCenterRequests[(page-1)*10 : page*10]
 	// res = response.PaginationDataResponse{
 	// 	Data:       data,
-	// 	Amount:     amount,
+	// 	Amount:     len(data),
 	// 	Page:       page,
-	// 	TotalPages: pages,
+	// 	TotalPages: int(math.Ceil(float64(len(mockCenterRequests)) / 10)),
 	// }
 
 	// u.redisCache.Set(redisKey, res, time.Minute*5, ctx)
 
 	// return res, nil
-
-	///////////////////
-	// MOCK DATA
-	if page < 1 {
-		page = 1
-	}
-
-	var res response.PaginationDataResponse
-	var redisKey string = u.getGetUploadChildRequestsOfWalletRedisKey(id, page)
-	if u.redisCache.Get(redisKey, &res, ctx) {
-		return res, nil
-	}
-
-	var data []entities.CenterRequest = mockCenterRequests[(page-1)*10 : page*10]
-	res = response.PaginationDataResponse{
-		Data:       data,
-		Amount:     len(data),
-		Page:       page,
-		TotalPages: int(math.Ceil(float64(len(mockCenterRequests)) / 10)),
-	}
-
-	u.redisCache.Set(redisKey, res, time.Minute*5, ctx)
-
-	return res, nil
 }
 
 // VoteUploadChildRequest implements business.IUploadChildRequestService.

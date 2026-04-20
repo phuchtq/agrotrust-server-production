@@ -351,10 +351,10 @@ func (p *pendingCampaignService) GetPendingCampaigns(req request.GetPendingCampa
 	}
 
 	var res response.PaginationDataResponse
-	var redisKey string = p.getGetPendingCampaignsRedisKey(req)
-	if p.redisCache.Get(redisKey, &res, ctx) {
-		return res, nil
-	}
+	// var redisKey string = p.getGetPendingCampaignsRedisKey(req)
+	// if p.redisCache.Get(redisKey, &res, ctx) {
+	// 	return res, nil
+	// }
 
 	data, pages, err := p.pendingCampaignRepo.GetPendingCampaigns(req, ctx)
 	if err != nil {
@@ -375,7 +375,7 @@ func (p *pendingCampaignService) GetPendingCampaigns(req request.GetPendingCampa
 		TotalPages: pages,
 	}
 
-	p.redisCache.Set(redisKey, res, time.Minute*2, ctx)
+	// p.redisCache.Set(redisKey, res, time.Minute*2, ctx)
 
 	return res, nil
 }

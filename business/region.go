@@ -533,10 +533,10 @@ func (r *regionService) GetSupportedRegionSuggestions(req request.GetSupportedRe
 	}
 
 	var res response.PaginationDataResponse
-	var redisKey string = r.getGetSupportedRegionSuggestionsRedisKey(req)
-	if r.redisCache.Get(redisKey, &res, ctx) {
-		return res, nil
-	}
+	// var redisKey string = r.getGetSupportedRegionSuggestionsRedisKey(req)
+	// if r.redisCache.Get(redisKey, &res, ctx) {
+	// 	return res, nil
+	// }
 
 	data, pages, err := r.regionRepo.GetSupportedRegionSuggestions(req, true, ctx)
 	var amount int
@@ -553,7 +553,7 @@ func (r *regionService) GetSupportedRegionSuggestions(req request.GetSupportedRe
 		TotalPages: pages,
 	}
 
-	r.redisCache.Set(redisKey, res, time.Minute*5, ctx)
+	// r.redisCache.Set(redisKey, res, time.Minute*5, ctx)
 
 	return res, err
 
@@ -671,10 +671,10 @@ func (r *regionService) GetWalletSupportedRegionSuggestions(req request.GetSuppo
 	}
 
 	var res response.PaginationDataResponse
-	var redisKey string = r.getGetAuthenticatedSupportedRegionSuggestionsRedisKey(req)
-	if r.redisCache.Get(redisKey, &res, ctx) {
-		return res, nil
-	}
+	// var redisKey string = r.getGetAuthenticatedSupportedRegionSuggestionsRedisKey(req)
+	// if r.redisCache.Get(redisKey, &res, ctx) {
+	// 	return res, nil
+	// }
 
 	data, pages, err := r.regionRepo.GetSupportedRegionSuggestions(req, false, ctx)
 	var amount int
@@ -691,7 +691,7 @@ func (r *regionService) GetWalletSupportedRegionSuggestions(req request.GetSuppo
 		TotalPages: pages,
 	}
 
-	r.redisCache.Set(redisKey, res, time.Minute*5, ctx)
+	// r.redisCache.Set(redisKey, res, time.Minute*5, ctx)
 
 	return res, err
 

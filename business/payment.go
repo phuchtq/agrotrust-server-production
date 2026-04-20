@@ -636,10 +636,10 @@ func (p *paymentService) GetPayments(req request.GetPaymentsRequest, ctx context
 	}
 
 	var res response.PaginationDataResponse
-	var redisKey string = p.getGetPaymentsRedisKey(req)
-	if p.redisCache.Get(redisKey, &res, ctx) {
-		return res, nil
-	}
+	// var redisKey string = p.getGetPaymentsRedisKey(req)
+	// if p.redisCache.Get(redisKey, &res, ctx) {
+	// 	return res, nil
+	// }
 
 	data, pages, err := p.paymentRepo.GetPayments(req, ctx)
 	if err != nil {
@@ -660,7 +660,7 @@ func (p *paymentService) GetPayments(req request.GetPaymentsRequest, ctx context
 		TotalPages: pages,
 	}
 
-	p.redisCache.Set(redisKey, res, time.Minute*2, ctx)
+	// p.redisCache.Set(redisKey, res, time.Minute*2, ctx)
 
 	return res, nil
 }
