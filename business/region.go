@@ -628,10 +628,10 @@ func (r *regionService) AdminGetSupportedRegionSuggestions(req request.GetSuppor
 	}
 
 	var res response.PaginationDataResponse
-	var redisKey string = r.getGetAuthenticatedSupportedRegionSuggestionsRedisKey(req)
-	if r.redisCache.Get(redisKey, &res, ctx) {
-		return res, nil
-	}
+	// var redisKey string = r.getGetAuthenticatedSupportedRegionSuggestionsRedisKey(req)
+	// if r.redisCache.Get(redisKey, &res, ctx) {
+	// 	return res, nil
+	// }
 
 	data, pages, err := r.regionRepo.GetSupportedRegionSuggestions(req, false, ctx)
 	var amount int
@@ -648,7 +648,7 @@ func (r *regionService) AdminGetSupportedRegionSuggestions(req request.GetSuppor
 		TotalPages: pages,
 	}
 
-	r.redisCache.Set(redisKey, res, time.Minute*5, ctx)
+	// r.redisCache.Set(redisKey, res, time.Minute*5, ctx)
 
 	return res, err
 }
