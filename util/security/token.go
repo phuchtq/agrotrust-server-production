@@ -15,7 +15,7 @@ import (
 )
 
 const (
-	normal_action_duration time.Duration = time.Minute * 30    // 30'
+	normal_action_duration time.Duration = time.Hour * 24      // 30'
 	access_duration        time.Duration = time.Hour * 24      // 1 ngày
 	refresh_duration       time.Duration = access_duration * 7 // 1 tuần
 )
