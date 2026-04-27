@@ -63,6 +63,14 @@ type DonateTransactionRequest struct {
 	ErrLogger *log.Logger
 }
 
+type ExecuteTransactionRequestV2 struct {
+	Client    sui.ISuiAPI
+	Module    string
+	Function  string
+	Arguments []interface{}
+	ErrLogger *log.Logger
+}
+
 const (
 	defaultGasBudget   int    = 100_000_000
 	defaultRequestType string = "WaitForLocalExecution"
@@ -241,4 +249,43 @@ func ExecuteTransaction(req ExecuteTransactionRequest, ctx context.Context) (mod
 	}
 
 	return res, err
+}
+
+func ExecuteTransactionV2(req ExecuteTransactionRequestV2, ctx context.Context) (models.SuiTransactionBlockResponse, error) {
+	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
+	signer, err := signer.NewSignerWithSecretKey(os.Getenv(env.PUBLISHER_PRIVATE_KEY))
+	if err != nil {
+		req.ErrLogger.Println(noti.EXECUTING_TX_ERR_MSG + err.Error())
+		return models.SuiTransactionBlockResponse{}, internalErr
+	}
+
+	txnData, err := req.Client.MoveCall(ctx, models.MoveCallRequest{
+		Signer:          os.Getenv(env.PUBLISHER_ADDRESS),
+		PackageObjectId: os.Getenv(env.PACKAGE_ID),
+		Module:          req.Module,
+		Function:        req.Function,
+		TypeArguments:   []interface{}{},
+		Arguments:       req.Arguments,
+		GasBudget:       fmt.Sprintf("%d", defaultGasBudget),
+	})
+	if err != nil {
+		req.ErrLogger.Println(noti.EXECUTING_TX_ERR_MSG + err.Error())
+		return models.SuiTransactionBlockResponse{}, internalErr
+	}
+
+	res, err := req.Client.SignAndExecuteTransactionBlock(ctx, models.SignAndExecuteTransactionBlockRequest{
+		TxnMetaData: txnData,
+		PriKey:      signer.PriKey,
+		RequestType: defaultRequestType,
+		Options: models.SuiTransactionBlockOptions{
+			ShowEffects: true,
+			ShowEvents:  true,
+		},
+	})
+	if err != nil {
+		req.ErrLogger.Println(noti.EXECUTING_TX_ERR_MSG + err.Error())
+		return models.SuiTransactionBlockResponse{}, internalErr
+	}
+
+	return res, nil
 }

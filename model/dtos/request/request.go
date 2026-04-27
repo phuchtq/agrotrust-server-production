@@ -64,8 +64,7 @@ type CreateRegistrationRequest struct {
 }
 
 type GetRegistrationRequests struct {
-	RegisterRole         string `form:"register_role"`
-	IsAvailableToConfirm *bool  `form:"is_available_to_confirm"`
+	RegisterRole string `form:"register_role"`
 	GetUploadChildRequests
 }
 

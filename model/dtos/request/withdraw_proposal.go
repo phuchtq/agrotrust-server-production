@@ -14,10 +14,10 @@ type GetWithdrawProposalsRequest struct {
 }
 
 type CreateWithdrawProposalRequest struct {
-	PoolID         string `json:"pool_id" validate:"required"`
-	WithdrawAmount int64  `json:"withdraw_amount" validate:"required,min=10000,max=20000000"`
-	Description    string `json:"description" validate:"required"`
-	ProofBlobID    string `json:"proof_blob_id"`
+	PoolID         string  `json:"pool_id" validate:"required"`
+	WithdrawAmount int64   `json:"withdraw_amount" validate:"required,min=10000,max=20000000"`
+	Description    string  `json:"description" validate:"required"`
+	ProofBlobID    *string `json:"proof_blob_id"`
 }
 
 type GetPendingWithdrawProposalsRequest struct {

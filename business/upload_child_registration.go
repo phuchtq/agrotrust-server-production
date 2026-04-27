@@ -21,14 +21,11 @@ import (
 	"raise-child/util/db"
 	on_chain "raise-child/util/on_chain"
 	walrus_pkg "raise-child/util/walrus_pkg"
-	"slices"
 	"strings"
 	"time"
 
 	"github.com/block-vision/sui-go-sdk/constant"
-	"github.com/block-vision/sui-go-sdk/models"
 	"github.com/block-vision/sui-go-sdk/sui"
-	"github.com/block-vision/sui-go-sdk/utils"
 )
 
 type uploadChildRequestService struct {
@@ -79,7 +76,7 @@ func (u *uploadChildRequestService) ReviewUploadChildRequest(id string, req requ
 		return errors.New(noti.GENERIC_ERROR_WARN_MSG)
 	}
 
-	if request.ReviewStatus != request_pending_status || request.ReviewedBy != nil {
+	if request.Status != request_pending_status || request.ReviewedBy != nil {
 		return errors.New(noti.REQUEST_REVIEWED_MESSAGE)
 	}
 
@@ -101,109 +98,186 @@ func (u *uploadChildRequestService) ReviewUploadChildRequest(id string, req requ
 		}
 	}
 
-	if !slices.Contains(manageObj.AdminIds, sender) {
-		return errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+	var foundIdx int = -1
+	var centerId string
+	for i, leader := range manageObj.LocalLeaderIds {
+		if centerId == "" {
+			if i < len(manageObj.LocalRegions) {
+				if manageObj.LocalRegions[i] == request.Region {
+					centerId = manageObj.ChildrenCenters[i]
+				}
+			}
+		}
+
+		if leader == sender {
+			foundIdx = i
+			break
+		}
 	}
 
-	var status string
-	var closedAt *time.Time
-	if req.IsVoteYes {
-		status = request_approved_status
-		var tmp = util.GetRequestDuration()
-		closedAt = &tmp
-	} else {
-		status = request_refused_status
+	var genericRightErr error = errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+	if foundIdx == -1 {
+		return genericRightErr
 	}
 
-	return u.uploadChildRequestRepo.SetReviewStatus(id, status, sender, closedAt, ctx)
-}
-
-// ConfirmUploadChildRequest implements business.IUploadChildRequestService.
-func (u *uploadChildRequestService) ConfirmUploadChildRequest(id string, ctx context.Context) (response.BuildTransactionResponse, error) {
-	req, err := u.uploadChildRequestRepo.GetUploadChildRequest(id, ctx)
+	var client = u.clients[constant.SuiTestnet]
+	nft, err := on_chain.GetOnChainObject[entities.StaffNft](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  manageObj.LocalLeaderNfts[foundIdx],
+		ErrLogger: u.errLogger,
+	}, ctx)
 	if err != nil {
-		return response.BuildTransactionResponse{}, err
+		return err
 	}
 
-	if req == nil {
-		return response.BuildTransactionResponse{}, errors.New(noti.GENERIC_ERROR_WARN_MSG)
+	if nft.Region != request.Region {
+		return genericRightErr
 	}
 
-	var sender string = ctx.Value("address").(string)
-	if req.CreatedBy != sender {
-		return response.BuildTransactionResponse{}, errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+	var curTime time.Time = time.Now()
+	request.ReviewedBy = &sender
+	request.UpdatedAt = curTime
+
+	if !req.IsVoteYes {
+		request.Status = request_refused_status
+		return u.uploadChildRequestRepo.UpdateUploadChildRequest(*request, ctx)
 	}
 
-	// Pending process
-	if req.ClosedAt.After(time.Now()) {
-		return response.BuildTransactionResponse{}, errors.New(noti.STILL_PENDING_REQUEST_MESSAGE)
-	} else { // Request closed
-		var rate float32 = float32(len(req.Approvers)) / float32(len(req.Approvers)+len(req.Refusers))
-		var isDenied bool = false
+	var secondGuardianFullName, secondGuardianPhone, secondGuardianRelation, secondGuardianIdentityCardBlobID string
+	if request.SecondGuardianProfile != nil {
+		secondGuardianFullName = request.SecondGuardianProfile.FullName
+		secondGuardianPhone = request.SecondGuardianProfile.PhoneNumber
+		secondGuardianRelation = request.SecondGuardianProfile.Relation
+		secondGuardianIdentityCardBlobID = request.SecondGuardianProfile.IdentityCardBlobID
+	}
 
-		if rate >= approve_rate_limit {
-			req.Status = request_approved_status
-			req.IsConfirmUpload = true
-		} else {
-			req.Status = request_refused_status
-			isDenied = true
+	var childModule = on_chain.InitializeModuleChild()
+	if _, err := on_chain.ExecuteTransactionV2(on_chain.ExecuteTransactionRequestV2{
+		Client:   client,
+		Module:   childModule.GetModule(),
+		Function: childModule.GetFunctionAddChild(),
+		Arguments: childModule.ToAddChildArguments(on_chain.AddChildArguments{
+			Center:                           centerId,
+			IdentityCode:                     request.IdentityCode,
+			BirthCertificateBlobID:           request.BirthCertificateBlobID,
+			FirstName:                        request.FirstName,
+			LastName:                         request.LastName,
+			Gender:                           request.Gender,
+			DateOfBirth:                      request.DateOfBirth,
+			HomeAddress:                      request.HomeAddress,
+			Region:                           request.Region,
+			AvatarBlobId:                     request.AvatarBlobId,
+			HomeBlobID:                       request.HomeBlobID,
+			FirstGuardianFullName:            request.FirstGuardianProfile.FullName,
+			FirstGuardianPhone:               request.FirstGuardianProfile.PhoneNumber,
+			FirstGuardianRelation:            request.FirstGuardianProfile.Relation,
+			FirstGuardianIdentityCardBlobID:  request.FirstGuardianProfile.IdentityCardBlobID,
+			SecondGuardianFullName:           secondGuardianFullName,
+			SecondGuardianPhone:              secondGuardianPhone,
+			SecondGuardianRelation:           secondGuardianRelation,
+			SecondGuardianIdentityCardBlobID: secondGuardianIdentityCardBlobID,
+		}),
+	}, ctx); err != nil {
+		return err
+	}
+
+	request.Status = request_approved_status
+
+	for i := 1; i <= 3; i++ {
+		if u.uploadChildRequestRepo.UpdateUploadChildRequest(*request, ctx) == nil {
+			return nil
 		}
-
-		req.UpdatedAt = time.Now()
-		if err := u.uploadChildRequestRepo.UpdateUploadChildRequest(*req, ctx); err != nil {
-			return response.BuildTransactionResponse{}, err
-		}
-
-		if isDenied {
-			return response.BuildTransactionResponse{}, nil
-		}
 	}
 
-	var res response.BuildTransactionResponse
-	var errRes error
-	if req.IsConfirmUpload {
-		var secondGuardianFullName, secondGuardianPhone, secondGuardianRelation, secondGuardianIdentityCardBlobID string
-		if req.SecondGuardianProfile != nil {
-			secondGuardianFullName = req.SecondGuardianProfile.FullName
-			secondGuardianPhone = req.SecondGuardianProfile.PhoneNumber
-			secondGuardianRelation = req.SecondGuardianProfile.Relation
-			secondGuardianIdentityCardBlobID = req.SecondGuardianProfile.IdentityCardBlobID
-		}
-
-		var module = on_chain.InitializeModuleChild()
-		txBytes, err := on_chain.BuildTransaction(on_chain.BuildTransactionRequest{
-			Client:    u.clients[constant.SuiTestnet],
-			Sender:    sender,
-			Module:    module.GetModule(),
-			Function:  module.GetFunctionAddChild(),
-			ErrLogger: u.errLogger,
-			Arguments: module.ToAddChildArguments(on_chain.AddChildArguments{
-				IdentityCode:                     req.IdentityCode,
-				FirstName:                        req.FirstName,
-				LastName:                         req.LastName,
-				Gender:                           req.Gender,
-				DateOfBirth:                      req.DateOfBirth,
-				HomeAddress:                      req.HomeAddress,
-				Region:                           req.Region,
-				AvatarBlobId:                     req.AvatarBlobId,
-				HomeBlobID:                       req.HomeBlobID,
-				FirstGuardianFullName:            req.FirstGuardianProfile.FullName,
-				FirstGuardianPhone:               req.FirstGuardianProfile.PhoneNumber,
-				FirstGuardianRelation:            req.FirstGuardianProfile.Relation,
-				FirstGuardianIdentityCardBlobID:  req.FirstGuardianProfile.IdentityCardBlobID,
-				SecondGuardianFullName:           secondGuardianFullName,
-				SecondGuardianPhone:              secondGuardianPhone,
-				SecondGuardianRelation:           secondGuardianRelation,
-				SecondGuardianIdentityCardBlobID: secondGuardianIdentityCardBlobID,
-			}),
-		}, ctx)
-
-		res.TxBytes = txBytes
-		errRes = err
-	}
-
-	return res, errRes
+	return errors.New(noti.INTERNALL_ERR_MSG)
 }
+
+// // ConfirmUploadChildRequest implements business.IUploadChildRequestService.
+// func (u *uploadChildRequestService) ConfirmUploadChildRequest(id string, ctx context.Context) (response.BuildTransactionResponse, error) {
+// 	req, err := u.uploadChildRequestRepo.GetUploadChildRequest(id, ctx)
+// 	if err != nil {
+// 		return response.BuildTransactionResponse{}, err
+// 	}
+
+// 	if req == nil {
+// 		return response.BuildTransactionResponse{}, errors.New(noti.GENERIC_ERROR_WARN_MSG)
+// 	}
+
+// 	var sender string = ctx.Value("address").(string)
+// 	if req.CreatedBy != sender {
+// 		return response.BuildTransactionResponse{}, errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+// 	}
+
+// 	// Pending process
+// 	if req.ClosedAt.After(time.Now()) {
+// 		return response.BuildTransactionResponse{}, errors.New(noti.STILL_PENDING_REQUEST_MESSAGE)
+// 	} else { // Request closed
+// 		var rate float32 = float32(len(req.Approvers)) / float32(len(req.Approvers)+len(req.Refusers))
+// 		var isDenied bool = false
+
+// 		if rate >= approve_rate_limit {
+// 			req.Status = request_approved_status
+// 			req.IsConfirmUpload = true
+// 		} else {
+// 			req.Status = request_refused_status
+// 			isDenied = true
+// 		}
+
+// 		req.UpdatedAt = time.Now()
+// 		if err := u.uploadChildRequestRepo.UpdateUploadChildRequest(*req, ctx); err != nil {
+// 			return response.BuildTransactionResponse{}, err
+// 		}
+
+// 		if isDenied {
+// 			return response.BuildTransactionResponse{}, nil
+// 		}
+// 	}
+
+// 	var res response.BuildTransactionResponse
+// 	var errRes error
+// 	if req.IsConfirmUpload {
+// 		var secondGuardianFullName, secondGuardianPhone, secondGuardianRelation, secondGuardianIdentityCardBlobID string
+// 		if req.SecondGuardianProfile != nil {
+// 			secondGuardianFullName = req.SecondGuardianProfile.FullName
+// 			secondGuardianPhone = req.SecondGuardianProfile.PhoneNumber
+// 			secondGuardianRelation = req.SecondGuardianProfile.Relation
+// 			secondGuardianIdentityCardBlobID = req.SecondGuardianProfile.IdentityCardBlobID
+// 		}
+
+// 		var module = on_chain.InitializeModuleChild()
+// 		txBytes, err := on_chain.BuildTransaction(on_chain.BuildTransactionRequest{
+// 			Client:    u.clients[constant.SuiTestnet],
+// 			Sender:    sender,
+// 			Module:    module.GetModule(),
+// 			Function:  module.GetFunctionAddChild(),
+// 			ErrLogger: u.errLogger,
+// 			Arguments: module.ToAddChildArguments(on_chain.AddChildArguments{
+// 				IdentityCode:                     req.IdentityCode,
+// 				FirstName:                        req.FirstName,
+// 				LastName:                         req.LastName,
+// 				Gender:                           req.Gender,
+// 				DateOfBirth:                      req.DateOfBirth,
+// 				HomeAddress:                      req.HomeAddress,
+// 				Region:                           req.Region,
+// 				AvatarBlobId:                     req.AvatarBlobId,
+// 				HomeBlobID:                       req.HomeBlobID,
+// 				FirstGuardianFullName:            req.FirstGuardianProfile.FullName,
+// 				FirstGuardianPhone:               req.FirstGuardianProfile.PhoneNumber,
+// 				FirstGuardianRelation:            req.FirstGuardianProfile.Relation,
+// 				FirstGuardianIdentityCardBlobID:  req.FirstGuardianProfile.IdentityCardBlobID,
+// 				SecondGuardianFullName:           secondGuardianFullName,
+// 				SecondGuardianPhone:              secondGuardianPhone,
+// 				SecondGuardianRelation:           secondGuardianRelation,
+// 				SecondGuardianIdentityCardBlobID: secondGuardianIdentityCardBlobID,
+// 			}),
+// 		}, ctx)
+
+// 		res.TxBytes = txBytes
+// 		errRes = err
+// 	}
+
+// 	return res, errRes
+// }
 
 // CreateUploadChildRequest implements business.IUploadChildRequestService.
 func (u *uploadChildRequestService) CreateUploadChildRequest(req request.UploadChildRequest, ctx context.Context) (*entities.UploadChildRequest, error) {
@@ -497,73 +571,73 @@ func (u *uploadChildRequestService) GetWalletUploadChildRequests(id string, page
 	// return res, nil
 }
 
-// VoteUploadChildRequest implements business.IUploadChildRequestService.
-func (u *uploadChildRequestService) VoteUploadChildRequest(id string, req request.VoteRequest, ctx context.Context) error {
-	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
+// // VoteUploadChildRequest implements business.IUploadChildRequestService.
+// func (u *uploadChildRequestService) VoteUploadChildRequest(id string, req request.VoteRequest, ctx context.Context) error {
+// 	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
 
-	var voter string = ctx.Value("address").(string)
-	if !utils.IsValidSuiAddress(models.SuiAddress(voter)) {
-		return genericErr
-	}
+// 	var voter string = ctx.Value("address").(string)
+// 	if !utils.IsValidSuiAddress(models.SuiAddress(voter)) {
+// 		return genericErr
+// 	}
 
-	request, err := u.uploadChildRequestRepo.GetUploadChildRequest(id, ctx)
-	if err != nil {
-		return err
-	}
+// 	request, err := u.uploadChildRequestRepo.GetUploadChildRequest(id, ctx)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	if request == nil {
-		return genericErr
-	}
+// 	if request == nil {
+// 		return genericErr
+// 	}
 
-	if request.ClosedAt.Before(time.Now()) {
-		return errors.New(noti.REQUEST_CLOSED_MESSAGE)
-	}
+// 	if request.ClosedAt.Before(time.Now()) {
+// 		return errors.New(noti.REQUEST_CLOSED_MESSAGE)
+// 	}
 
-	if voter == request.CreatedBy {
-		return errors.New(noti.OWNER_VOTE_WARN_MSG)
-	}
+// 	if voter == request.CreatedBy {
+// 		return errors.New(noti.OWNER_VOTE_WARN_MSG)
+// 	}
 
-	if slices.Contains(request.Approvers, voter) || slices.Contains(request.Refusers, voter) {
-		return errors.New(noti.ALREADY_VOTE_MESSAGE)
-	}
+// 	if slices.Contains(request.Approvers, voter) || slices.Contains(request.Refusers, voter) {
+// 		return errors.New(noti.ALREADY_VOTE_MESSAGE)
+// 	}
 
-	var manageObj entities.Manage
-	if !u.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
-		res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-			Client:    u.clients[constant.SuiTestnet],
-			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-			ErrLogger: u.errLogger,
-		}, ctx)
-		if err != nil {
-			return err
-		}
+// 	var manageObj entities.Manage
+// 	if !u.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
+// 		res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+// 			Client:    u.clients[constant.SuiTestnet],
+// 			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+// 			ErrLogger: u.errLogger,
+// 		}, ctx)
+// 		if err != nil {
+// 			return err
+// 		}
 
-		if res != nil {
-			u.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
-			manageObj = *res
-		}
-	}
+// 		if res != nil {
+// 			u.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
+// 			manageObj = *res
+// 		}
+// 	}
 
-	// Not admins or local leaders
-	if !slices.Contains(manageObj.AdminIds, voter) && !slices.Contains(manageObj.LocalLeaderIds, voter) {
-		return errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
-	}
+// 	// Not admins or local leaders
+// 	if !slices.Contains(manageObj.AdminIds, voter) && !slices.Contains(manageObj.LocalLeaderIds, voter) {
+// 		return errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+// 	}
 
-	if req.IsVoteYes {
-		request.Approvers = append(request.Approvers, voter)
-	} else {
-		request.Refusers = append(request.Refusers, voter)
-		if req.RefuseReason == "" {
-			return errors.New(noti.FIELD_EMPTY_WARN_MSG)
-		}
+// 	if req.IsVoteYes {
+// 		request.Approvers = append(request.Approvers, voter)
+// 	} else {
+// 		request.Refusers = append(request.Refusers, voter)
+// 		if req.RefuseReason == "" {
+// 			return errors.New(noti.FIELD_EMPTY_WARN_MSG)
+// 		}
 
-		request.RefuseReasons = append(request.RefuseReasons, strings.TrimSpace(req.RefuseReason))
-	}
+// 		request.RefuseReasons = append(request.RefuseReasons, strings.TrimSpace(req.RefuseReason))
+// 	}
 
-	request.UpdatedAt = time.Now()
+// 	request.UpdatedAt = time.Now()
 
-	return u.uploadChildRequestRepo.UpdateUploadChildRequest(*request, ctx)
-}
+// 	return u.uploadChildRequestRepo.UpdateUploadChildRequest(*request, ctx)
+// }
 
 func (u *uploadChildRequestService) getGetUploadChildRequestsRedisKey(req request.GetUploadChildRequests) string {
 	var keyword string = "empty"
@@ -597,81 +671,4 @@ func (u *uploadChildRequestService) getGetUploadChildRequestsRedisKey(req reques
 
 func (u *uploadChildRequestService) getGetUploadChildRequestsOfWalletRedisKey(id string, page int) string {
 	return fmt.Sprintf("upload_child_req:of:%s:s:%d:p;%d", id, default_page_size, page)
-}
-
-var mockUploadChildReqs = getMockUploadChildRequests()
-
-func getMockUploadChildRequests() []entities.UploadChildRequest {
-	requests := make([]entities.UploadChildRequest, 20)
-	now := time.Now()
-
-	var ptrStr = func(s string) *string { return &s }
-	var ptrTime = func(t time.Time) *time.Time { return &t }
-
-	for i := 0; i < 20; i++ {
-		id := fmt.Sprintf("%d", i+1)
-
-		// Khởi tạo giá trị mặc định cho Pending
-		reviewStatus := "Pending"
-		var reviewedBy *string = nil
-		var closedAt *time.Time = nil
-		approvers := []string{}
-		refusers := []string{}
-		refuseReasons := []string{}
-		isConfirm := false
-
-		// Phân bổ logic trạng thái: 0=Pending, 1=Approved, 2=Refused
-		if i%3 == 1 {
-			reviewStatus = "Approved"
-			reviewedBy = ptrStr("Admin_Alpha")
-			closedAt = ptrTime(now)
-			approvers = []string{"Admin_Alpha"}
-			isConfirm = true
-		} else if i%3 == 2 {
-			reviewStatus = "Refused"
-			reviewedBy = ptrStr("Admin_Beta")
-			closedAt = ptrTime(now)
-			refusers = []string{"Admin_Beta"}
-			refuseReasons = []string{"Thông tin người giám hộ không khớp với hồ sơ."}
-		}
-
-		requests[i] = entities.UploadChildRequest{
-			ID:           id,
-			ProfileID:    "PROF-" + id,
-			IdentityCode: fmt.Sprintf("ID%06d", 100+i),
-			AvatarBlobId: "avatar-" + id + ".png",
-			HomeBlobID:   "home-" + id + ".png",
-			Region:       "Quảng Nam",
-			FirstName:    []string{"Văn", "Thị", "Đức", "Minh"}[i%4],
-			LastName:     []string{"Tùng", "Hoa", "Mạnh", "Lan"}[i%4],
-			Gender:       []string{"Male", "Female"}[i%2],
-			DateOfBirth:  "2018-02-14",
-			HomeAddress:  "Thôn 4, Xã X, Huyện Y",
-			FirstGuardianProfile: entities.ChildGuardianProfile{
-				FullName:           "Nguyễn Văn Cha",
-				PhoneNumber:        "0912345678",
-				Relation:           "Father",
-				IdentityCardBlobID: "id-card-guardian-1-" + id,
-			},
-			SecondGuardianProfile: &entities.ChildGuardianProfile{
-				FullName:           "Lê Thị Mẹ",
-				PhoneNumber:        "0987654321",
-				Relation:           "Mother",
-				IdentityCardBlobID: "id-card-guardian-2-" + id,
-			},
-			Approvers:       approvers,
-			Refusers:        refusers,
-			RefuseReasons:   refuseReasons,
-			AIEvaluation:    "Passed",
-			Status:          reviewStatus,
-			ReviewStatus:    reviewStatus,
-			IsConfirmUpload: isConfirm,
-			CreatedBy:       "User_" + id,
-			ReviewedBy:      reviewedBy,
-			CreatedAt:       now.Add(time.Duration(-i) * time.Hour),
-			UpdatedAt:       now,
-			ClosedAt:        closedAt,
-		}
-	}
-	return requests
 }

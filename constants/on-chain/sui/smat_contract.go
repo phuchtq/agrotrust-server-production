@@ -44,9 +44,13 @@ const (
 	CREATE_CHILD_SPEICAL_NEED_WITHDRAW_PROPOSAL_FUNCTION_V2          string = "create_special_need_withdraw_proposal_v2"
 	CREATE_CHILD_SPECIAL_NEED_PROPOSAL_FUNCTION_V2                   string = "create_child_special_need_proposal_v2"
 	WITHDRAW_FROM_SPECIAL_NEED_CAMPAIGN_FUNCTION                     string = "withdraw_from_special_need_campaign"
+	WITHDRAW_FROM_SPECIAL_NEED_CAMPAIGN_FUNCTION_v2                  string = "withdraw_from_special_need_campaign_v2"
 	WITHDRAW_FROM_BOOKS_NEED_PROPOSAL_FUNCTION                       string = "withdraw_from_books_need_proposal"
+	WITHDRAW_FROM_BOOKS_NEED_PROPOSAL_FUNCTION_V2                    string = "withdraw_from_books_need_proposal_v2"
 	WITHDRAW_FROM_HEALTH_INSURANCE_NEED_PROPOSAL_FUNCTION            string = "withdraw_from_health_insurance_need_proposal"
+	WITHDRAW_FROM_HEALTH_INSURANCE_NEED_PROPOSAL_FUNCTION_V2         string = "withdraw_from_health_insurance_need_proposal_v2"
 	WITHDRAW_FROM_MEAL_NEED_PROPOSAL_FUNCTION                        string = "withdraw_from_meal_need_proposal"
+	WITHDRAW_FROM_MEAL_NEED_PROPOSAL_FUNCTION_V2                     string = "withdraw_from_meal_need_proposal_v2"
 	CONFIRM_PROVIDE_MEAL_FOR_CHILD_FUNCTION_V2                       string = "confirm_provide_meal_for_child_v2"
 	SUBMIT_TASK_FUNCTION                                             string = "submit_task"
 	VOTE_SPECIAL_NEED_PROPOSAL_FUNCTION                              string = "vote_special_need_proposal"
@@ -64,6 +68,11 @@ const (
 	CREATE_WITHDRAW_PROPOSAL_FUNCTION                                string = "create_withdraw_proposal"
 	CREATE_WITHDRAW_PROPOSAL_V2_FUNCTION                             string = "create_withdraw_proposal_v2"
 	VOTE_WITHDRAW_PROPOSAL_FUNCTION                                  string = "vote_withdraw_proposal"
+	VOTE_POOL_CAMPAIGN_WITHDRAW_PROPOSAL_FUNCTION                    string = "vote_pool_campaign_withdraw_proposal"
+	VOTE_BOOKS_NEED_WITHDRAW_PROPOSAL_FUNCTION                       string = "vote_books_need_withdraw_proposal"
+	VOTE_MEAL_NEED_WITHDRAW_PROPOSAL_FUNCTION                        string = "vote_meal_need_withdraw_proposal"
+	VOTE_HEALTH_INSURANCE_NEED_WITHDRAW_PROPOSAL_FUNCTION            string = "vote_health_isurance_need_withdraw_proposal"
+	VOTE_SPECIAL_NEED_CAMPAIGN_WITHDRAW_PROPOSAL_FUNCTION            string = "vote_special_need_campaign_withdraw_proposal"
 	UPDATE_PUBLISHER_NFT_FUNCTION                                    string = "update_publisher_nft"
 	CREATE_CENTER_FUNCTION                                           string = "create_children_center"
 	UPLOAD_CENTER_IMAGE_FUNCTION                                     string = "upload_center_image"
@@ -90,6 +99,7 @@ const (
 	SUPPORT_CAMPAIGN_FUNCTION_v2                                     string = "support_campaign_v2"
 	CREATE_CAMPAIGN_WITHDRAW_PROPOSAL_FUNCTION                       string = "create_campaign_withdraw_proposal"
 	WITHDRAW_FROM_CAMPAIGN_FUNCTION                                  string = "withdraw_from_campaign"
+	WITHDRAW_FROM_CAMPAIGN_FUNCTION_V2                               string = "withdraw_from_campaign_v2"
 )
 
 // Structs

@@ -4,7 +4,6 @@ import (
 	"context"
 	"raise-child/model/dtos/request"
 	"raise-child/model/entities"
-	"time"
 )
 
 type IUploadChildRequestRepository interface {
@@ -14,8 +13,8 @@ type IUploadChildRequestRepository interface {
 	CreateUploadChildRequest(req entities.UploadChildRequest, ctx context.Context) error
 	UpdateUploadChildRequest(req entities.UploadChildRequest, ctx context.Context) error
 	IsChildRequested(identityCode string, ctx context.Context) (bool, error)
-	GetPendingRequests(ctx context.Context) ([]entities.BackgroundRecord, []entities.BackgroundRecord, error)
-	SetApprovedStatuses(reqs []entities.BackgroundRecord, ctx context.Context) error
-	SetRefusedStatuses(reqs []entities.BackgroundRecord, ctx context.Context) error
-	SetReviewStatus(id, reviewStatus, reviewer string, closedAt *time.Time, ctx context.Context) error
+	// GetPendingRequests(ctx context.Context) ([]entities.BackgroundRecord, []entities.BackgroundRecord, error)
+	// SetApprovedStatuses(reqs []entities.BackgroundRecord, ctx context.Context) error
+	// SetRefusedStatuses(reqs []entities.BackgroundRecord, ctx context.Context) error
+	// SetReviewStatus(id, reviewStatus, reviewer string, closedAt *time.Time, ctx context.Context) error
 }

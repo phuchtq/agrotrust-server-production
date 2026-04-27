@@ -36,9 +36,12 @@ func InitializeCenterRequestRoute(server *gin.Engine) {
 	norGroup.GET("/user/:id", transport.GetWalletCenterRequests)
 	norGroup.GET("/:id", transport.GetCenterRequest)
 
-	// Auth group
-	var authGroup = server.Group(contextPath, middleware.Authorize)
-	authGroup.POST("", transport.CreateCenterRequest)
-	authGroup.POST("/:id/vote", transport.VoteCenterRequest)
-	authGroup.POST("/:id/confirm", transport.ConfirmCenterRequest)
+	// Staff group
+	var staffGroup = server.Group(contextPath, middleware.Authorize, middleware.StaffRoleAuthorize)
+	staffGroup.POST("/:id/vote", transport.VoteCenterRequest)
+
+	// Leader group
+	var leaderGroup = server.Group(contextPath, middleware.Authorize, middleware.LeaderAuthorize)
+	leaderGroup.POST("", transport.CreateCenterRequest)
+	leaderGroup.POST("/:id/confirm", transport.ConfirmCenterRequest)
 }

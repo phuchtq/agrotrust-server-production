@@ -60,8 +60,6 @@ func InitializeUploadChildRequestRoute(server *gin.Engine) {
 	// Auth group
 	var authGroup = server.Group(contextPath, middleware.Authorize)
 	authGroup.POST("", transport.CreateUploadChildRequest)
-	authGroup.POST("/:id/vote", transport.VoteUploadChildRequest)
-	authGroup.POST("/:id/confirm", transport.ConfirmUploadChildRequest)
 
 	// Admin group
 	var adminGroup = server.Group(contextPath, middleware.Authorize, middleware.AdminAuthorize)

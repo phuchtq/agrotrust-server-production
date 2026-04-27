@@ -76,105 +76,209 @@ func GenerateCenterRequestService() (business.ICenterRequestService, error) {
 	), nil
 }
 
+// // ConfirmRequest implements business.ICenterRequestService.
+// func (c *centerRequestService) ConfirmRequest(id string, ctx context.Context) (response.BuildTransactionResponse, error) {
+// 	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
+
+// 	var sender string = ctx.Value("address").(string)
+// 	if !utils.IsValidSuiAddress(models.SuiAddress(sender)) {
+// 		return response.BuildTransactionResponse{}, genericErr
+// 	}
+
+// 	req, err := c.centerRequestRepo.GetRequest(id, ctx)
+// 	if err != nil {
+// 		return response.BuildTransactionResponse{}, err
+// 	}
+
+// 	if req == nil {
+// 		return response.BuildTransactionResponse{}, genericErr
+// 	}
+
+// 	if req.CreatedBy != sender {
+// 		return response.BuildTransactionResponse{}, errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+// 	}
+
+// 	// Pending process
+// 	if req.ClosedAt.After(time.Now()) {
+// 		return response.BuildTransactionResponse{}, errors.New(noti.STILL_PENDING_REQUEST_MESSAGE)
+// 	}
+
+// 	var rate float32 = float32(len(req.Approvers)) / float32(len(req.Approvers)+len(req.Refusers))
+// 	// var isDenied bool = false
+
+// 	// if rate >= approve_rate_limit {
+// 	// 	req.Status = request_approved_status
+// 	// 	req.IsConfirmRegister = true
+// 	// 	if req.IsAvailableToConfirm {
+// 	// 		req.IsConfirmRegister = true
+// 	// 	}
+// 	// } else {
+// 	// 	req.Status = request_refused_status
+// 	// 	isDenied = true
+// 	// }
+
+// 	// req.UpdatedAt = time.Now()
+// 	// if err := c.centerRequestRepo.UpdateRegistrationRequest(*req, ctx); err != nil {
+// 	// 	return response.BuildTransactionResponse{}, err
+// 	// }
+
+// 	// if isDenied {
+// 	// 	return response.BuildTransactionResponse{}, nil
+// 	// }
+
+// 	if rate < approve_rate_limit {
+// 		req.Status = request_refused_status
+// 		req.UpdatedAt = time.Now()
+// 		if err := c.centerRequestRepo.UpdateRegistrationRequest(*req, ctx); err != nil {
+// 			return response.BuildTransactionResponse{}, err
+// 		}
+
+// 		return response.BuildTransactionResponse{}, nil
+// 	}
+
+// 	var manageModule = on_chain.InitializeModuleManage()
+// 	var client = c.clients[constant.SuiTestnet]
+// 	caps, err := on_chain.GetOnChainOwnedObjects[entities.Cap](on_chain.GetOnChainOwnedObjectsRequest{
+// 		Client:       client,
+// 		OwnerAddress: sender,
+// 		StructType:   fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), manageModule.GetModule(), manageModule.GetUploadCenterCapStruct()),
+// 	}, ctx)
+// 	if err != nil {
+// 		return response.BuildTransactionResponse{}, err
+// 	}
+
+// 	if caps == nil || len(caps) == 0 {
+// 		return response.BuildTransactionResponse{}, genericErr
+// 	}
+
+// 	var manageObj entities.Manage
+// 	if !c.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
+// 		res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+// 			Client:    client,
+// 			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+// 			ErrLogger: c.errLogger,
+// 		}, ctx)
+// 		if err != nil {
+// 			return response.BuildTransactionResponse{}, err
+// 		}
+
+// 		if res != nil {
+// 			c.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
+// 			manageObj = *res
+// 		}
+// 	}
+
+// 	var startIdx int
+// 	for i, region := range manageObj.LocalRegions {
+// 		if region == req.Region {
+// 			startIdx = i
+// 			break
+// 		}
+// 	}
+
+// 	leaders, err := on_chain.GetOnChainObjects[entities.StaffNft](on_chain.GetOnChainObjectsRequest{
+// 		Client:    client,
+// 		ObjectIds: manageObj.LocalLeaderNfts[startIdx:],
+// 		ErrLogger: c.errLogger,
+// 	}, ctx)
+// 	if err != nil {
+// 		return response.BuildTransactionResponse{}, err
+// 	}
+
+// 	var leaderAddresses []string
+// 	for i, leader := range leaders {
+// 		if leader.Region == req.Region {
+// 			leaderAddresses = append(leaderAddresses, manageObj.LocalLeaderIds[startIdx+i])
+// 		}
+// 	}
+
+// 	var childModule = on_chain.InitializeModuleChild()
+// 	txBytes, err := on_chain.BuildTransaction(on_chain.BuildTransactionRequest{
+// 		Client:    client,
+// 		Sender:    sender,
+// 		Module:    childModule.GetModule(),
+// 		Function:  childModule.GetFunctionUploadCenter(),
+// 		ErrLogger: c.errLogger,
+// 		Arguments: childModule.ToCreateCenterArguments(on_chain.CreateCenterArguments{
+// 			CapID:       caps[0].ID.ID,
+// 			Region:      req.Region,
+// 			Address:     req.Address,
+// 			PhoneNumber: req.PhoneNumber,
+// 			ImageBlobID: req.ImageBlobID,
+// 			Leaders:     leaderAddresses,
+// 		}),
+// 	}, ctx)
+
+// 	return response.BuildTransactionResponse{
+// 		TxBytes: txBytes,
+// 	}, err
+// }
+
 // ConfirmRequest implements business.ICenterRequestService.
-func (c *centerRequestService) ConfirmRequest(id string, ctx context.Context) (response.BuildTransactionResponse, error) {
-	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
-
-	var sender string = ctx.Value("address").(string)
-	if !utils.IsValidSuiAddress(models.SuiAddress(sender)) {
-		return response.BuildTransactionResponse{}, genericErr
-	}
-
+func (c *centerRequestService) ConfirmRequest(id string, ctx context.Context) error {
 	req, err := c.centerRequestRepo.GetRequest(id, ctx)
 	if err != nil {
-		return response.BuildTransactionResponse{}, err
+		return err
 	}
 
+	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
 	if req == nil {
-		return response.BuildTransactionResponse{}, genericErr
+		return genericErr
 	}
 
+	var sender string = ctx.Value("address").(string)
 	if req.CreatedBy != sender {
-		return response.BuildTransactionResponse{}, errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+		return errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
 	}
 
-	// Pending process
+	var curTime time.Time = time.Now()
 	if req.ClosedAt.After(time.Now()) {
-		return response.BuildTransactionResponse{}, errors.New(noti.STILL_PENDING_REQUEST_MESSAGE)
+		return errors.New(noti.STILL_PENDING_REQUEST_MESSAGE)
 	}
 
-	var rate float32 = float32(len(req.Approvers)) / float32(len(req.Approvers)+len(req.Refusers))
-	// var isDenied bool = false
+	if req.Approvers == nil || len(req.Approvers) == 0 {
+		return errors.New(noti.NOT_ARRPOVED_REQUEST_WARN_MSG)
+	}
 
-	// if rate >= approve_rate_limit {
-	// 	req.Status = request_approved_status
-	// 	req.IsConfirmRegister = true
-	// 	if req.IsAvailableToConfirm {
-	// 		req.IsConfirmRegister = true
-	// 	}
-	// } else {
-	// 	req.Status = request_refused_status
-	// 	isDenied = true
-	// }
+	var refuseCounts int
+	if req.Refusers != nil && len(req.Refusers) > 0 {
+		refuseCounts = len(req.Refusers)
+	}
 
-	// req.UpdatedAt = time.Now()
-	// if err := c.centerRequestRepo.UpdateRegistrationRequest(*req, ctx); err != nil {
-	// 	return response.BuildTransactionResponse{}, err
-	// }
-
-	// if isDenied {
-	// 	return response.BuildTransactionResponse{}, nil
-	// }
-
+	var rate float32 = float32(len(req.Approvers)) / float32(len(req.Approvers)+refuseCounts)
 	if rate < approve_rate_limit {
 		req.Status = request_refused_status
-		req.UpdatedAt = time.Now()
-		if err := c.centerRequestRepo.UpdateRegistrationRequest(*req, ctx); err != nil {
-			return response.BuildTransactionResponse{}, err
-		}
-
-		return response.BuildTransactionResponse{}, nil
+	} else {
+		req.Status = request_approved_status
+		req.IsConfirmRegister = true
 	}
 
-	// Wait for background server to mint cap object to register
-	if !req.IsAvailableToConfirm {
-		return response.BuildTransactionResponse{}, nil
+	req.UpdatedAt = curTime
+	if err := c.centerRequestRepo.UpdateRegistrationRequest(*req, ctx); err != nil {
+		return err
 	}
 
-	var manageModule = on_chain.InitializeModuleManage()
+	if req.Status == request_refused_status {
+		return nil
+	}
+
 	var client = c.clients[constant.SuiTestnet]
-	caps, err := on_chain.GetOnChainOwnedObjects[entities.Cap](on_chain.GetOnChainOwnedObjectsRequest{
-		Client:       client,
-		OwnerAddress: sender,
-		StructType:   fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), manageModule.GetModule(), manageModule.GetUploadCenterCapStruct()),
+	manage, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: c.errLogger,
 	}, ctx)
 	if err != nil {
-		return response.BuildTransactionResponse{}, err
+		return err
 	}
 
-	if caps == nil || len(caps) == 0 {
-		return response.BuildTransactionResponse{}, genericErr
-	}
-
-	var manageObj entities.Manage
-	if !c.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
-		res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-			Client:    client,
-			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-			ErrLogger: c.errLogger,
-		}, ctx)
-		if err != nil {
-			return response.BuildTransactionResponse{}, err
-		}
-
-		if res != nil {
-			c.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
-			manageObj = *res
-		}
+	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
+	if manage == nil {
+		return internalErr
 	}
 
 	var startIdx int
-	for i, region := range manageObj.LocalRegions {
+	for i, region := range manage.LocalRegions {
 		if region == req.Region {
 			startIdx = i
 			break
@@ -183,130 +287,132 @@ func (c *centerRequestService) ConfirmRequest(id string, ctx context.Context) (r
 
 	leaders, err := on_chain.GetOnChainObjects[entities.StaffNft](on_chain.GetOnChainObjectsRequest{
 		Client:    client,
-		ObjectIds: manageObj.LocalLeaderNfts[startIdx:],
+		ObjectIds: manage.LocalLeaderNfts[startIdx:],
 		ErrLogger: c.errLogger,
 	}, ctx)
 	if err != nil {
-		return response.BuildTransactionResponse{}, err
+		return err
 	}
 
-	var leaderAddresses []string
-	for i, leader := range leaders {
+	if leaders == nil {
+		return internalErr
+	}
+
+	var regionLeaders []string
+	for _, leader := range leaders {
 		if leader.Region == req.Region {
-			leaderAddresses = append(leaderAddresses, manageObj.LocalLeaderIds[startIdx+i])
+			regionLeaders = append(regionLeaders, leader.Owner)
 		}
 	}
 
 	var childModule = on_chain.InitializeModuleChild()
-	txBytes, err := on_chain.BuildTransaction(on_chain.BuildTransactionRequest{
-		Client:    client,
-		Sender:    sender,
-		Module:    childModule.GetModule(),
-		Function:  childModule.GetFunctionUploadCenter(),
-		ErrLogger: c.errLogger,
+	var executeReq = on_chain.ExecuteTransactionRequestV2{
+		Client:   client,
+		Module:   childModule.GetModule(),
+		Function: childModule.GetFunctionUploadCenter(),
 		Arguments: childModule.ToCreateCenterArguments(on_chain.CreateCenterArguments{
-			CapID:       caps[0].ID.ID,
 			Region:      req.Region,
 			Address:     req.Address,
 			PhoneNumber: req.PhoneNumber,
 			ImageBlobID: req.ImageBlobID,
-			Leaders:     leaderAddresses,
+			Leaders:     regionLeaders,
+			Sender:      req.CreatedBy,
 		}),
-	}, ctx)
+		ErrLogger: c.errLogger,
+	}
 
-	return response.BuildTransactionResponse{
-		TxBytes: txBytes,
-	}, err
+	for i := 1; i <= 3; i++ {
+		if _, err := on_chain.ExecuteTransactionV2(executeReq, ctx); err == nil {
+			return nil
+		}
+	}
+
+	return internalErr
 }
 
 // CreateRequest implements business.ICenterRequestService.
 func (c *centerRequestService) CreateRequest(req request.CreateCenterRequest, ctx context.Context) (*entities.CenterRequest, error) {
-	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
-
-	var sender string = ctx.Value("address").(string)
-	if !utils.IsValidSuiAddress(models.SuiAddress(sender)) {
-		return nil, genericErr
-	}
-
 	var client = c.clients[constant.SuiTestnet]
-	var module = on_chain.InitializeModuleStaff()
-	staffNfts, err := on_chain.GetOnChainOwnedObjects[entities.StaffNft](on_chain.GetOnChainOwnedObjectsRequest{
-		Client:       client,
-		OwnerAddress: sender,
-		StructType:   fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), module.GetModule(), module.GetStaffNftObjectStruct()),
-		ErrLogger:    c.errLogger,
-	}, ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	var genericRightErr error = errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
-	if staffNfts == nil || len(staffNfts) == 0 {
-		return nil, genericRightErr
-	}
-
-	var isRegionStaff bool = false
-	for _, nft := range staffNfts {
-		if nft.Region == req.Region {
-			isRegionStaff = true
-			break
-		}
-	}
-
-	if !isRegionStaff {
-		return nil, genericRightErr
-	}
-
-	var manageObj entities.Manage
-	if !c.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
-		res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-			Client:    client,
-			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-			ErrLogger: c.errLogger,
-		}, ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		if res != nil {
-			c.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
-			manageObj = *res
-		}
-	}
-
-	var isRegionHaveStaffs bool = false
-	for i := 0; i < len(manageObj.LocalRegions); i++ {
-		if manageObj.LocalRegions[i] == req.Region && !manageObj.CenterConfirmStatuses[i] {
-			isRegionHaveStaffs = true
-			break
-		}
-	}
-
-	if !isRegionHaveStaffs {
-		return nil, genericErr
-	}
-
-	var nftIds []string = append(manageObj.LocalLeaderNfts, manageObj.VolunteerNfts...)
-	nfts, err := on_chain.GetOnChainObjects[entities.StaffNft](on_chain.GetOnChainObjectsRequest{
+	manage, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
 		Client:    client,
-		ObjectIds: nftIds,
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
 		ErrLogger: c.errLogger,
 	}, ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	var staffCount int = 0
-	for _, nft := range nfts {
-		if nft.Region == req.Region {
-			staffCount++
-			if staffCount == min_region_staffs {
+	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
+	if manage == nil {
+		return nil, internalErr
+	}
+
+	var staffStartSearchIdx int = -1
+	for i, region := range manage.LocalRegions {
+		if region == req.Region {
+			staffStartSearchIdx = i
+			break
+		}
+	}
+
+	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
+	if staffStartSearchIdx == -1 {
+		return nil, genericErr
+	}
+
+	var sender string = ctx.Value("address").(string)
+	var regionLeaderNft string
+	for i, leader := range manage.LocalLeaderIds[staffStartSearchIdx:] {
+		if leader == sender {
+			regionLeaderNft = manage.LocalLeaderNfts[staffStartSearchIdx+i]
+			break
+		}
+	}
+
+	var genericRightErr error = errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+	if regionLeaderNft == "" {
+		return nil, genericRightErr
+	}
+
+	senderLeaderNft, err := on_chain.GetOnChainObject[entities.StaffNft](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  regionLeaderNft,
+		ErrLogger: c.errLogger,
+	}, ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if senderLeaderNft == nil {
+		return nil, genericRightErr
+	}
+
+	var staffNfts []string = manage.LocalLeaderNfts[staffStartSearchIdx:]
+	staffNfts = append(staffNfts, manage.VolunteerNfts[staffStartSearchIdx:]...)
+	staffs, err := on_chain.GetOnChainObjects[entities.StaffNft](on_chain.GetOnChainObjectsRequest{
+		Client:    client,
+		ObjectIds: staffNfts,
+		ErrLogger: c.errLogger,
+	}, ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if staffs == nil {
+		return nil, internalErr
+	}
+
+	var regionStaffCounts int
+	for _, staff := range staffs {
+		if staff.Region == req.Region {
+			regionStaffCounts += 1
+			if regionStaffCounts == min_region_staffs {
 				break
 			}
 		}
 	}
 
-	if staffCount < min_region_staffs {
+	if regionStaffCounts < min_region_staffs {
 		return nil, genericErr
 	}
 
@@ -605,120 +711,3 @@ func (c *centerRequestService) getCenterRequestRedisKey(id string) string {
 }
 
 var global_cur_time = time.Now()
-var mockCenterRequests = []entities.CenterRequest{
-	{
-		ID: "1", ProfileID: "PROF-001", Region: "Hà Nội", Address: "123 Đường Láng, Đống Đa",
-		PhoneNumber: "0901112223", ImageBlobID: "img-001", Status: "Approved",
-		Approvers: []string{"admin-01", "admin-02"}, IsAvailableToConfirm: true, IsConfirmRegister: true,
-		CreatedBy: "user-01", CreatedAt: global_cur_time.Add(-100 * time.Hour), UpdatedAt: global_cur_time.Add(-24 * time.Hour),
-	},
-	{
-		ID: "2", ProfileID: "PROF-002", Region: "TP.HCM", Address: "456 Lê Lợi, Quận 1",
-		PhoneNumber: "0902223334", ImageBlobID: "img-002", Status: "Pending",
-		Approvers: []string{}, IsAvailableToConfirm: false, IsConfirmRegister: false,
-		CreatedBy: "user-02", CreatedAt: global_cur_time.Add(-90 * time.Hour), UpdatedAt: global_cur_time.Add(-80 * time.Hour),
-	},
-	{
-		ID: "3", ProfileID: "PROF-003", Region: "Đà Nẵng", Address: "789 Võ Nguyên Giáp",
-		PhoneNumber: "0903334445", ImageBlobID: "img-003", Status: "Refused",
-		Refusers: []string{"admin-03"}, RefuseReasons: []string{"Ảnh chứng chỉ mờ"},
-		IsAvailableToConfirm: false, IsConfirmRegister: false,
-		CreatedBy: "user-03", CreatedAt: global_cur_time.Add(-80 * time.Hour), UpdatedAt: global_cur_time.Add(-70 * time.Hour),
-	},
-	{
-		ID: "4", ProfileID: "PROF-004", Region: "Cần Thơ", Address: "12 Đại lộ Hòa Bình",
-		PhoneNumber: "0904445556", ImageBlobID: "img-004", Status: "Approved",
-		Approvers: []string{"admin-01"}, IsAvailableToConfirm: true, IsConfirmRegister: false,
-		CreatedBy: "user-04", CreatedAt: global_cur_time.Add(-70 * time.Hour), UpdatedAt: global_cur_time.Add(-60 * time.Hour),
-	},
-	{
-		ID: "5", ProfileID: "PROF-005", Region: "Hải Phòng", Address: "34 Lạch Tray",
-		PhoneNumber: "0905556667", ImageBlobID: "img-005", Status: "Pending",
-		IsAvailableToConfirm: false, IsConfirmRegister: false,
-		CreatedBy: "user-05", CreatedAt: global_cur_time.Add(-60 * time.Hour), UpdatedAt: global_cur_time.Add(-50 * time.Hour),
-	},
-	{
-		ID: "6", ProfileID: "PROF-006", Region: "Huế", Address: "56 Hùng Vương",
-		PhoneNumber: "0906667778", ImageBlobID: "img-006", Status: "Refused",
-		Refusers: []string{"admin-02"}, RefuseReasons: []string{"Địa chỉ không tồn tại"},
-		CreatedBy: "user-06", CreatedAt: global_cur_time.Add(-50 * time.Hour), UpdatedAt: global_cur_time.Add(-40 * time.Hour),
-	},
-	{
-		ID: "7", ProfileID: "PROF-007", Region: "Nha Trang", Address: "78 Trần Phú",
-		PhoneNumber: "0907778889", ImageBlobID: "img-007", Status: "Approved",
-		Approvers: []string{"admin-04"}, IsAvailableToConfirm: true, IsConfirmRegister: true,
-		CreatedBy: "user-07", CreatedAt: global_cur_time.Add(-40 * time.Hour), UpdatedAt: global_cur_time.Add(-30 * time.Hour),
-	},
-	{
-		ID: "8", ProfileID: "PROF-008", Region: "Đà Lạt", Address: "90 Phan Đình Phùng",
-		PhoneNumber: "0908889990", ImageBlobID: "img-008", Status: "Pending",
-		CreatedBy: "user-08", CreatedAt: global_cur_time.Add(-30 * time.Hour), UpdatedAt: global_cur_time.Add(-20 * time.Hour),
-	},
-	{
-		ID: "9", ProfileID: "PROF-009", Region: "Vũng Tàu", Address: "23 Thùy Vân",
-		PhoneNumber: "0909990001", ImageBlobID: "img-009", Status: "Approved",
-		Approvers: []string{"admin-01", "admin-05"}, IsAvailableToConfirm: true, IsConfirmRegister: false,
-		CreatedBy: "user-09", CreatedAt: global_cur_time.Add(-20 * time.Hour), UpdatedAt: global_cur_time.Add(-10 * time.Hour),
-	},
-	{
-		ID: "10", ProfileID: "PROF-010", Region: "Hà Nội", Address: "11 Cầu Giấy",
-		PhoneNumber: "0911223344", ImageBlobID: "img-010", Status: "Pending",
-		CreatedBy: "user-10", CreatedAt: global_cur_time.Add(-10 * time.Hour), UpdatedAt: global_cur_time.Add(-5 * time.Hour),
-	},
-	{
-		ID: "11", ProfileID: "PROF-011", Region: "TP.HCM", Address: "88 Nguyễn Huệ",
-		PhoneNumber: "0912334455", ImageBlobID: "img-011", Status: "Refused",
-		RefuseReasons: []string{"Số điện thoại không liên lạc được"},
-		CreatedBy:     "user-11", CreatedAt: global_cur_time.Add(-15 * time.Hour), UpdatedAt: global_cur_time.Add(-2 * time.Hour),
-	},
-	{
-		ID: "12", ProfileID: "PROF-012", Region: "Bắc Ninh", Address: "45 Lý Thái Tổ",
-		PhoneNumber: "0913445566", ImageBlobID: "img-012", Status: "Approved",
-		Approvers: []string{"admin-02"}, IsAvailableToConfirm: true, IsConfirmRegister: true,
-		CreatedBy: "user-12", CreatedAt: global_cur_time.Add(-12 * time.Hour), UpdatedAt: global_cur_time.Add(-1 * time.Hour),
-	},
-	{
-		ID: "13", ProfileID: "PROF-013", Region: "Quảng Ninh", Address: "67 Hạ Long",
-		PhoneNumber: "0914556677", ImageBlobID: "img-013", Status: "Pending",
-		CreatedBy: "user-13", CreatedAt: global_cur_time.Add(-8 * time.Hour), UpdatedAt: global_cur_time.Add(-4 * time.Hour),
-	},
-	{
-		ID: "14", ProfileID: "PROF-014", Region: "Nghệ An", Address: "12 Vinh",
-		PhoneNumber: "0915667788", ImageBlobID: "img-014", Status: "Pending",
-		CreatedBy: "user-14", CreatedAt: global_cur_time.Add(-6 * time.Hour), UpdatedAt: global_cur_time.Add(-3 * time.Hour),
-	},
-	{
-		ID: "15", ProfileID: "PROF-015", Region: "Thanh Hóa", Address: "34 Sầm Sơn",
-		PhoneNumber: "0916778899", ImageBlobID: "img-015", Status: "Refused",
-		RefuseReasons: []string{"Hồ sơ thiếu công chứng"},
-		CreatedBy:     "user-15", CreatedAt: global_cur_time.Add(-24 * time.Hour), UpdatedAt: global_cur_time.Add(-12 * time.Hour),
-	},
-	{
-		ID: "16", ProfileID: "PROF-016", Region: "Hà Giang", Address: "56 Đồng Văn",
-		PhoneNumber: "0917889900", ImageBlobID: "img-016", Status: "Approved",
-		Approvers: []string{"admin-03"}, IsAvailableToConfirm: true, IsConfirmRegister: false,
-		CreatedBy: "user-16", CreatedAt: global_cur_time.Add(-48 * time.Hour), UpdatedAt: global_cur_time.Add(-24 * time.Hour),
-	},
-	{
-		ID: "17", ProfileID: "PROF-017", Region: "Lào Cai", Address: "78 Sa Pa",
-		PhoneNumber: "0918990011", ImageBlobID: "img-017", Status: "Pending",
-		CreatedBy: "user-17", CreatedAt: global_cur_time.Add(-72 * time.Hour), UpdatedAt: global_cur_time.Add(-36 * time.Hour),
-	},
-	{
-		ID: "18", ProfileID: "PROF-018", Region: "Phú Quốc", Address: "90 Dương Đông",
-		PhoneNumber: "0919001122", ImageBlobID: "img-018", Status: "Approved",
-		Approvers: []string{"admin-01"}, IsAvailableToConfirm: true, IsConfirmRegister: true,
-		CreatedBy: "user-18", CreatedAt: global_cur_time.Add(-96 * time.Hour), UpdatedAt: global_cur_time.Add(-48 * time.Hour),
-	},
-	{
-		ID: "19", ProfileID: "PROF-019", Region: "Bình Dương", Address: "12 Thủ Dầu Một",
-		PhoneNumber: "0920112233", ImageBlobID: "img-019", Status: "Pending",
-		CreatedBy: "user-19", CreatedAt: global_cur_time.Add(-120 * time.Hour), UpdatedAt: global_cur_time.Add(-60 * time.Hour),
-	},
-	{
-		ID: "20", ProfileID: "PROF-020", Region: "Đồng Nai", Address: "34 Biên Hòa",
-		PhoneNumber: "0921223344", ImageBlobID: "img-020", Status: "Refused",
-		RefuseReasons: []string{"Thông tin đăng ký không khớp"},
-		CreatedBy:     "user-20", CreatedAt: global_cur_time.Add(-144 * time.Hour), UpdatedAt: global_cur_time.Add(-72 * time.Hour),
-	},
-}

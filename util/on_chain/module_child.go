@@ -26,15 +26,16 @@ type AddChildArguments struct {
 	SecondGuardianPhone              string
 	SecondGuardianRelation           string
 	SecondGuardianIdentityCardBlobID string
+	Sender                           string
 }
 
 type CreateCenterArguments struct {
-	CapID       string
 	Region      string
 	Address     string
 	PhoneNumber string
 	ImageBlobID string
 	Leaders     []string
+	Sender      string
 }
 
 type SupportChildBooksNeedArguments struct {
@@ -49,6 +50,7 @@ type SupportChildBooksNeedArguments struct {
 	PhoneNumber string
 	Email       string
 	Message     string
+	Sender      string
 }
 
 type SupportChildBooksNeedArgumentsV2 struct {
@@ -79,6 +81,7 @@ type SupportChildHealthInsuranceNeedArguments struct {
 	PhoneNumber string
 	Email       string
 	Message     string
+	Sender      string
 }
 
 type SupportChildHealthInsuranceNeedArgumentsV2 struct {
@@ -121,6 +124,7 @@ type SupportChildSpeicalNeedArguments struct {
 	PhoneNumber string
 	Email       string
 	Message     string
+	Sender      string
 }
 
 type SupportChildSpeicalNeedArgumentsV2 struct {
@@ -221,6 +225,16 @@ type WithdrawFromNeedArguments struct {
 	LocalPool  string
 	TargetID   string
 	ProposalID string
+	Sender     string
+}
+
+type WithdrawFromNeedArgumentsV2 struct {
+	LocalPool     string
+	TargetID      string
+	ProposalID    string
+	TransferredAt int64
+	Creator       string
+	Sender        string
 }
 
 type SubmitTaskArguments struct {
@@ -262,6 +276,7 @@ type IModuleChild interface {
 	ToCreateChildSpecialNeedProposalArgumentsV2(args CreateChildSpecialNeedProposalArgumentsV2) []interface{}
 	ToConfirmChildSpecialNeedProposalArguments(args ConfirmChildSpecialNeedProposalArguments) []interface{}
 	ToWithdrawFromNeedArguments(args WithdrawFromNeedArguments) []interface{}
+	ToWithdrawFromNeedArgumentsV2(args WithdrawFromNeedArgumentsV2) []interface{}
 	ToUpdateChildNeedArguments(args UpdateChildNeedArguments) []interface{}
 	ToSubmitTaskArguments(args SubmitTaskArguments) []interface{}
 	GetFunctionAddChild() string
@@ -283,9 +298,13 @@ type IModuleChild interface {
 	GetFunctionCreateChildSpecialNeedProposalV2() string
 	GetFunctionConfirmChildSpecialNeedProposal() string
 	GetFunctionWithdrawFromBooksNeedProposal() string
+	GetFunctionWithdrawFromBooksNeedProposalV2() string
 	GetFunctionWithdrawFromHealthInsuranceNeedProposal() string
+	GetFunctionWithdrawFromHealthInsuranceNeedProposalV2() string
 	GetFunctionWithdrawFromMealNeedProposal() string
+	GetFunctionWithdrawFromMealNeedProposalV2() string
 	GetFunctionWithdrawFromSpecialNeedCampaign() string
+	GetFunctionWithdrawFromSpecialNeedCampaignV2() string
 	GetFunctionSupportChildBooksNeed() string
 	GetFunctionSupportChildBooksNeedV2() string
 	GetFunctionSupportChildHealthInsuranceNeed() string
@@ -303,6 +322,30 @@ type IModuleChild interface {
 }
 
 type moduleChild struct{}
+
+func InitializeModuleChild() IModuleChild {
+	return &moduleChild{}
+}
+
+// GetFunctionWithdrawFromBooksNeedProposalV2 implements IModuleChild.
+func (m *moduleChild) GetFunctionWithdrawFromBooksNeedProposalV2() string {
+	return sui.WITHDRAW_FROM_BOOKS_NEED_PROPOSAL_FUNCTION_V2
+}
+
+// GetFunctionWithdrawFromHealthInsuranceNeedProposalV2 implements IModuleChild.
+func (m *moduleChild) GetFunctionWithdrawFromHealthInsuranceNeedProposalV2() string {
+	return sui.WITHDRAW_FROM_HEALTH_INSURANCE_NEED_PROPOSAL_FUNCTION_V2
+}
+
+// GetFunctionWithdrawFromMealNeedProposalV2 implements IModuleChild.
+func (m *moduleChild) GetFunctionWithdrawFromMealNeedProposalV2() string {
+	return sui.WITHDRAW_FROM_MEAL_NEED_PROPOSAL_FUNCTION_V2
+}
+
+// GetFunctionWithdrawFromSpecialNeedCampaignV2 implements IModuleChild.
+func (m *moduleChild) GetFunctionWithdrawFromSpecialNeedCampaignV2() string {
+	return sui.WITHDRAW_FROM_SPECIAL_NEED_CAMPAIGN_FUNCTION_v2
+}
 
 // GetFunctionSupportChildBooksNeedV2 implements IModuleChild.
 func (m *moduleChild) GetFunctionSupportChildBooksNeedV2() string {
@@ -322,10 +365,6 @@ func (m *moduleChild) GetFunctionSupportChildMealNeedV2() string {
 // GetFunctionSupportChildSpecialNeedCampaignV2 implements IModuleChild.
 func (m *moduleChild) GetFunctionSupportChildSpecialNeedCampaignV2() string {
 	return sui.SUPPORT_CHILD_SPECIAL_NEED_CAMPAIGN_FUNCTION_V2
-}
-
-func InitializeModuleChild() IModuleChild {
-	return &moduleChild{}
 }
 
 // ToCreateChildNormalNeedWithdrawProposalArgumentsV2 implements IModuleChild.
@@ -377,6 +416,7 @@ func (m *moduleChild) ToCreateChildSpecialNeedWithdrawProposalArgumentsV2(args C
 	}
 
 	return []interface{}{
+		os.Getenv(env.ADMIN_CAP_ID_1),
 		os.Getenv(env.MANAGE_OBJECT_ID),
 		os.Getenv(env.POOL_ID),
 		args.LocalPool,
@@ -399,10 +439,11 @@ func (m *moduleChild) GetFunctionSupportChildHealthInsuranceNeed() string {
 // ToSupportChildHealthInsuranceNeedArguments implements IModuleChild.
 func (m *moduleChild) ToSupportChildHealthInsuranceNeedArguments(args SupportChildHealthInsuranceNeedArguments) []interface{} {
 	return []interface{}{
+		os.Getenv(env.ADMIN_CAP_ID_1),
 		os.Getenv(env.MANAGE_OBJECT_ID),
 		os.Getenv(env.POOL_ID),
-		args.NeedID,
 		args.LocalPool,
+		args.NeedID,
 		args.ChildID,
 		args.DonorNft,
 		uint64(args.Amount),
@@ -412,6 +453,7 @@ func (m *moduleChild) ToSupportChildHealthInsuranceNeedArguments(args SupportChi
 		args.PhoneNumber,
 		args.Email,
 		args.Message,
+		args.Sender,
 		sui.CLOCK_OBJECT_ID,
 	}
 }
@@ -504,6 +546,7 @@ func (m *moduleChild) ToSupportChildSpeicalNeedArgumentsV2(args SupportChildSpei
 // ToSubmitTaskArguments implements IModuleChild.
 func (m *moduleChild) ToSubmitTaskArguments(args SubmitTaskArguments) []interface{} {
 	return []interface{}{
+		os.Getenv(env.ADMIN_CAP_ID_1),
 		args.Center,
 		args.StaffNft,
 		args.Description,
@@ -516,6 +559,7 @@ func (m *moduleChild) ToSubmitTaskArguments(args SubmitTaskArguments) []interfac
 // ToUpdateChildNeedArguments implements IModuleChild.
 func (m *moduleChild) ToUpdateChildNeedArguments(args UpdateChildNeedArguments) []interface{} {
 	return []interface{}{
+		os.Getenv(env.ADMIN_CAP_ID_1),
 		os.Getenv(env.MANAGE_OBJECT_ID),
 		args.StaffNft,
 		args.ChildID,
@@ -694,6 +738,7 @@ func (m *moduleChild) ToCreateChildSpecialNeedWithdrawProposalArguments(args Cre
 // ToSupportChildSpeicalNeedArguments implements IModuleChild.
 func (m *moduleChild) ToSupportChildSpeicalNeedArguments(args SupportChildSpeicalNeedArguments) []interface{} {
 	return []interface{}{
+		os.Getenv(env.ADMIN_CAP_ID_1),
 		os.Getenv(env.MANAGE_OBJECT_ID),
 		os.Getenv(env.POOL_ID),
 		args.CampaignID,
@@ -707,6 +752,7 @@ func (m *moduleChild) ToSupportChildSpeicalNeedArguments(args SupportChildSpeica
 		args.PhoneNumber,
 		args.Email,
 		args.Message,
+		args.Sender,
 		sui.CLOCK_OBJECT_ID,
 	}
 }
@@ -738,6 +784,7 @@ func (m *moduleChild) ToCreateChildNormalNeedWithdrawProposalArguments(args Crea
 // ToCreateChildSpecialNeedProposalArguments implements IModuleChild.
 func (m *moduleChild) ToCreateChildSpecialNeedProposalArguments(args CreateChildSpecialNeedProposalArguments) []interface{} {
 	return []interface{}{
+		os.Getenv(env.ADMIN_CAP_ID_1),
 		os.Getenv(env.MANAGE_OBJECT_ID),
 		args.ChildID,
 		args.LocalPool,
@@ -751,10 +798,11 @@ func (m *moduleChild) ToCreateChildSpecialNeedProposalArguments(args CreateChild
 // ToSupportChildBooksNeedArguments implements IModuleChild.
 func (m *moduleChild) ToSupportChildBooksNeedArguments(args SupportChildBooksNeedArguments) []interface{} {
 	return []interface{}{
+		os.Getenv(env.ADMIN_CAP_ID_1),
 		os.Getenv(env.MANAGE_OBJECT_ID),
 		os.Getenv(env.POOL_ID),
-		args.NeedID,
 		args.LocalPool,
+		args.NeedID,
 		args.ChildID,
 		args.DonorNft,
 		uint64(args.Amount),
@@ -764,6 +812,7 @@ func (m *moduleChild) ToSupportChildBooksNeedArguments(args SupportChildBooksNee
 		args.PhoneNumber,
 		args.Email,
 		args.Message,
+		args.Sender,
 		sui.CLOCK_OBJECT_ID,
 	}
 }
@@ -793,12 +842,29 @@ func (m *moduleChild) ToSupportChildMealNeedArguments(args SupportChildMealNeedA
 // “ToWithdrawFromNeedArguments“ implements IModuleChild.
 func (m *moduleChild) ToWithdrawFromNeedArguments(args WithdrawFromNeedArguments) []interface{} {
 	return []interface{}{
+		os.Getenv(env.ADMIN_CAP_ID_1),
 		os.Getenv(env.MANAGE_OBJECT_ID),
 		os.Getenv(env.POOL_ID),
 		args.LocalPool,
 		args.TargetID,
 		args.ProposalID,
-		os.Getenv(env.POOL_WITHDRAW_DAO_OBJECT_ID),
+		args.Sender,
+		sui.CLOCK_OBJECT_ID,
+	}
+}
+
+// ToWithdrawFromNeedArgumentsV2 implements IModuleChild.
+func (m *moduleChild) ToWithdrawFromNeedArgumentsV2(args WithdrawFromNeedArgumentsV2) []interface{} {
+	return []interface{}{
+		os.Getenv(env.ADMIN_CAP_ID_1),
+		os.Getenv(env.MANAGE_OBJECT_ID),
+		os.Getenv(env.POOL_ID),
+		args.LocalPool,
+		args.TargetID,
+		args.ProposalID,
+		uint64(args.TransferredAt),
+		args.Creator,
+		args.Sender,
 		sui.CLOCK_OBJECT_ID,
 	}
 }
@@ -806,6 +872,7 @@ func (m *moduleChild) ToWithdrawFromNeedArguments(args WithdrawFromNeedArguments
 // ToAddChildArguments implements IModuleChild.
 func (m *moduleChild) ToAddChildArguments(args AddChildArguments) []interface{} {
 	return []interface{}{
+		os.Getenv(env.ADMIN_CAP_ID_1),
 		os.Getenv(env.MANAGE_OBJECT_ID),
 		args.Center,
 		args.IdentityCode,
@@ -826,6 +893,7 @@ func (m *moduleChild) ToAddChildArguments(args AddChildArguments) []interface{} 
 		args.SecondGuardianPhone,
 		args.SecondGuardianRelation,
 		args.SecondGuardianIdentityCardBlobID,
+		args.Sender,
 		sui.CLOCK_OBJECT_ID,
 	}
 }
@@ -833,13 +901,15 @@ func (m *moduleChild) ToAddChildArguments(args AddChildArguments) []interface{} 
 // ToCreateCenterArguments implements IModuleChild.
 func (m *moduleChild) ToCreateCenterArguments(args CreateCenterArguments) []interface{} {
 	return []interface{}{
+		os.Getenv(env.ADMIN_CAP_ID_1),
 		os.Getenv(env.MANAGE_OBJECT_ID),
-		args.CapID,
+		os.Getenv(env.POOL_ID),
 		args.Region,
 		args.Address,
 		args.PhoneNumber,
 		args.ImageBlobID,
 		args.Leaders,
+		args.Sender,
 		sui.CLOCK_OBJECT_ID,
 	}
 }

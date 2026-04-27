@@ -11,9 +11,6 @@ import (
 	"raise-child/interfaces/repository"
 	"raise-child/model/dtos/request"
 	"raise-child/model/entities"
-	"time"
-
-	"github.com/lib/pq"
 )
 
 type uploadChildRepo struct {
@@ -79,9 +76,8 @@ func (u *uploadChildRepo) GetUploadChildRequest(id string, ctx context.Context) 
 		&res.Region, &res.FirstName, &res.LastName, &res.Gender, &res.DateOfBirth, &res.HomeAddress,
 		&res.FirstGuardianProfile.FullName, &res.FirstGuardianProfile.PhoneNumber, &res.FirstGuardianProfile.Relation, &res.FirstGuardianProfile.IdentityCardBlobID,
 		&secondGuardianName, &secondGuardianPhone, &secondGuardianRelation, &secondGuardianIdentityBlob,
-		pq.Array(&res.Approvers), pq.Array(&res.Refusers), pq.Array(&res.RefuseReasons),
-		&res.AIEvaluation, &res.Status, &res.ReviewStatus, &res.IsConfirmUpload,
-		&res.CreatedBy, &res.ReviewedBy, &res.CreatedAt, &res.UpdatedAt, &res.ClosedAt, &res.BirthCertificateBlobID); err != nil {
+		&res.AIEvaluation, &res.Status, &res.IsConfirmUpload,
+		&res.CreatedBy, &res.ReviewedBy, &res.CreatedAt, &res.UpdatedAt, &res.BirthCertificateBlobID); err != nil {
 
 		if err == sql.ErrNoRows {
 			return nil, nil
@@ -143,19 +139,6 @@ func (u *uploadChildRepo) GetUploadChildRequests(req request.GetUploadChildReque
 		isHavePreviosCondition = true
 	}
 
-	if req.IsClosed != nil {
-		if isHavePreviosCondition {
-			queryCondition += " AND "
-		}
-
-		var operation string = ">"
-		if *req.IsClosed {
-			operation = "<="
-		}
-
-		queryCondition += fmt.Sprintf("closed_at %s NOW()", operation)
-	}
-
 	if isHavePreviosCondition {
 		queryCondition += " "
 	}
@@ -190,9 +173,8 @@ func (u *uploadChildRepo) GetUploadChildRequests(req request.GetUploadChildReque
 			&x.Region, &x.FirstName, &x.LastName, &x.Gender, &x.DateOfBirth, &x.HomeAddress,
 			&x.FirstGuardianProfile.FullName, &x.FirstGuardianProfile.PhoneNumber, &x.FirstGuardianProfile.Relation, &x.FirstGuardianProfile.IdentityCardBlobID,
 			&secondGuardianName, &secondGuardianPhone, &secondGuardianRelation, &secondGuardianIdentityBlob,
-			pq.Array(&x.Approvers), pq.Array(&x.Refusers), pq.Array(&x.RefuseReasons),
-			&x.AIEvaluation, &x.Status, &x.ReviewStatus, &x.IsConfirmUpload,
-			&x.CreatedBy, &x.ReviewedBy, &x.CreatedAt, &x.UpdatedAt, &x.ClosedAt, &x.BirthCertificateBlobID); err != nil {
+			&x.AIEvaluation, &x.Status, &x.IsConfirmUpload,
+			&x.CreatedBy, &x.ReviewedBy, &x.CreatedAt, &x.UpdatedAt, &x.BirthCertificateBlobID); err != nil {
 
 			u.errLogger.Println(errLogMsg + err.Error())
 			return nil, 0, internalErr
@@ -246,9 +228,8 @@ func (u *uploadChildRepo) GetWalletUploadChildRequests(id string, page int, ctx 
 			&x.Region, &x.FirstName, &x.LastName, &x.Gender, &x.DateOfBirth, &x.HomeAddress,
 			&x.FirstGuardianProfile.FullName, &x.FirstGuardianProfile.PhoneNumber, &x.FirstGuardianProfile.Relation, &x.FirstGuardianProfile.IdentityCardBlobID,
 			&secondGuardianName, &secondGuardianPhone, &secondGuardianRelation, &secondGuardianIdentityBlob,
-			pq.Array(&x.Approvers), pq.Array(&x.Refusers), pq.Array(&x.RefuseReasons),
-			&x.AIEvaluation, &x.Status, &x.ReviewStatus, &x.IsConfirmUpload,
-			&x.CreatedBy, &x.ReviewedBy, &x.CreatedAt, &x.UpdatedAt, &x.ClosedAt, &x.BirthCertificateBlobID); err != nil {
+			&x.AIEvaluation, &x.Status, &x.IsConfirmUpload,
+			&x.CreatedBy, &x.ReviewedBy, &x.CreatedAt, &x.UpdatedAt, &x.BirthCertificateBlobID); err != nil {
 
 			u.errLogger.Println(errLogMsg + err.Error())
 			return nil, 0, internalErr
@@ -293,15 +274,13 @@ func (u *uploadChildRepo) IsChildRequested(identityCode string, ctx context.Cont
 func (u *uploadChildRepo) UpdateUploadChildRequest(req entities.UploadChildRequest, ctx context.Context) error {
 	var query string = "UPDATE " + upload_child_request_table + " SET " +
 		"region = $1, first_name = $2, last_name = $3, gender = $4, " +
-		"date_of_birth = $5, approvers = $6, refusers = $7, refuse_reasons = $8, " +
-		"status = $9, is_confirm_upload = $10, updated_at = $11 WHERE id = $12"
+		"date_of_birth = $5, status = $6, is_confirm_upload = $7, updated_at = $8 WHERE id = $9"
 
 	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.UPLOAD_CHILD_REQUEST_REPOSITORY) + "UpdateUploadChildRequest - "
 	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
 
 	res, err := u.db.ExecContext(ctx, query, req.Region, req.FirstName, req.LastName, req.Gender,
-		req.DateOfBirth, pq.Array(req.Approvers), pq.Array(req.Refusers), pq.Array(req.RefuseReasons),
-		req.Status, req.IsConfirmUpload, req.UpdatedAt, req.ID)
+		req.DateOfBirth, req.Status, req.IsConfirmUpload, req.UpdatedAt, req.ID)
 	if err != nil {
 		u.errLogger.Println(errLogMsg + err.Error())
 		return internalErr
@@ -320,105 +299,105 @@ func (u *uploadChildRepo) UpdateUploadChildRequest(req entities.UploadChildReque
 	return nil
 }
 
-// GetPendingRequests implements repository.IUploadChildRequestRepository.
-func (u *uploadChildRepo) GetPendingRequests(ctx context.Context) ([]entities.BackgroundRecord, []entities.BackgroundRecord, error) {
-	var query string = "SELECT id, approvers, refusers, created_by, status FROM " + upload_child_request_table + " WHERE is_available_to_confirm = false AND closed_at <= NOW() AND (status = 'Pending' OR status = 'Approved')"
-	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.UPLOAD_CHILD_REQUEST_REPOSITORY) + "GetPendingRequests - "
-	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
+// // GetPendingRequests implements repository.IUploadChildRequestRepository.
+// func (u *uploadChildRepo) GetPendingRequests(ctx context.Context) ([]entities.BackgroundRecord, []entities.BackgroundRecord, error) {
+// 	var query string = "SELECT id, approvers, refusers, created_by, status FROM " + upload_child_request_table + " WHERE is_available_to_confirm = false AND closed_at <= NOW() AND (status = 'Pending' OR status = 'Approved')"
+// 	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.UPLOAD_CHILD_REQUEST_REPOSITORY) + "GetPendingRequests - "
+// 	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
 
-	rows, err := u.db.QueryContext(ctx, query)
-	if err != nil {
-		u.errLogger.Println(errLogMsg + err.Error())
-		return nil, nil, internalErr
-	}
+// 	rows, err := u.db.QueryContext(ctx, query)
+// 	if err != nil {
+// 		u.errLogger.Println(errLogMsg + err.Error())
+// 		return nil, nil, internalErr
+// 	}
 
-	var pendingRes, approvedRes []entities.BackgroundRecord
-	for rows.Next() {
-		var x entities.BackgroundRecord
-		var status string
-		if err := rows.Scan(
-			&x.ID, pq.Array(&x.Approvers), pq.Array(&x.Refusers), &x.Sender, &status); err != nil {
+// 	var pendingRes, approvedRes []entities.BackgroundRecord
+// 	for rows.Next() {
+// 		var x entities.BackgroundRecord
+// 		var status string
+// 		if err := rows.Scan(
+// 			&x.ID, pq.Array(&x.Approvers), pq.Array(&x.Refusers), &x.Sender, &status); err != nil {
 
-			u.errLogger.Println(errLogMsg + err.Error())
-			return nil, nil, internalErr
-		}
+// 			u.errLogger.Println(errLogMsg + err.Error())
+// 			return nil, nil, internalErr
+// 		}
 
-		if status == "Pending" {
-			pendingRes = append(pendingRes, x)
-		} else {
-			approvedRes = append(approvedRes, x)
-		}
-	}
+// 		if status == "Pending" {
+// 			pendingRes = append(pendingRes, x)
+// 		} else {
+// 			approvedRes = append(approvedRes, x)
+// 		}
+// 	}
 
-	return pendingRes, approvedRes, nil
-}
+// 	return pendingRes, approvedRes, nil
+// }
 
-// SetApprovedStatuses implements repository.IUploadChildRequestRepository.
-func (u *uploadChildRepo) SetApprovedStatuses(reqs []entities.BackgroundRecord, ctx context.Context) error {
-	if reqs == nil || len(reqs) == 0 {
-		return nil
-	}
+// // SetApprovedStatuses implements repository.IUploadChildRequestRepository.
+// func (u *uploadChildRepo) SetApprovedStatuses(reqs []entities.BackgroundRecord, ctx context.Context) error {
+// 	if reqs == nil || len(reqs) == 0 {
+// 		return nil
+// 	}
 
-	var query string = "UPDATE " + upload_child_request_table + " SET status = 'Approved', is_available_to_confirm = true, updated_at = $1 WHERE "
-	for i, req := range reqs {
-		query += fmt.Sprintf("id = '%s'", req.ID)
-		if i < len(reqs)-1 {
-			query += " OR "
-		}
-	}
+// 	var query string = "UPDATE " + upload_child_request_table + " SET status = 'Approved', is_available_to_confirm = true, updated_at = $1 WHERE "
+// 	for i, req := range reqs {
+// 		query += fmt.Sprintf("id = '%s'", req.ID)
+// 		if i < len(reqs)-1 {
+// 			query += " OR "
+// 		}
+// 	}
 
-	if _, err := u.db.ExecContext(ctx, query, time.Now()); err != nil {
-		u.errLogger.Println(fmt.Sprintf(noti.REPO_ERR_MSG, shared.UPLOAD_CHILD_REQUEST_REPOSITORY) + "SetApprovedStatuses - " + err.Error())
-		return errors.New(noti.INTERNALL_ERR_MSG)
-	}
+// 	if _, err := u.db.ExecContext(ctx, query, time.Now()); err != nil {
+// 		u.errLogger.Println(fmt.Sprintf(noti.REPO_ERR_MSG, shared.UPLOAD_CHILD_REQUEST_REPOSITORY) + "SetApprovedStatuses - " + err.Error())
+// 		return errors.New(noti.INTERNALL_ERR_MSG)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
-// SetRefusedStatuses implements repository.IUploadChildRequestRepository.
-func (u *uploadChildRepo) SetRefusedStatuses(reqs []entities.BackgroundRecord, ctx context.Context) error {
-	if reqs == nil || len(reqs) == 0 {
-		return nil
-	}
+// // SetRefusedStatuses implements repository.IUploadChildRequestRepository.
+// func (u *uploadChildRepo) SetRefusedStatuses(reqs []entities.BackgroundRecord, ctx context.Context) error {
+// 	if reqs == nil || len(reqs) == 0 {
+// 		return nil
+// 	}
 
-	var query string = "UPDATE " + upload_child_request_table + " SET status = 'Refused', updated_at = $1 WHERE "
-	for i, req := range reqs {
-		query += fmt.Sprintf("id = '%s'", req.ID)
-		if i < len(reqs)-1 {
-			query += " OR "
-		}
-	}
+// 	var query string = "UPDATE " + upload_child_request_table + " SET status = 'Refused', updated_at = $1 WHERE "
+// 	for i, req := range reqs {
+// 		query += fmt.Sprintf("id = '%s'", req.ID)
+// 		if i < len(reqs)-1 {
+// 			query += " OR "
+// 		}
+// 	}
 
-	if _, err := u.db.ExecContext(ctx, query, time.Now()); err != nil {
-		u.errLogger.Println(fmt.Sprintf(noti.REPO_ERR_MSG, shared.UPLOAD_CHILD_REQUEST_REPOSITORY) + "SetRefusedStatuses - " + err.Error())
-		return errors.New(noti.INTERNALL_ERR_MSG)
-	}
+// 	if _, err := u.db.ExecContext(ctx, query, time.Now()); err != nil {
+// 		u.errLogger.Println(fmt.Sprintf(noti.REPO_ERR_MSG, shared.UPLOAD_CHILD_REQUEST_REPOSITORY) + "SetRefusedStatuses - " + err.Error())
+// 		return errors.New(noti.INTERNALL_ERR_MSG)
+// 	}
 
-	return nil
-}
+// 	return nil
+// }
 
-// SetReviewStatus implements repository.IUploadChildRequestRepository.
-func (u *uploadChildRepo) SetReviewStatus(id string, reviewStatus string, reviewer string, closedAt *time.Time, ctx context.Context) error {
-	var query string = "UPDATE " + upload_child_request_table + " SET review_status = $1, reviewed_by = $2, closed_at = $3 WHERE id = $4"
+// // SetReviewStatus implements repository.IUploadChildRequestRepository.
+// func (u *uploadChildRepo) SetReviewStatus(id string, reviewStatus string, reviewer string, closedAt *time.Time, ctx context.Context) error {
+// 	var query string = "UPDATE " + upload_child_request_table + " SET review_status = $1, reviewed_by = $2, closed_at = $3 WHERE id = $4"
 
-	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.UPLOAD_CHILD_REQUEST_REPOSITORY) + "SetReviewStatus - "
-	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
+// 	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.UPLOAD_CHILD_REQUEST_REPOSITORY) + "SetReviewStatus - "
+// 	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
 
-	res, err := u.db.ExecContext(ctx, query, reviewStatus, reviewer, closedAt, id)
-	if err != nil {
-		u.errLogger.Println(errLogMsg + err.Error())
-		return internalErr
-	}
+// 	res, err := u.db.ExecContext(ctx, query, reviewStatus, reviewer, closedAt, id)
+// 	if err != nil {
+// 		u.errLogger.Println(errLogMsg + err.Error())
+// 		return internalErr
+// 	}
 
-	rowsAffected, err := res.RowsAffected()
-	if err != nil {
-		u.errLogger.Println(errLogMsg + err.Error())
-		return internalErr
-	}
+// 	rowsAffected, err := res.RowsAffected()
+// 	if err != nil {
+// 		u.errLogger.Println(errLogMsg + err.Error())
+// 		return internalErr
+// 	}
 
-	if rowsAffected == 0 {
-		return errors.New(fmt.Sprintf(noti.UNDEFINED_OBJECT_WARN_MSG, upload_child_request_table))
-	}
+// 	if rowsAffected == 0 {
+// 		return errors.New(fmt.Sprintf(noti.UNDEFINED_OBJECT_WARN_MSG, upload_child_request_table))
+// 	}
 
-	return nil
-}
+// 	return nil
+// }

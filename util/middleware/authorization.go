@@ -156,3 +156,27 @@ func StaffRoleAuthorize(ctx *gin.Context) {
 
 	ctx.Next()
 }
+
+func VolunteerRoleAuthorize(ctx *gin.Context) {
+	val, exists := ctx.Get("roles")
+	if !exists {
+		util.ProcessResponse(util.GetUnAuthBodyResponse(ctx))
+		ctx.Abort()
+		return
+	}
+
+	roles, ok := val.([]string)
+	if !ok {
+		util.ProcessResponse(util.GetUnAuthBodyResponse(ctx))
+		ctx.Abort()
+		return
+	}
+
+	if !slices.Contains(roles, "Volunteer") {
+		util.ProcessResponse(util.GetUnAuthBodyResponse(ctx))
+		ctx.Abort()
+		return
+	}
+
+	ctx.Next()
+}

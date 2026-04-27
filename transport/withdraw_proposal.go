@@ -80,30 +80,20 @@ func GetWithdrawProposals(ctx *gin.Context) {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        id     path      string               true  "Withdraw Proposal ID"
-// @Param        query  query     request.VoteRequest  true  "Vote Action Details"
-// @Success      200    {object}  response.BuildTransactionResponse
+// @Success      200    {object}  response.MessageAPIResponse "Success"
 // @Failure      400      {object}  response.MessageAPIResponse "Invalid data. Please try again."
 // @Failure      401      {object}  response.MessageAPIResponse "You have no rights to access this action."
 // @Failure      500      {object}  response.MessageAPIResponse "There is something wrong in the system during the process. Please try again later."
 // @Router       /withdraw-proposals/{id}/vote [post]
 func VoteWithdrawProposal(ctx *gin.Context) {
-	var request request.VoteRequest
-	if ctx.ShouldBindQuery(&request) != nil {
-		util.ProcessResponse(util.GenerateInvalidRequestAndSystemProblemModel(ctx, nil))
-		return
-	}
-
 	service, err := business.GenerateWithdrawProposalService()
 	if err != nil {
 		util.ProcessResponse(util.GenerateInvalidRequestAndSystemProblemModel(ctx, err))
 		return
 	}
 
-	res, err := service.VoteWithdrawProposal(ctx.Param("id"), request, ctx)
 	util.ProcessResponse(response.APIResponse{
-		Data1:    res,
-		Data2:    res,
-		ErrMsg:   err,
+		ErrMsg:   service.VoteWithdrawProposal(ctx.Param("id"), ctx),
 		Context:  ctx,
 		PostType: action_type.NON_POST,
 	})
@@ -178,7 +168,7 @@ func ConfirmMainPoolWithdrawProposal(ctx *gin.Context) {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        request  body      request.CreateWithdrawProposalRequest   true  "Withdraw Proposal details (e.g., "withdraw amount", "description")"
-// @Success      201  {object}  response.BuildTransactionResponse
+// @Success      201  {object}  response.MessageAPIResponse "Success"
 // @Failure      400  {object}  response.MessageAPIResponse "Invalid data. Please try again."
 // @Failure      401  {object}  response.MessageAPIResponse "You have no rights to access this action."
 // @Failure      500  {object}  response.MessageAPIResponse "There is something wrong in the system during the process. Please try again later."
@@ -196,11 +186,8 @@ func CreateWithdrawProposal(ctx *gin.Context) {
 		return
 	}
 
-	res, err := service.CreateWithdrawProposal(request, ctx)
 	util.ProcessResponse(response.APIResponse{
-		Data1:    res,
-		Data2:    res,
-		ErrMsg:   err,
+		ErrMsg:   service.CreateWithdrawProposal(request, ctx),
 		Context:  ctx,
 		PostType: action_type.CREATE_ACTION,
 	})

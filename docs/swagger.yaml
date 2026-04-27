@@ -47,8 +47,6 @@ definitions:
         description: Default as false, when status aprroved, user clicks to update
           to true, call smart contract to register role
         type: boolean
-      isAvailableToConfirm:
-        type: boolean
       phone_number:
         type: string
       profile_id:
@@ -251,8 +249,6 @@ definitions:
         description: Default as false, when status aprroved, user clicks to update
           to true, call smart contract to register role
         type: boolean
-      isAvailableToConfirm:
-        type: boolean
       last_name:
         type: string
       phone_number:
@@ -302,15 +298,9 @@ definitions:
     properties:
       ai_evaluation:
         type: string
-      approvers:
-        items:
-          type: string
-        type: array
       avatar_blob_id:
         type: string
       birth_certificate_blob_id:
-        type: string
-      closed_at:
         type: string
       created_at:
         type: string
@@ -340,18 +330,7 @@ definitions:
         type: string
       profile_id:
         type: string
-      refuse_reasons:
-        items:
-          type: string
-        type: array
-      refusers:
-        items:
-          type: string
-        type: array
       region:
-        type: string
-      review_status:
-        description: e.g. "Pending", "Approved", "Refused"
         type: string
       reviewed_by:
         type: string
@@ -1727,9 +1706,6 @@ paths:
       description: Retrieve center requests with filtering based on query parameters
       parameters:
       - in: query
-        name: is_available_to_confirm
-        type: boolean
-      - in: query
         name: is_closed
         type: boolean
       - in: query
@@ -1852,9 +1828,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Success
           schema:
-            $ref: '#/definitions/response.BuildTransactionResponse'
+            $ref: '#/definitions/response.MessageAPIResponse'
         "400":
           description: Invalid data. Please try again.
           schema:
@@ -2186,43 +2162,6 @@ paths:
       summary: Get upload-child request details
       tags:
       - Child Upload Request
-  /child-upload-reqs/{id}/confirm:
-    post:
-      consumes:
-      - application/json
-      description: Prepares and builds a transaction for registering new child information
-        on-chain
-      parameters:
-      - description: UploadChild Request ID (UUID)
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/response.BuildTransactionResponse'
-        "400":
-          description: Invalid data. Please try again.
-          schema:
-            $ref: '#/definitions/response.MessageAPIResponse'
-        "401":
-          description: You have no rights to access this action.
-          schema:
-            $ref: '#/definitions/response.MessageAPIResponse'
-        "500":
-          description: There is something wrong in the system during the process.
-            Please try again later.
-          schema:
-            $ref: '#/definitions/response.MessageAPIResponse'
-      security:
-      - BearerAuth: []
-      summary: Confirm and store a child information to Sui Blockhain
-      tags:
-      - Child Upload Request
   /child-upload-reqs/{id}/review:
     post:
       consumes:
@@ -2260,45 +2199,6 @@ paths:
       security:
       - BearerAuth: []
       summary: Review an upload-child request
-      tags:
-      - Child Upload Request
-  /child-upload-reqs/{id}/vote:
-    post:
-      consumes:
-      - application/json
-      description: Submit an approval or refusal vote for a specific child upload
-        request using its ID.
-      parameters:
-      - description: Upload Child Request ID
-        in: path
-        name: id
-        required: true
-        type: string
-      - description: Voting details (e.g., vote type, comments)
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/request.VoteRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/response.MessageAPIResponse'
-        "400":
-          description: Invalid data. Please try again.
-          schema:
-            $ref: '#/definitions/response.MessageAPIResponse'
-        "500":
-          description: There is something wrong in the system during the process.
-            Please try again later.
-          schema:
-            $ref: '#/definitions/response.MessageAPIResponse'
-      security:
-      - BearerAuth: []
-      summary: Vote on an upload-child request
       tags:
       - Child Upload Request
   /child-upload-reqs/user/{id}:
@@ -3581,7 +3481,7 @@ paths:
       consumes:
       - application/json
       description: Prepares and builds a transaction for approve and upload Payment
-        on-chain
+        with method as Manual Bank on-chain
       parameters:
       - description: Payment ID
         in: path
@@ -3592,9 +3492,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Success
           schema:
-            $ref: '#/definitions/response.BuildTransactionResponse'
+            $ref: '#/definitions/response.MessageAPIResponse'
         "400":
           description: Invalid data. Please try again.
           schema:
@@ -3610,7 +3510,7 @@ paths:
             $ref: '#/definitions/response.MessageAPIResponse'
       security:
       - BearerAuth: []
-      summary: Approve a Payment and upload to Sui Blockchain
+      summary: Approve a Payment with method as Manual Bank and upload to Sui Blockchain
       tags:
       - payment
   /payments/{id}/refuse:
@@ -4955,9 +4855,6 @@ paths:
         name: gender
         type: string
       - in: query
-        name: is_available_to_confirm
-        type: boolean
-      - in: query
         name: is_closed
         type: boolean
       - in: query
@@ -5084,9 +4981,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Success
           schema:
-            $ref: '#/definitions/response.BuildTransactionResponse'
+            $ref: '#/definitions/response.MessageAPIResponse'
         "400":
           description: Invalid data. Please try again.
           schema:
@@ -5847,9 +5744,9 @@ paths:
       - application/json
       responses:
         "201":
-          description: Created
+          description: Success
           schema:
-            $ref: '#/definitions/response.BuildTransactionResponse'
+            $ref: '#/definitions/response.MessageAPIResponse'
         "400":
           description: Invalid data. Please try again.
           schema:
@@ -5989,20 +5886,13 @@ paths:
         name: id
         required: true
         type: string
-      - in: query
-        name: is_vote_yes
-        required: true
-        type: boolean
-      - in: query
-        name: refuse_reason
-        type: string
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Success
           schema:
-            $ref: '#/definitions/response.BuildTransactionResponse'
+            $ref: '#/definitions/response.MessageAPIResponse'
         "400":
           description: Invalid data. Please try again.
           schema:

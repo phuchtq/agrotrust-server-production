@@ -8,38 +8,42 @@ import (
 )
 
 type SpecialNeedCampaign struct {
-	ID                ID       `json:"id"`
-	ChildID           string   `json:"child"`
-	Creator           string   `json:"creator"`
-	Target            string   `json:"target"`
-	Description       string   `json:"description"`
-	ProofBlobID       string   `json:"proof_blob_id"`
-	TotalDonated      string   `json:"total_donated"`
-	WithdrawAmount    string   `json:"withdraw_amount"`
-	Donors            []string `json:"donors"`
-	Donations         []string `json:"donations"`
-	Withdraws         []string `json:"withdraws"`
-	WithdrawProposals []string `json:"withdraw_proposals"`
-	CreatedAt         string   `json:"created_at"`
-	UpdatedAt         string   `json:"updated_at"`
+	ID                      ID       `json:"id"`
+	ChildID                 string   `json:"child"`
+	Creator                 string   `json:"creator"`
+	Target                  string   `json:"target"`
+	Description             string   `json:"description"`
+	ProofBlobID             string   `json:"proof_blob_id"`
+	TotalDonated            string   `json:"total_donated"`
+	WithdrawAmount          string   `json:"withdraw_amount"`
+	Donors                  []string `json:"donors"`
+	DonorTotalContributions []string `json:"donor_total_contributions"`
+	RemainVotePowers        []string `json:"remain_vote_powers"`
+	Donations               []string `json:"donations"`
+	Withdraws               []string `json:"withdraws"`
+	WithdrawProposals       []string `json:"withdraw_proposals"`
+	CreatedAt               string   `json:"created_at"`
+	UpdatedAt               string   `json:"updated_at"`
 }
 
 type OnChainCampaign struct {
-	ID                ID       `json:"id"`
-	PoolID            string   `json:"pool_id"`
-	PoolName          string   `json:"pool_name"`
-	Creator           string   `json:"creator"`
-	Target            string   `json:"target"`
-	Description       string   `json:"description"`
-	ProofBlobID       string   `json:"proof_blob_id"`
-	TotalDonated      string   `json:"total_donated"`
-	WithdrawAmount    string   `json:"withdraw_amount"`
-	Donors            []string `json:"donors"`
-	Donations         []string `json:"donations"`
-	Withdraws         []string `json:"withdraws"`
-	WithdrawProposals []string `json:"withdraw_proposals"`
-	CreatedAt         string   `json:"created_at"`
-	UpdatedAt         string   `json:"updated_at"`
+	ID                      ID       `json:"id"`
+	PoolID                  string   `json:"pool_id"`
+	PoolName                string   `json:"pool_name"`
+	Creator                 string   `json:"creator"`
+	Target                  string   `json:"target"`
+	Description             string   `json:"description"`
+	ProofBlobID             string   `json:"proof_blob_id"`
+	TotalDonated            string   `json:"total_donated"`
+	WithdrawAmount          string   `json:"withdraw_amount"`
+	Donors                  []string `json:"donors"`
+	DonorTotalContributions []string `json:"donor_total_contributions"`
+	RemainVotePowers        []string `json:"remain_vote_powers"`
+	Donations               []string `json:"donations"`
+	Withdraws               []string `json:"withdraws"`
+	WithdrawProposals       []string `json:"withdraw_proposals"`
+	CreatedAt               string   `json:"created_at"`
+	UpdatedAt               string   `json:"updated_at"`
 }
 
 type PendingCampaign struct {

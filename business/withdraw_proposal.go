@@ -81,28 +81,171 @@ const (
 	min_withdraw_proposal_approve_rate float32 = 0.8
 )
 
+// // CreateWithdrawProposal implements business.IWithdrawProposalService.
+// func (w *withdrawProposalService) CreateWithdrawProposal(req request.CreateWithdrawProposalRequest, ctx context.Context) (response.BuildTransactionResponse, error) {
+// 	// if !utils.IsValidSuiAddress(models.SuiAddress(req.PoolID)) || !utils.IsValidSuiAddress(models.SuiAddress(sender)) {
+// 	// 	return response.BuildTransactionResponse{}, genericErr
+// 	// }
+
+// 	var client = w.clients[constant.SuiTestnet]
+// 	var manageObj entities.Manage
+// 	if !w.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
+// 		res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+// 			Client:    w.clients[constant.SuiTestnet],
+// 			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+// 			ErrLogger: w.errLogger,
+// 		}, ctx)
+// 		if err != nil {
+// 			return response.BuildTransactionResponse{}, err
+// 		}
+
+// 		if res != nil {
+// 			w.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
+// 			manageObj = *res
+// 		}
+// 	}
+
+// 	var sender string = ctx.Value("address").(string)
+// 	var isAdmin bool = slices.Contains(manageObj.AdminIds, sender)
+// 	var isLeader bool = slices.Contains(manageObj.LocalLeaderIds, sender)
+// 	var genericRightErr error = errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+// 	if !isAdmin && !isLeader {
+// 		return response.BuildTransactionResponse{}, genericRightErr
+// 	}
+
+// 	var mainPoolId string = os.Getenv(env.POOL_ID)
+// 	var reqPoolId string = strings.TrimSpace(req.PoolID)
+// 	var isMainPoolRequested bool = mainPoolId == reqPoolId
+// 	if isLeader {
+// 		if isMainPoolRequested {
+// 			return response.BuildTransactionResponse{}, genericRightErr
+// 		}
+// 	}
+
+// 	var poolNotEnoughBalenceErr error = errors.New(noti.POOL_CURRENTLY_NOT_ENOUGH_BALENCE)
+// 	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
+// 	var localPoolId string
+// 	if !isMainPoolRequested {
+// 		localPool, _ := on_chain.GetOnChainObject[entities.LocalPool](on_chain.GetOnChainObjectRequest{
+// 			Client:    client,
+// 			ObjectId:  reqPoolId,
+// 			ErrLogger: w.errLogger,
+// 		}, ctx)
+// 		if localPool == nil {
+// 			return response.BuildTransactionResponse{}, internalErr
+// 		}
+
+// 		if isLeader {
+// 			if !slices.Contains(localPool.Mods, sender) {
+// 				return response.BuildTransactionResponse{}, genericRightErr
+// 			}
+// 		}
+
+// 		bankProfile, err := w.bankProfileRepo.GetBankProfileByOwner(sender, ctx)
+// 		if err != nil {
+// 			return response.BuildTransactionResponse{}, err
+// 		}
+
+// 		if bankProfile == nil {
+// 			return response.BuildTransactionResponse{}, errors.New(noti.LEADER_NOT_UPLOAD_BANK_PROFILE_MESSAGE)
+// 		}
+
+// 		totalAmount, _ := strconv.ParseInt(localPool.TotalAmount, 10, 64)
+// 		if totalAmount < req.WithdrawAmount {
+// 			return response.BuildTransactionResponse{}, poolNotEnoughBalenceErr
+// 		}
+
+// 		localPoolId = reqPoolId
+// 	} else {
+// 		mainPool, _ := on_chain.GetOnChainObject[entities.MainPool](on_chain.GetOnChainObjectRequest{
+// 			Client:    client,
+// 			ObjectId:  mainPoolId,
+// 			ErrLogger: w.errLogger,
+// 		}, ctx)
+// 		if mainPool == nil {
+// 			return response.BuildTransactionResponse{}, internalErr
+// 		}
+
+// 		localPools, _ := on_chain.GetOnChainObjects[entities.LocalPool](on_chain.GetOnChainObjectsRequest{
+// 			Client:    client,
+// 			ObjectIds: mainPool.LocalPools,
+// 			ErrLogger: w.errLogger,
+// 		}, ctx)
+// 		if localPools == nil || len(localPools) == 0 {
+// 			return response.BuildTransactionResponse{}, internalErr
+// 		}
+
+// 		var localPoolsTotalAmount int64
+// 		for _, localPool := range localPools {
+// 			totalAmount, _ := strconv.ParseInt(localPool.TotalAmount, 10, 64)
+// 			localPoolsTotalAmount += totalAmount
+// 		}
+
+// 		totalAmount, _ := strconv.ParseInt(mainPool.TotalAmount, 10, 64)
+// 		var mainPoolAmount int64 = totalAmount - localPoolsTotalAmount
+// 		if mainPoolAmount < req.WithdrawAmount {
+// 			return response.BuildTransactionResponse{}, poolNotEnoughBalenceErr
+// 		}
+
+// 		localPoolId = mainPool.LocalPools[0]
+// 	}
+
+// 	var description string = strings.TrimSpace(req.Description)
+// 	if description == "" {
+// 		description = "Withdraw"
+// 	}
+
+// 	var module = on_chain.InitializeModulePool()
+// 	txBytes, err := on_chain.BuildTransaction(on_chain.BuildTransactionRequest{
+// 		Client:    client,
+// 		Sender:    sender,
+// 		Module:    module.GetModule(),
+// 		Function:  module.GetFunctionCreateWithdrawProposal(),
+// 		ErrLogger: w.errLogger,
+// 		Arguments: module.ToCreateWithdrawProposalArguments(on_chain.CreateWithdrawProposalArguments{
+// 			LocalPoolId:     localPoolId,
+// 			WithdrawAmount:  req.WithdrawAmount,
+// 			Description:     description,
+// 			IsFromLocalPool: reqPoolId != mainPoolId,
+// 			ClosedAt:        util.ToMilliseconds(util.GetRequestDuration()),
+// 		}),
+// 	}, ctx)
+// 	if err != nil {
+// 		return response.BuildTransactionResponse{}, err
+// 	}
+
+// 	var proposalId string = util.GenerateId()
+// 	return response.BuildTransactionResponse{
+// 			TxBytes:    txBytes,
+// 			ProposalId: proposalId,
+// 		}, w.withdrawRepo.CreateOffChainWithdrawProposal(entities.OffChainWithdrawProposal{
+// 			ID:        proposalId,
+// 			Purpose:   string(entities.WITHDRAW_PURPOSE),
+// 			Target:    req.PoolID,
+// 			CreatedAt: time.Now(),
+// 		}, ctx)
+// }
+
 // CreateWithdrawProposal implements business.IWithdrawProposalService.
-func (w *withdrawProposalService) CreateWithdrawProposal(req request.CreateWithdrawProposalRequest, ctx context.Context) (response.BuildTransactionResponse, error) {
-	// if !utils.IsValidSuiAddress(models.SuiAddress(req.PoolID)) || !utils.IsValidSuiAddress(models.SuiAddress(sender)) {
-	// 	return response.BuildTransactionResponse{}, genericErr
-	// }
+func (w *withdrawProposalService) CreateWithdrawProposal(req request.CreateWithdrawProposalRequest, ctx context.Context) error {
+	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
+	if !util.IsValidSuiAddressStrict(req.PoolID) {
+		return genericErr
+	}
 
 	var client = w.clients[constant.SuiTestnet]
-	var manageObj entities.Manage
-	if !w.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
-		res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-			Client:    w.clients[constant.SuiTestnet],
-			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-			ErrLogger: w.errLogger,
-		}, ctx)
-		if err != nil {
-			return response.BuildTransactionResponse{}, err
-		}
+	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: w.errLogger,
+	}, ctx)
+	if err != nil {
+		return err
+	}
 
-		if res != nil {
-			w.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
-			manageObj = *res
-		}
+	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
+	if manageObj == nil {
+		return internalErr
 	}
 
 	var sender string = ctx.Value("address").(string)
@@ -110,7 +253,7 @@ func (w *withdrawProposalService) CreateWithdrawProposal(req request.CreateWithd
 	var isLeader bool = slices.Contains(manageObj.LocalLeaderIds, sender)
 	var genericRightErr error = errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
 	if !isAdmin && !isLeader {
-		return response.BuildTransactionResponse{}, genericRightErr
+		return genericRightErr
 	}
 
 	var mainPoolId string = os.Getenv(env.POOL_ID)
@@ -118,12 +261,11 @@ func (w *withdrawProposalService) CreateWithdrawProposal(req request.CreateWithd
 	var isMainPoolRequested bool = mainPoolId == reqPoolId
 	if isLeader {
 		if isMainPoolRequested {
-			return response.BuildTransactionResponse{}, genericRightErr
+			return genericRightErr
 		}
 	}
 
 	var poolNotEnoughBalenceErr error = errors.New(noti.POOL_CURRENTLY_NOT_ENOUGH_BALENCE)
-	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
 	var localPoolId string
 	if !isMainPoolRequested {
 		localPool, _ := on_chain.GetOnChainObject[entities.LocalPool](on_chain.GetOnChainObjectRequest{
@@ -132,27 +274,27 @@ func (w *withdrawProposalService) CreateWithdrawProposal(req request.CreateWithd
 			ErrLogger: w.errLogger,
 		}, ctx)
 		if localPool == nil {
-			return response.BuildTransactionResponse{}, internalErr
+			return internalErr
 		}
 
 		if isLeader {
 			if !slices.Contains(localPool.Mods, sender) {
-				return response.BuildTransactionResponse{}, genericRightErr
+				return genericRightErr
 			}
 		}
 
 		bankProfile, err := w.bankProfileRepo.GetBankProfileByOwner(sender, ctx)
 		if err != nil {
-			return response.BuildTransactionResponse{}, err
+			return err
 		}
 
 		if bankProfile == nil {
-			return response.BuildTransactionResponse{}, errors.New(noti.LEADER_NOT_UPLOAD_BANK_PROFILE_MESSAGE)
+			return errors.New(noti.LEADER_NOT_UPLOAD_BANK_PROFILE_MESSAGE)
 		}
 
 		totalAmount, _ := strconv.ParseInt(localPool.TotalAmount, 10, 64)
 		if totalAmount < req.WithdrawAmount {
-			return response.BuildTransactionResponse{}, poolNotEnoughBalenceErr
+			return poolNotEnoughBalenceErr
 		}
 
 		localPoolId = reqPoolId
@@ -163,7 +305,7 @@ func (w *withdrawProposalService) CreateWithdrawProposal(req request.CreateWithd
 			ErrLogger: w.errLogger,
 		}, ctx)
 		if mainPool == nil {
-			return response.BuildTransactionResponse{}, internalErr
+			return internalErr
 		}
 
 		localPools, _ := on_chain.GetOnChainObjects[entities.LocalPool](on_chain.GetOnChainObjectsRequest{
@@ -172,7 +314,7 @@ func (w *withdrawProposalService) CreateWithdrawProposal(req request.CreateWithd
 			ErrLogger: w.errLogger,
 		}, ctx)
 		if localPools == nil || len(localPools) == 0 {
-			return response.BuildTransactionResponse{}, internalErr
+			return internalErr
 		}
 
 		var localPoolsTotalAmount int64
@@ -184,10 +326,10 @@ func (w *withdrawProposalService) CreateWithdrawProposal(req request.CreateWithd
 		totalAmount, _ := strconv.ParseInt(mainPool.TotalAmount, 10, 64)
 		var mainPoolAmount int64 = totalAmount - localPoolsTotalAmount
 		if mainPoolAmount < req.WithdrawAmount {
-			return response.BuildTransactionResponse{}, poolNotEnoughBalenceErr
+			return poolNotEnoughBalenceErr
 		}
 
-		localPoolId = mainPool.LocalPools[0]
+		localPoolId = os.Getenv(env.SHARED_LOCAL_POOL_ID)
 	}
 
 	var description string = strings.TrimSpace(req.Description)
@@ -195,35 +337,53 @@ func (w *withdrawProposalService) CreateWithdrawProposal(req request.CreateWithd
 		description = "Withdraw"
 	}
 
-	var module = on_chain.InitializeModulePool()
-	txBytes, err := on_chain.BuildTransaction(on_chain.BuildTransactionRequest{
-		Client:    client,
-		Sender:    sender,
-		Module:    module.GetModule(),
-		Function:  module.GetFunctionCreateWithdrawProposal(),
-		ErrLogger: w.errLogger,
-		Arguments: module.ToCreateWithdrawProposalArguments(on_chain.CreateWithdrawProposalArguments{
+	var offchainProposalId string = util.GenerateId()
+	if err := w.withdrawRepo.CreateOffChainWithdrawProposal(entities.OffChainWithdrawProposal{
+		ID:          offchainProposalId,
+		Purpose:     string(entities.WITHDRAW_PURPOSE),
+		Target:      req.PoolID,
+		LocalPoolID: localPoolId,
+		CreatedAt:   time.Now(),
+	}, ctx); err != nil {
+		return err
+	}
+
+	var poolModule = on_chain.InitializeModulePool()
+	res, err := on_chain.ExecuteTransactionV2(on_chain.ExecuteTransactionRequestV2{
+		Client:   w.clients[constant.SuiTestnet],
+		Module:   poolModule.GetModule(),
+		Function: poolModule.GetFunctionCreateWithdrawProposal(),
+		Arguments: poolModule.ToCreateWithdrawProposalArguments(on_chain.CreateWithdrawProposalArguments{
 			LocalPoolId:     localPoolId,
 			WithdrawAmount:  req.WithdrawAmount,
 			Description:     description,
+			ProofBlobID:     req.ProofBlobID,
 			IsFromLocalPool: reqPoolId != mainPoolId,
 			ClosedAt:        util.ToMilliseconds(util.GetRequestDuration()),
+			Creator:         sender,
 		}),
+		ErrLogger: w.errLogger,
 	}, ctx)
 	if err != nil {
-		return response.BuildTransactionResponse{}, err
+		return err
 	}
 
-	var proposalId string = util.GenerateId()
-	return response.BuildTransactionResponse{
-			TxBytes:    txBytes,
-			ProposalId: proposalId,
-		}, w.withdrawRepo.CreateOffChainWithdrawProposal(entities.OffChainWithdrawProposal{
-			ID:        proposalId,
-			Purpose:   string(entities.WITHDRAW_PURPOSE),
-			Target:    req.PoolID,
-			CreatedAt: time.Now(),
-		}, ctx)
+	var events = res.Events
+	var eventType string = fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), poolModule.GetModule(), poolModule.GetWithdrawProposalEventEmittedStruct())
+	for _, event := range events {
+		if event.Type == eventType {
+			if onChainProposal, ok := event.ParsedJson["id"].(string); ok {
+				for i := 1; i <= 3; i++ {
+					if w.withdrawRepo.SetOnChainProposalIdAfterExecuteTx(offchainProposalId, onChainProposal, ctx) == nil {
+						return nil
+					}
+				}
+				break
+			}
+		}
+	}
+
+	return internalErr
 }
 
 // ConfirmWithdrawProposal implements business.IWithdrawProposalService.
@@ -282,13 +442,14 @@ func (w *withdrawProposalService) ConfirmWithdrawProposal(id string, ctx context
 		return nil, errors.New(noti.WITHDRAW_PROPOSAL_EXECUTED_MESSSAGE)
 	}
 
-	if !proposal.IsFromLocalPool {
+	if proposal.IsCancelled {
 		return nil, genericErr
 	}
 
-	approveWeight, _ := strconv.ParseInt(proposal.ApproveWeight, 10, 64)
-	refuseWeight, _ := strconv.ParseInt(proposal.RefuseWeight, 10, 64)
-	if approveWeight/(approveWeight+refuseWeight) < min_withdraw_proposal_amount_value {
+	approveWeight, _ := strconv.ParseInt(proposal.TotalApproveWeight, 10, 64)
+	withdrawAmount, _ := strconv.ParseInt(proposal.WithdrawAmount, 10, 64)
+
+	if approveWeight < withdrawAmount {
 		return nil, errors.New(noti.WITHDRAW_PROPOSAL_FAIL_CONDITION_MESSAGE)
 	}
 
@@ -357,7 +518,6 @@ func (w *withdrawProposalService) ConfirmWithdrawProposal(id string, ctx context
 	var curTime time.Time = time.Now()
 	var expiredAt time.Time
 	var paymentMethod string
-	withdrawAmount, _ := strconv.ParseInt(proposal.WithdrawAmount, 10, 64)
 	var res map[string]interface{} = make(map[string]interface{})
 	var isPayosAvailable bool = bankProfile.PayosApiKey != "" && bankProfile.PayosCheckSumKey != "" && bankProfile.PayosClientID != ""
 
@@ -496,11 +656,11 @@ func (w *withdrawProposalService) ConfirmMainPoolWithdrawProposal(id string, cap
 		return response.BuildTransactionResponse{}, internalErr
 	}
 
-	approveWeight, _ := strconv.ParseInt(proposal.ApproveWeight, 10, 64)
-	refuseWeight, _ := strconv.ParseInt(proposal.RefuseWeight, 10, 64)
-	if approveWeight/(approveWeight+refuseWeight) < min_withdraw_proposal_amount_value {
-		return response.BuildTransactionResponse{}, errors.New(noti.WITHDRAW_PROPOSAL_FAIL_CONDITION_MESSAGE)
-	}
+	// approveWeight, _ := strconv.ParseInt(proposal.ApproveWeight, 10, 64)
+	// refuseWeight, _ := strconv.ParseInt(proposal.RefuseWeight, 10, 64)
+	// if approveWeight/(approveWeight+refuseWeight) < min_withdraw_proposal_amount_value {
+	// 	return response.BuildTransactionResponse{}, errors.New(noti.WITHDRAW_PROPOSAL_FAIL_CONDITION_MESSAGE)
+	// }
 
 	// todo: validate transaction capture image blob id
 
@@ -590,7 +750,7 @@ func (w *withdrawProposalService) GetWithdrawProposals(req request.GetWithdrawPr
 
 	proposals, _ := on_chain.GetOnChainObjects[entities.WithdrawProposal](on_chain.GetOnChainObjectsRequest{
 		Client:    client,
-		ObjectIds: pool.WithdrawProposals,
+		ObjectIds: pool.AllWithdrawProposals,
 		ErrLogger: w.errLogger,
 	}, ctx)
 	if proposals == nil || len(proposals) == 0 {
@@ -599,7 +759,7 @@ func (w *withdrawProposalService) GetWithdrawProposals(req request.GetWithdrawPr
 
 	var filteredProposals []entities.WithdrawProposal
 	var curTime time.Time = time.Now()
-	for i := len(pool.WithdrawProposals) - 1; i >= 0; i-- {
+	for i := len(pool.AllWithdrawProposals) - 1; i >= 0; i-- {
 		var proposal = proposals[i]
 		if creator != "" {
 			if proposal.Creator != creator { // Not matched
@@ -705,67 +865,340 @@ func (w *withdrawProposalService) GetWithdrawProposals(req request.GetWithdrawPr
 	return res, nil
 }
 
+// // VoteWithdrawProposal implements business.IWithdrawProposalService.
+// func (w *withdrawProposalService) VoteWithdrawProposal(id string, req request.VoteRequest, ctx context.Context) (response.BuildTransactionResponse, error) {
+// 	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
+// 	var sender string = ctx.Value("address").(string)
+// 	if !util.IsValidSuiAddressStrict(id) {
+// 		return response.BuildTransactionResponse{}, genericErr
+// 	}
+
+// 	// todo: add admin nft and get nft of wallet to check
+// 	var client = w.clients[constant.SuiTestnet]
+// 	proposal, _ := on_chain.GetOnChainObject[entities.WithdrawProposal](on_chain.GetOnChainObjectRequest{
+// 		Client:    client,
+// 		ObjectId:  id,
+// 		ErrLogger: w.errLogger,
+// 	}, ctx)
+// 	if proposal == nil {
+// 		return response.BuildTransactionResponse{}, genericErr
+// 	}
+
+// 	if !proposal.ToWithdrawProposalResponse().ClosedAt.After(time.Now()) {
+// 		return response.BuildTransactionResponse{}, errors.New(noti.WITHDRAW_PROPOSAL_CLOSED_MESSAGE)
+// 	}
+
+// 	if slices.Contains(proposal.Approvers, sender) || slices.Contains(proposal.Refusers, sender) {
+// 		return response.BuildTransactionResponse{}, errors.New(noti.ALREADY_VOTE_MESSAGE)
+// 	}
+
+// 	var donorModule = on_chain.InitializeModuleDonor()
+// 	nfts, _ := on_chain.GetOnChainOwnedObjects[entities.Donor](on_chain.GetOnChainOwnedObjectsRequest{
+// 		Client:       client,
+// 		OwnerAddress: sender,
+// 		StructType:   fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), donorModule.GetModule(), donorModule.GetDonorNftStruct()),
+// 		ErrLogger:    w.errLogger,
+// 	}, ctx)
+// 	if nfts == nil || len(nfts) == 0 {
+// 		return response.BuildTransactionResponse{}, errors.New(noti.HAVE_TO_DONATE_TO_VOTE)
+// 	}
+
+// 	var refuseReason string = strings.TrimSpace(req.RefuseReason)
+// 	if refuseReason == "" {
+// 		refuseReason = "Refuse"
+// 	}
+
+// 	var poolModule = on_chain.InitializeModulePool()
+// 	txBytes, err := on_chain.BuildTransaction(on_chain.BuildTransactionRequest{
+// 		Client:    client,
+// 		Sender:    sender,
+// 		Module:    poolModule.GetModule(),
+// 		Function:  poolModule.GetFunctionVoteWithdrawProposal(),
+// 		ErrLogger: w.errLogger,
+// 		Arguments: poolModule.ToVoteWithdrawProposalArguments(on_chain.VoteWithdrawProposalArguments{
+// 			ProposalId:   id,
+// 			DonorId:      nfts[0].ID.ID,
+// 			IsApprove:    req.IsVoteYes,
+// 			RefuseReason: refuseReason,
+// 		}),
+// 	}, ctx)
+
+// 	return response.BuildTransactionResponse{
+// 		TxBytes: txBytes,
+// 	}, err
+// }
+
 // VoteWithdrawProposal implements business.IWithdrawProposalService.
-func (w *withdrawProposalService) VoteWithdrawProposal(id string, req request.VoteRequest, ctx context.Context) (response.BuildTransactionResponse, error) {
+func (w *withdrawProposalService) VoteWithdrawProposal(id string, ctx context.Context) error {
 	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
-	var sender string = ctx.Value("address").(string)
 	if !util.IsValidSuiAddressStrict(id) {
-		return response.BuildTransactionResponse{}, genericErr
+		return genericErr
 	}
 
-	// todo: add admin nft and get nft of wallet to check
 	var client = w.clients[constant.SuiTestnet]
-	proposal, _ := on_chain.GetOnChainObject[entities.WithdrawProposal](on_chain.GetOnChainObjectRequest{
+	proposal, err := on_chain.GetOnChainObject[entities.WithdrawProposal](on_chain.GetOnChainObjectRequest{
 		Client:    client,
 		ObjectId:  id,
 		ErrLogger: w.errLogger,
 	}, ctx)
+	if err != nil {
+		return err
+	}
+
 	if proposal == nil {
-		return response.BuildTransactionResponse{}, genericErr
+		return genericErr
 	}
 
-	if !proposal.ToWithdrawProposalResponse().ClosedAt.After(time.Now()) {
-		return response.BuildTransactionResponse{}, errors.New(noti.WITHDRAW_PROPOSAL_CLOSED_MESSAGE)
+	miliSecClosedAt, _ := strconv.ParseInt(proposal.ClosedAt, 10, 64)
+	var closedAt time.Time = util.MilliSecToTime(miliSecClosedAt)
+	if !time.Now().Before(closedAt) {
+		return errors.New(noti.WITHDRAW_PROPOSAL_CLOSED_MESSAGE)
 	}
 
-	if slices.Contains(proposal.Approvers, sender) || slices.Contains(proposal.Refusers, sender) {
-		return response.BuildTransactionResponse{}, errors.New(noti.ALREADY_VOTE_MESSAGE)
+	var sender string = ctx.Value("address").(string)
+	if slices.Contains(proposal.Approvers, sender) {
+		return errors.New(noti.ALREADY_VOTE_MESSAGE)
 	}
 
-	var donorModule = on_chain.InitializeModuleDonor()
-	nfts, _ := on_chain.GetOnChainOwnedObjects[entities.Donor](on_chain.GetOnChainOwnedObjectsRequest{
-		Client:       client,
-		OwnerAddress: sender,
-		StructType:   fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), donorModule.GetModule(), donorModule.GetDonorNftStruct()),
-		ErrLogger:    w.errLogger,
-	}, ctx)
-	if nfts == nil || len(nfts) == 0 {
-		return response.BuildTransactionResponse{}, errors.New(noti.HAVE_TO_DONATE_TO_VOTE)
+	var module, function string
+	var args []interface{}
+	if proposal.Purpose == string(entities.POOL_WITHDRAW_PROPOSAL_PURPOSE) {
+		var localPoolId string
+		var mainPoolId string = os.Getenv(env.POOL_ID)
+		if proposal.TargetID == mainPoolId {
+			pool, err := on_chain.GetOnChainObject[entities.MainPool](on_chain.GetOnChainObjectRequest{
+				Client:    client,
+				ObjectId:  mainPoolId,
+				ErrLogger: w.errLogger,
+			}, ctx)
+			if err != nil {
+				return err
+			}
+
+			if proposal.PoolID != mainPoolId || proposal.PoolName != "Main Pool" {
+				return genericErr
+			}
+
+			var foundIdx int = -1
+			for i, donor := range pool.Donors {
+				if donor == sender {
+					foundIdx = i
+					break
+				}
+			}
+
+			if foundIdx == -1 {
+				return errors.New(noti.HAVE_TO_DONATE_TO_VOTE)
+			}
+
+			remainVotePower, _ := strconv.Atoi(pool.RemainVotePowers[foundIdx])
+			if remainVotePower == 0 {
+				// todo: return msg
+			}
+
+			localPoolId = os.Getenv(env.SHARED_LOCAL_POOL_ID)
+		} else {
+			pool, err := on_chain.GetOnChainObject[entities.LocalPool](on_chain.GetOnChainObjectRequest{
+				Client:    client,
+				ObjectId:  proposal.TargetID,
+				ErrLogger: w.errLogger,
+			}, ctx)
+			if err != nil {
+				return err
+			}
+
+			if proposal.PoolID != pool.ID.ID || proposal.PoolName != pool.Region {
+				return genericErr
+			}
+
+			var foundIdx int = -1
+			for i, donor := range pool.Donors {
+				if donor == sender {
+					foundIdx = i
+					break
+				}
+			}
+
+			if foundIdx == -1 {
+				return errors.New(noti.HAVE_TO_DONATE_TO_VOTE)
+			}
+
+			remainVotePower, _ := strconv.Atoi(pool.RemainVotePowers[foundIdx])
+			if remainVotePower == 0 {
+				// todo: return msg
+			}
+
+			localPoolId = proposal.TargetID
+		}
+
+		var poolModule = on_chain.InitializeModulePool()
+		module = poolModule.GetModule()
+		function = poolModule.GetFunctionVoteWithdrawProposal()
+		args = poolModule.ToVoteWithdrawProposalArguments(on_chain.VoteWithdrawProposalArguments{
+			LocalPoolID: localPoolId,
+			ProposalID:  id,
+			Sender:      sender,
+		})
+	} else if proposal.Purpose == string(entities.POOL_CAMPAIGN_WITHDRAW_PROPOSAL_PURPOSE) {
+		campaign, err := on_chain.GetOnChainObject[entities.OnChainCampaign](on_chain.GetOnChainObjectRequest{
+			Client:    client,
+			ObjectId:  proposal.TargetID,
+			ErrLogger: w.errLogger,
+		}, ctx)
+		if err != nil {
+			return err
+		}
+
+		if campaign == nil {
+			return genericErr
+		}
+
+		var foundIdx int = -1
+		for i, donor := range campaign.Donors {
+			if donor == sender {
+				foundIdx = i
+				break
+			}
+		}
+
+		if foundIdx == -1 {
+			return errors.New(noti.HAVE_TO_DONATE_TO_VOTE)
+		}
+
+		remainVotePower, _ := strconv.Atoi(campaign.RemainVotePowers[foundIdx])
+		if remainVotePower == 0 {
+			// todo: return msg
+		}
+
+		var campaignModule = on_chain.InitializeModuleCampaign()
+		module = campaignModule.GetModule()
+		function = campaignModule.GetFunctionVotePoolCampaignWithdrawProposal()
+		args = campaignModule.ToVotePoolCampaignWithdrawProposalArguments(on_chain.VotePoolCampaignWithdrawProposalArguments{
+			CampaignID: proposal.TargetID,
+			ProposalID: id,
+			Sender:     sender,
+		})
+	} else {
+		var donorList []string
+		var votePowerList []string
+		var needModule = on_chain.InitializeModuleNeed()
+
+		switch proposal.Purpose {
+		case string(entities.BOOKS_NEED_WITHDRAW_PROPOSAL_PURPOSE):
+			need, err := on_chain.GetOnChainObject[entities.BooksNeed](on_chain.GetOnChainObjectRequest{
+				Client:    client,
+				ObjectId:  proposal.TargetID,
+				ErrLogger: w.errLogger,
+			}, ctx)
+			if err != nil {
+				return err
+			}
+
+			if need == nil {
+				return genericErr
+			}
+
+			donorList = need.Donors
+			votePowerList = need.RemainVotePowers
+			function = needModule.GetFunctionVoteBooksNeedWithdrawProposal()
+
+		case string(entities.MEAL_NEED_WITHDRAW_PROPOSAL_PURPOSE):
+			need, err := on_chain.GetOnChainObject[entities.MealNeed](on_chain.GetOnChainObjectRequest{
+				Client:    client,
+				ObjectId:  proposal.TargetID,
+				ErrLogger: w.errLogger,
+			}, ctx)
+			if err != nil {
+				return err
+			}
+
+			if need == nil {
+				return genericErr
+			}
+
+			donorList = need.Donors
+			votePowerList = need.RemainVotePowers
+			function = needModule.GetFunctionVoteMealNeedWithdrawProposal()
+
+		case string(entities.HEALTH_INSURANCE_NEED_WITHDRAW_PROPOSAL_PURPOSE):
+			need, err := on_chain.GetOnChainObject[entities.HealthInsuranceNeed](on_chain.GetOnChainObjectRequest{
+				Client:    client,
+				ObjectId:  proposal.TargetID,
+				ErrLogger: w.errLogger,
+			}, ctx)
+			if err != nil {
+				return err
+			}
+
+			if need == nil {
+				return genericErr
+			}
+
+			donorList = need.Donors
+			votePowerList = need.RemainVotePowers
+			function = needModule.GetFunctionVoteHealthInsuranceNeedWithdrawProposal()
+
+		case string(entities.SPECIAL_NEED_CAMPAIGN_WITHDRAW_PROPOSAL_PURPOSE):
+			campaign, err := on_chain.GetOnChainObject[entities.SpecialNeedCampaign](on_chain.GetOnChainObjectRequest{
+				Client:    client,
+				ObjectId:  proposal.TargetID,
+				ErrLogger: w.errLogger,
+			}, ctx)
+			if err != nil {
+				return err
+			}
+
+			if campaign == nil {
+				return genericErr
+			}
+
+			donorList = campaign.Donors
+			votePowerList = campaign.RemainVotePowers
+			function = needModule.GetFunctionVoteSpecialNeedCampaignWithdrawProposal()
+		}
+
+		if donorList == nil || votePowerList == nil {
+			return genericErr
+		}
+
+		var foundIdx int = -1
+		for i, donor := range donorList {
+			if donor == sender {
+				foundIdx = i
+				break
+			}
+		}
+
+		if foundIdx == -1 {
+			return errors.New(noti.HAVE_TO_DONATE_TO_VOTE)
+		}
+
+		remainVotePower, _ := strconv.Atoi(votePowerList[foundIdx])
+		if remainVotePower == 0 {
+			// todo: return msg
+		}
+
+		module = needModule.GetModule()
+		args = needModule.ToVoteChildNeedWithdrawProposalArguments(on_chain.VoteChildNeedWithdrawProposalArguments{
+			TargetID:   proposal.TargetID,
+			ProposalID: id,
+			Sender:     sender,
+		})
 	}
 
-	var refuseReason string = strings.TrimSpace(req.RefuseReason)
-	if refuseReason == "" {
-		refuseReason = "Refuse"
+	if module == "" || function == "" || args == nil {
+		return genericErr
 	}
 
-	var poolModule = on_chain.InitializeModulePool()
-	txBytes, err := on_chain.BuildTransaction(on_chain.BuildTransactionRequest{
+	_, errRes := on_chain.ExecuteTransactionV2(on_chain.ExecuteTransactionRequestV2{
 		Client:    client,
-		Sender:    sender,
-		Module:    poolModule.GetModule(),
-		Function:  poolModule.GetFunctionVoteWithdrawProposal(),
+		Module:    module,
+		Function:  function,
+		Arguments: args,
 		ErrLogger: w.errLogger,
-		Arguments: poolModule.ToVoteWithdrawProposalArguments(on_chain.VoteWithdrawProposalArguments{
-			ProposalId:   id,
-			DonorId:      nfts[0].ID.ID,
-			IsApprove:    req.IsVoteYes,
-			RefuseReason: refuseReason,
-		}),
 	}, ctx)
 
-	return response.BuildTransactionResponse{
-		TxBytes: txBytes,
-	}, err
+	return errRes
 }
 
 func (w *withdrawProposalService) getGetWithdrawProposalsRedisKey(req request.GetWithdrawProposalsRequest) string {

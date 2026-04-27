@@ -4,7 +4,6 @@ import (
 	"context"
 	"database/sql"
 	"errors"
-	"fmt"
 	"log"
 	"os"
 	"raise-child/constants/env"
@@ -107,17 +106,6 @@ func (a *adminRequestService) ConfirmRequest(id string, ctx context.Context) (re
 	}
 
 	var client = a.clients[constant.SuiTestnet]
-	var mangeModule = on_chain.InitializeModuleManage()
-	caps, err := on_chain.GetOnChainOwnedObjects[entities.Cap](on_chain.GetOnChainOwnedObjectsRequest{
-		Client:       client,
-		OwnerAddress: sender,
-		StructType:   fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), mangeModule.GetModule(), mangeModule.GetRegisterAdminCapStruct()),
-		ErrLogger:    a.errLogger,
-	}, ctx)
-	if err != nil {
-		return response.BuildTransactionResponse{}, err
-	}
-
 	var staffModule = on_chain.InitializeModuleStaff()
 	txBytes, err := on_chain.BuildTransaction(on_chain.BuildTransactionRequest{
 		Client:    client,
@@ -126,7 +114,6 @@ func (a *adminRequestService) ConfirmRequest(id string, ctx context.Context) (re
 		Function:  staffModule.GetFunctionRegisterAdmin(),
 		ErrLogger: a.errLogger,
 		Arguments: staffModule.ToRegisterAdminArguments(on_chain.RegisterAdminArguments{
-			CapID:              caps[0].ID.ID,
 			IdentityCode:       req.IdentityCode,
 			IdentityCardBlobID: req.IdentityCardBlobID,
 			AvatarBlobID:       req.AvatarBlobID,

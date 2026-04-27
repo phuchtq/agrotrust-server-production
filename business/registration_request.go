@@ -105,26 +105,209 @@ func GenerateRegistrationRequestService() (business.IRegistrationRequestService,
 	), nil
 }
 
+// // ConfirmRegistrationRequest implements business.IRegistrationRequestService.
+// func (r *registrationRequestService) ConfirmRegistrationRequest(id string, ctx context.Context) (response.BuildTransactionResponse, error) {
+// 	req, err := r.registrationRequestRepo.GetRegistrationRequest(id, ctx)
+// 	if err != nil {
+// 		return response.BuildTransactionResponse{}, err
+// 	}
+
+// 	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
+// 	if req == nil {
+// 		return response.BuildTransactionResponse{}, genericErr
+// 	}
+
+// 	var sender string = ctx.Value("address").(string)
+// 	if req.CreatedBy != sender {
+// 		return response.BuildTransactionResponse{}, errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+// 	}
+
+// 	// Pending process
+// 	if req.ClosedAt.After(time.Now()) {
+// 		return response.BuildTransactionResponse{}, errors.New(noti.STILL_PENDING_REQUEST_MESSAGE)
+// 	} else { // Request closed
+// 		var rate float32 = float32(len(req.Approvers)) / float32(len(req.Approvers)+len(req.Refusers))
+// 		var isDenied bool = false
+
+// 		if rate >= approve_rate_limit {
+// 			req.Status = request_approved_status
+// 			req.IsConfirmRegister = true
+// 		} else {
+// 			req.Status = request_refused_status
+// 			isDenied = true
+// 		}
+
+// 		req.UpdatedAt = time.Now()
+// 		if err := r.registrationRequestRepo.UpdateRegistrationRequest(*req, ctx); err != nil {
+// 			return response.BuildTransactionResponse{}, err
+// 		}
+
+// 		if isDenied {
+// 			return response.BuildTransactionResponse{}, nil
+// 		}
+// 	}
+
+// 	// Wait for background server to mint cap object to register
+// 	if !req.IsAvailableToConfirm {
+// 		return response.BuildTransactionResponse{}, nil
+// 	}
+
+// 	var client = r.clients[constant.SuiTestnet]
+// 	var manageModule = on_chain.InitializeModuleManage()
+// 	var capType string
+
+// 	switch req.RegisterRole {
+// 	case admin_role:
+// 		capType = manageModule.GetRegisterAdminCapStruct()
+// 	case local_leader_role:
+// 		capType = manageModule.GetRegisterLeaderCapStruct()
+// 	case volunteer_role:
+// 		capType = manageModule.GetRegisterVolunteerCapStruct()
+// 	}
+
+// 	r.errLogger.Println("Cap type:", capType)
+
+// 	caps, err := on_chain.GetOnChainOwnedObjects[entities.Cap](on_chain.GetOnChainOwnedObjectsRequest{
+// 		Client:       client,
+// 		OwnerAddress: sender,
+// 		StructType:   fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), manageModule.GetModule(), capType),
+// 		ErrLogger:    r.errLogger,
+// 	}, ctx)
+// 	if err != nil {
+// 		return response.BuildTransactionResponse{}, err
+// 	}
+
+// 	var args []interface{}
+// 	var function string
+// 	var staffModule = on_chain.InitializeModuleStaff()
+// 	switch req.RegisterRole {
+// 	case admin_role:
+// 		function = staffModule.GetFunctionRegisterAdmin()
+// 		args = staffModule.ToRegisterAdminArguments(on_chain.RegisterAdminArguments{
+// 			CapID:              caps[0].ID.ID,
+// 			IdentityCode:       req.IdentityCode,
+// 			IdentityCardBlobID: req.IdentityCardBlobID,
+// 			AvatarBlobID:       req.AvatarBlobID,
+// 			FirstName:          req.FirstName,
+// 			LastName:           req.LastName,
+// 			Gender:             req.Gender,
+// 			DateOfBirth:        req.DateOfBirth,
+// 			PhoneNumber:        req.PhoneNumber,
+// 			Email:              req.Email,
+// 		})
+// 	case local_leader_role:
+// 		pool, err := on_chain.GetOnChainObject[entities.MainPool](on_chain.GetOnChainObjectRequest{
+// 			Client:    client,
+// 			ObjectId:  os.Getenv(env.POOL_ID),
+// 			ErrLogger: r.errLogger,
+// 		}, ctx)
+// 		if err != nil {
+// 			return response.BuildTransactionResponse{}, err
+// 		}
+
+// 		var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
+// 		if pool == nil {
+// 			return response.BuildTransactionResponse{}, internalErr
+// 		}
+
+// 		localPools, err := on_chain.GetOnChainObjects[entities.LocalPool](on_chain.GetOnChainObjectsRequest{
+// 			Client:    client,
+// 			ObjectIds: pool.LocalPools,
+// 			ErrLogger: r.errLogger,
+// 		}, ctx)
+// 		if err != nil {
+// 			return response.BuildTransactionResponse{}, err
+// 		}
+
+// 		if localPools == nil || len(localPools) == 0 {
+// 			return response.BuildTransactionResponse{}, internalErr
+// 		}
+
+// 		var localPoolId string
+// 		for _, localPool := range localPools {
+// 			if localPool.Region == req.Region {
+// 				localPoolId = localPool.ID.ID
+// 				break
+// 			}
+// 		}
+
+// 		if localPoolId == "" {
+// 			localPoolId = os.Getenv(env.SHARED_LOCAL_POOL_ID)
+// 		}
+
+// 		function = staffModule.GetFunctionRegisterLeader()
+// 		args = staffModule.ToRegisterNormalStaffArguments(on_chain.RegisterNormalStaffArguments{
+// 			LocalPoolID: localPoolId,
+// 			Region:      req.Region,
+// 			RegisterAdminArguments: on_chain.RegisterAdminArguments{
+// 				CapID:              caps[0].ID.ID,
+// 				IdentityCode:       req.IdentityCode,
+// 				IdentityCardBlobID: req.IdentityCardBlobID,
+// 				AvatarBlobID:       req.AvatarBlobID,
+// 				FirstName:          req.FirstName,
+// 				LastName:           req.LastName,
+// 				Gender:             req.Gender,
+// 				DateOfBirth:        req.DateOfBirth,
+// 				PhoneNumber:        req.PhoneNumber,
+// 				Email:              req.Email,
+// 			},
+// 		})
+// 	case volunteer_role:
+// 		function = staffModule.GetFunctionRegisterVolunteer()
+// 		args = staffModule.ToRegisterNormalStaffArguments(on_chain.RegisterNormalStaffArguments{
+// 			Region: req.Region,
+// 			RegisterAdminArguments: on_chain.RegisterAdminArguments{
+// 				CapID:              caps[0].ID.ID,
+// 				IdentityCode:       req.IdentityCode,
+// 				IdentityCardBlobID: req.IdentityCardBlobID,
+// 				AvatarBlobID:       req.AvatarBlobID,
+// 				FirstName:          req.FirstName,
+// 				LastName:           req.LastName,
+// 				Gender:             req.Gender,
+// 				DateOfBirth:        req.DateOfBirth,
+// 				PhoneNumber:        req.PhoneNumber,
+// 				Email:              req.Email,
+// 			},
+// 		})
+// 	}
+
+// 	var module = on_chain.InitializeModuleStaff()
+// 	txBytes, err := on_chain.BuildTransaction(on_chain.BuildTransactionRequest{
+// 		Client:    r.clients[constant.SuiTestnet],
+// 		Sender:    sender,
+// 		Module:    module.GetModule(),
+// 		Function:  function,
+// 		ErrLogger: r.errLogger,
+// 		Arguments: args,
+// 	}, ctx)
+
+// 	return response.BuildTransactionResponse{
+// 		TxBytes:         txBytes,
+// 		RegistrationReq: id,
+// 	}, err
+// }
+
 // ConfirmRegistrationRequest implements business.IRegistrationRequestService.
-func (r *registrationRequestService) ConfirmRegistrationRequest(id string, ctx context.Context) (response.BuildTransactionResponse, error) {
+func (r *registrationRequestService) ConfirmRegistrationRequest(id string, ctx context.Context) error {
 	req, err := r.registrationRequestRepo.GetRegistrationRequest(id, ctx)
 	if err != nil {
-		return response.BuildTransactionResponse{}, err
+		return err
 	}
 
 	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
 	if req == nil {
-		return response.BuildTransactionResponse{}, genericErr
+		return genericErr
 	}
 
 	var sender string = ctx.Value("address").(string)
 	if req.CreatedBy != sender {
-		return response.BuildTransactionResponse{}, errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+		return errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
 	}
 
 	// Pending process
-	if req.ClosedAt.After(time.Now()) {
-		return response.BuildTransactionResponse{}, errors.New(noti.STILL_PENDING_REQUEST_MESSAGE)
+	var curTime time.Time = time.Now()
+	if req.ClosedAt.After(curTime) {
+		return errors.New(noti.STILL_PENDING_REQUEST_MESSAGE)
 	} else { // Request closed
 		var rate float32 = float32(len(req.Approvers)) / float32(len(req.Approvers)+len(req.Refusers))
 		var isDenied bool = false
@@ -137,54 +320,25 @@ func (r *registrationRequestService) ConfirmRegistrationRequest(id string, ctx c
 			isDenied = true
 		}
 
-		req.UpdatedAt = time.Now()
+		req.UpdatedAt = curTime
 		if err := r.registrationRequestRepo.UpdateRegistrationRequest(*req, ctx); err != nil {
-			return response.BuildTransactionResponse{}, err
+			return err
 		}
 
 		if isDenied {
-			return response.BuildTransactionResponse{}, nil
+			return nil
 		}
-	}
-
-	// Wait for background server to mint cap object to register
-	if !req.IsAvailableToConfirm {
-		return response.BuildTransactionResponse{}, nil
-	}
-
-	var client = r.clients[constant.SuiTestnet]
-	var manageModule = on_chain.InitializeModuleManage()
-	var capType string
-
-	switch req.RegisterRole {
-	case admin_role:
-		capType = manageModule.GetRegisterAdminCapStruct()
-	case local_leader_role:
-		capType = manageModule.GetRegisterLeaderCapStruct()
-	case volunteer_role:
-		capType = manageModule.GetRegisterVolunteerCapStruct()
-	}
-
-	r.errLogger.Println("Cap type:", capType)
-
-	caps, err := on_chain.GetOnChainOwnedObjects[entities.Cap](on_chain.GetOnChainOwnedObjectsRequest{
-		Client:       client,
-		OwnerAddress: sender,
-		StructType:   fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), manageModule.GetModule(), capType),
-		ErrLogger:    r.errLogger,
-	}, ctx)
-	if err != nil {
-		return response.BuildTransactionResponse{}, err
 	}
 
 	var args []interface{}
 	var function string
 	var staffModule = on_chain.InitializeModuleStaff()
+	var client = r.clients[constant.SuiTestnet]
+	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
 	switch req.RegisterRole {
 	case admin_role:
 		function = staffModule.GetFunctionRegisterAdmin()
 		args = staffModule.ToRegisterAdminArguments(on_chain.RegisterAdminArguments{
-			CapID:              caps[0].ID.ID,
 			IdentityCode:       req.IdentityCode,
 			IdentityCardBlobID: req.IdentityCardBlobID,
 			AvatarBlobID:       req.AvatarBlobID,
@@ -202,12 +356,11 @@ func (r *registrationRequestService) ConfirmRegistrationRequest(id string, ctx c
 			ErrLogger: r.errLogger,
 		}, ctx)
 		if err != nil {
-			return response.BuildTransactionResponse{}, err
+			return err
 		}
 
-		var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
 		if pool == nil {
-			return response.BuildTransactionResponse{}, internalErr
+			return internalErr
 		}
 
 		localPools, err := on_chain.GetOnChainObjects[entities.LocalPool](on_chain.GetOnChainObjectsRequest{
@@ -216,11 +369,11 @@ func (r *registrationRequestService) ConfirmRegistrationRequest(id string, ctx c
 			ErrLogger: r.errLogger,
 		}, ctx)
 		if err != nil {
-			return response.BuildTransactionResponse{}, err
+			return err
 		}
 
 		if localPools == nil || len(localPools) == 0 {
-			return response.BuildTransactionResponse{}, internalErr
+			return internalErr
 		}
 
 		var localPoolId string
@@ -240,7 +393,6 @@ func (r *registrationRequestService) ConfirmRegistrationRequest(id string, ctx c
 			LocalPoolID: localPoolId,
 			Region:      req.Region,
 			RegisterAdminArguments: on_chain.RegisterAdminArguments{
-				CapID:              caps[0].ID.ID,
 				IdentityCode:       req.IdentityCode,
 				IdentityCardBlobID: req.IdentityCardBlobID,
 				AvatarBlobID:       req.AvatarBlobID,
@@ -257,7 +409,6 @@ func (r *registrationRequestService) ConfirmRegistrationRequest(id string, ctx c
 		args = staffModule.ToRegisterNormalStaffArguments(on_chain.RegisterNormalStaffArguments{
 			Region: req.Region,
 			RegisterAdminArguments: on_chain.RegisterAdminArguments{
-				CapID:              caps[0].ID.ID,
 				IdentityCode:       req.IdentityCode,
 				IdentityCardBlobID: req.IdentityCardBlobID,
 				AvatarBlobID:       req.AvatarBlobID,
@@ -271,20 +422,19 @@ func (r *registrationRequestService) ConfirmRegistrationRequest(id string, ctx c
 		})
 	}
 
-	var module = on_chain.InitializeModuleStaff()
-	txBytes, err := on_chain.BuildTransaction(on_chain.BuildTransactionRequest{
-		Client:    r.clients[constant.SuiTestnet],
-		Sender:    sender,
-		Module:    module.GetModule(),
-		Function:  function,
-		ErrLogger: r.errLogger,
-		Arguments: args,
-	}, ctx)
+	for i := 1; i <= 3; i++ {
+		if _, err := on_chain.ExecuteTransactionV2(on_chain.ExecuteTransactionRequestV2{
+			Client:    client,
+			Module:    staffModule.GetModule(),
+			Function:  function,
+			Arguments: args,
+			ErrLogger: r.errLogger,
+		}, ctx); err == nil {
+			return nil
+		}
+	}
 
-	return response.BuildTransactionResponse{
-		TxBytes:         txBytes,
-		RegistrationReq: id,
-	}, err
+	return internalErr
 }
 
 // CreateRegistrationRequest implements business.IRegistrationRequestService.
@@ -396,26 +546,24 @@ func (r *registrationRequestService) CreateRegistrationRequest(req request.Creat
 	// todo: validate identity code
 	var curTime time.Time = time.Now()
 	var request = entities.RegistrationRequest{
-		ID:                   util.GenerateId(),
-		ProfileID:            ctx.Value("sub").(string),
-		RegisterRole:         role,
-		IdentityCode:         identityCode,
-		IdentityCardBlobID:   strings.TrimSpace(req.IdentityCardBlobID),
-		AvatarBlobID:         strings.TrimSpace(req.AvatarBlobID),
-		Region:               req.Region,
-		FirstName:            firstName,
-		LastName:             lastName,
-		Gender:               *profile.Gender,
-		DateOfBirth:          *profile.DateOfBirth,
-		PhoneNumber:          *profile.PhoneNumber,
-		Email:                *profile.Email,
-		Status:               request_pending_status,
-		IsAvailableToConfirm: false,
-		IsConfirmRegister:    false,
-		CreatedBy:            sender,
-		CreatedAt:            curTime,
-		UpdatedAt:            curTime,
-		ClosedAt:             util.GetRequestDuration(),
+		ID:                 util.GenerateId(),
+		ProfileID:          ctx.Value("sub").(string),
+		RegisterRole:       role,
+		IdentityCode:       identityCode,
+		IdentityCardBlobID: strings.TrimSpace(req.IdentityCardBlobID),
+		AvatarBlobID:       strings.TrimSpace(req.AvatarBlobID),
+		Region:             req.Region,
+		FirstName:          firstName,
+		LastName:           lastName,
+		Gender:             *profile.Gender,
+		DateOfBirth:        *profile.DateOfBirth,
+		PhoneNumber:        *profile.PhoneNumber,
+		Email:              *profile.Email,
+		Status:             request_pending_status,
+		CreatedBy:          sender,
+		CreatedAt:          curTime,
+		UpdatedAt:          curTime,
+		ClosedAt:           util.GetRequestDuration(),
 	}
 
 	return &request, r.registrationRequestRepo.CreateRegistrationRequest(request, ctx)
@@ -580,11 +728,6 @@ func (r *registrationRequestService) getGetRegistrationRequestsRedisKey(req requ
 		role = req.RegisterRole
 	}
 
-	var isAvailable string = "empty"
-	if req.IsAvailableToConfirm != nil {
-		isAvailable = fmt.Sprintf("%v", *req.IsAvailableToConfirm)
-	}
-
 	var keyword string = "empty"
 	if req.Keyword != "" {
 		keyword = req.Keyword
@@ -610,6 +753,6 @@ func (r *registrationRequestService) getGetRegistrationRequestsRedisKey(req requ
 		isClosed = fmt.Sprintf("%v", *req.IsClosed)
 	}
 
-	return fmt.Sprintf("registration_req:role:%s:available:%s:kw:%s:r:%s:g:%s:status:%s:closed:%s:o:%s:s:%d:p:%d",
-		role, isAvailable, keyword, region, gender, status, isClosed, req.SortOrder, req.PageSize, req.Page)
+	return fmt.Sprintf("registration_req:role:%s:kw:%s:r:%s:g:%s:status:%s:closed:%s:o:%s:s:%d:p:%d",
+		role, keyword, region, gender, status, isClosed, req.SortOrder, req.PageSize, req.Page)
 }

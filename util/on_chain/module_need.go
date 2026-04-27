@@ -24,23 +24,65 @@ type EditUpdateNeedDatesArguments struct {
 	EndDate     string
 }
 
+type VoteChildNeedWithdrawProposalArguments struct {
+	TargetID   string
+	ProposalID string
+	Sender     string
+}
+
 type IModuleNeed interface {
 	GetModule() string
 	GetSpecialNeedDaoObjectStruct() string
 	ToEditSpecialNeedProposalDaoArguments(args EditSpecialNeedProposalDaoArguments) []interface{}
 	ToVoteSpecialNeedProposalArguments(args VoteSpecialNeedProposalArguments) []interface{}
 	ToEditUpdateNeedDatesArguments(args EditUpdateNeedDatesArguments) []interface{}
+	ToVoteChildNeedWithdrawProposalArguments(args VoteChildNeedWithdrawProposalArguments) []interface{}
 	GetFunctionEditSpecialNeedProposalDao() string
 	GetFunctionVoteSpecialNeedProposal() string
 	GetFunctionEditUpdateBooksNeedDates() string
 	GetFunctionEditUpdateMealNeedDates() string
 	GetFunctionEditUpdateHealthInsuranceNeedDates() string
+	GetFunctionVoteBooksNeedWithdrawProposal() string
+	GetFunctionVoteMealNeedWithdrawProposal() string
+	GetFunctionVoteHealthInsuranceNeedWithdrawProposal() string
+	GetFunctionVoteSpecialNeedCampaignWithdrawProposal() string
 }
 
 type moduleNeed struct{}
 
 func InitializeModuleNeed() IModuleNeed {
 	return &moduleNeed{}
+}
+
+// GetFunctionVoteBooksNeedWithdrawProposal implements IModuleNeed.
+func (m *moduleNeed) GetFunctionVoteBooksNeedWithdrawProposal() string {
+	return sui.VOTE_BOOKS_NEED_WITHDRAW_PROPOSAL_FUNCTION
+}
+
+// GetFunctionVoteHealthInsuranceNeedWithdrawProposal implements IModuleNeed.
+func (m *moduleNeed) GetFunctionVoteHealthInsuranceNeedWithdrawProposal() string {
+	return sui.VOTE_HEALTH_INSURANCE_NEED_WITHDRAW_PROPOSAL_FUNCTION
+}
+
+// GetFunctionVoteMealNeedWithdrawProposal implements IModuleNeed.
+func (m *moduleNeed) GetFunctionVoteMealNeedWithdrawProposal() string {
+	return sui.VOTE_MEAL_NEED_WITHDRAW_PROPOSAL_FUNCTION
+}
+
+// GetFunctionVoteSpecialNeedCampaignWithdrawProposal implements IModuleNeed.
+func (m *moduleNeed) GetFunctionVoteSpecialNeedCampaignWithdrawProposal() string {
+	return sui.VOTE_SPECIAL_NEED_CAMPAIGN_WITHDRAW_PROPOSAL_FUNCTION
+}
+
+// ToVoteChildNeedWithdrawProposalArguments implements IModuleNeed.
+func (m *moduleNeed) ToVoteChildNeedWithdrawProposalArguments(args VoteChildNeedWithdrawProposalArguments) []interface{} {
+	return []interface{}{
+		os.Getenv(env.ADMIN_CAP_ID_1),
+		args.TargetID,
+		args.ProposalID,
+		args.Sender,
+		sui.CLOCK_OBJECT_ID,
+	}
 }
 
 // GetFunctionEditSpecialNeedProposalDao implements IModuleNeed.

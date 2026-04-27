@@ -38,9 +38,8 @@ func (c *centerRequestRepo) CreateRegistrationRequest(req entities.CenterRequest
 	var query string = "INSERT INTO " + center_request_table +
 		" (id, profile_id, region, address, phone_number, image_blob_id, " +
 		"approvers, refusers, refuse_reasons, status, " +
-		" is_available_to_confirm, is_confirm_register, " +
-		"created_by, created_at, updated_at, closed_at) " +
-		"values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)"
+		"is_confirm_register, created_by, created_at, updated_at, closed_at) " +
+		"values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15)"
 
 	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.CENTER_REQUEST_REPOSITORY) + "CreateRegistrationRequest - "
 
@@ -56,8 +55,7 @@ func (c *centerRequestRepo) CreateRegistrationRequest(req entities.CenterRequest
 
 	if _, err := c.db.ExecContext(ctx, query, req.ID, req.ProfileID, req.Region, req.Address, req.PhoneNumber, req.ImageBlobID,
 		pq.Array(req.Approvers), pq.Array(req.Refusers), pq.Array(req.RefuseReasons), req.Status,
-		req.IsAvailableToConfirm, req.IsConfirmRegister,
-		req.CreatedBy, req.CreatedAt, req.UpdatedAt, req.ClosedAt); err != nil {
+		req.IsConfirmRegister, req.CreatedBy, req.CreatedAt, req.UpdatedAt, req.ClosedAt); err != nil {
 
 		c.errLogger.Println(errLogMsg + err.Error())
 		return errors.New(noti.INTERNALL_ERR_MSG)
@@ -74,7 +72,7 @@ func (c *centerRequestRepo) GetRegistrationRequests(req request.GetCenterRequest
 	var queryCondition string
 	var isHavePreviosCondition bool = false
 	if req.Region != "" {
-		queryCondition += fmt.Sprintf("LOWER(region) = LOWER('%%%%%s%%%%')", req.Region)
+		queryCondition += fmt.Sprintf("LOWER(region) = LOWER('%s')", req.Region)
 		isHavePreviosCondition = true
 	}
 
@@ -93,15 +91,6 @@ func (c *centerRequestRepo) GetRegistrationRequests(req request.GetCenterRequest
 		}
 
 		queryCondition += fmt.Sprintf("(LOWER(address) LIKE LOWER('%s') OR phone_number LIKE '%s')", req.Keyword, req.Keyword)
-		isHavePreviosCondition = true
-	}
-
-	if req.IsAvailableToConfirm != nil {
-		if isHavePreviosCondition {
-			queryCondition += " AND "
-		}
-
-		queryCondition += fmt.Sprintf("is_available_to_confirm = %v", *req.IsAvailableToConfirm)
 		isHavePreviosCondition = true
 	}
 
@@ -161,8 +150,7 @@ func (c *centerRequestRepo) GetRegistrationRequests(req request.GetCenterRequest
 		if err := rows.Scan(
 			&x.ID, &x.ProfileID, &x.Region, &x.Address, &x.PhoneNumber, &x.ImageBlobID,
 			pq.Array(&x.Approvers), pq.Array(&x.Refusers), pq.Array(&x.RefuseReasons), &x.Status,
-			&x.IsAvailableToConfirm, &x.IsConfirmRegister,
-			&x.CreatedBy, &x.CreatedAt, &x.UpdatedAt, &x.ClosedAt); err != nil {
+			&x.IsConfirmRegister, &x.CreatedBy, &x.CreatedAt, &x.UpdatedAt, &x.ClosedAt); err != nil {
 
 			c.errLogger.Println(errLogMsg + err.Error())
 			return nil, 0, internalErr
@@ -186,8 +174,7 @@ func (c *centerRequestRepo) GetRequest(id string, ctx context.Context) (*entitie
 	if err := c.db.QueryRowContext(ctx, query, id).Scan(
 		&res.ID, &res.ProfileID, &res.Region, &res.Address, &res.PhoneNumber, &res.ImageBlobID,
 		pq.Array(&res.Approvers), pq.Array(&res.Refusers), pq.Array(&res.RefuseReasons), &res.Status,
-		&res.IsAvailableToConfirm, &res.IsConfirmRegister,
-		&res.CreatedBy, &res.CreatedAt, &res.UpdatedAt, &res.ClosedAt); err != nil {
+		&res.IsConfirmRegister, &res.CreatedBy, &res.CreatedAt, &res.UpdatedAt, &res.ClosedAt); err != nil {
 
 		if err == sql.ErrNoRows {
 			return nil, nil
@@ -218,8 +205,7 @@ func (c *centerRequestRepo) GetWalletRegistrationRequests(id string, ctx context
 		if err := rows.Scan(
 			&x.ID, &x.ProfileID, &x.Region, &x.Address, &x.PhoneNumber, &x.ImageBlobID,
 			pq.Array(&x.Approvers), pq.Array(&x.Refusers), pq.Array(&x.RefuseReasons), &x.Status,
-			&x.IsAvailableToConfirm, &x.IsConfirmRegister,
-			&x.CreatedBy, &x.CreatedAt, &x.UpdatedAt, &x.ClosedAt); err != nil {
+			&x.IsConfirmRegister, &x.CreatedBy, &x.CreatedAt, &x.UpdatedAt, &x.ClosedAt); err != nil {
 
 			c.errLogger.Println(errLogMsg + err.Error())
 			return nil, internalErr
@@ -251,14 +237,14 @@ func (c *centerRequestRepo) UpdateRegistrationRequest(req entities.CenterRequest
 	var query string = "UPDATE " + center_request_table + " SET " +
 		"address = $1, phone_number = $2, image_blob_id = $3, " +
 		"approvers = $4, refusers = $5, refuse_reasons = $6, " +
-		"status = $7, is_confirm_register = $8, is_available_to_confirm = $9, updated_at = $10 WHERE id = $11"
+		"status = $7, is_confirm_register = $8, updated_at = $9 WHERE id = $10"
 
 	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.CENTER_REQUEST_REPOSITORY) + "UpdateRegistrationRequest - "
 	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
 
 	res, err := c.db.ExecContext(ctx, query, req.Address, req.PhoneNumber, req.ImageBlobID,
 		pq.Array(req.Approvers), pq.Array(req.Refusers), pq.Array(req.RefuseReasons),
-		req.Status, req.IsConfirmRegister, req.IsAvailableToConfirm, req.UpdatedAt, req.ID)
+		req.Status, req.IsConfirmRegister, req.UpdatedAt, req.ID)
 	if err != nil {
 		c.errLogger.Println(errLogMsg + err.Error())
 		return internalErr

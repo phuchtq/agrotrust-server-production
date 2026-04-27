@@ -8,32 +8,38 @@ import (
 )
 
 type BooksNeed struct {
-	ID                ID       `json:"id"`
-	ChildID           string   `json:"child"`
-	Year              string   `json:"year"`
-	YearChanges       []string `json:"year_changes"`
-	Semster           string   `json:"semester"`
-	Value             string   `json:"value"`
-	SupportedYears    []string `json:"supported_years"`
-	Donors            []string `json:"donors"`
-	Donations         []string `json:"donations"`
-	WithdrawProposals []string `json:"withdraw_proposals"`
-	WithdrawsForNeed  []string `json:"withdraws_for_need"`
-	IsUpdated         bool     `json:"is_updated"`
+	ID                      ID       `json:"id"`
+	ChildID                 string   `json:"child"`
+	Year                    string   `json:"year"`
+	YearChanges             []string `json:"year_changes"`
+	ValueChanges            []string `json:"value_changes"`
+	Semster                 string   `json:"semester"`
+	Value                   string   `json:"value"`
+	SupportedYears          []string `json:"supported_years"`
+	Donors                  []string `json:"donors"`
+	DonorTotalContributions []string `json:"donor_total_contributions"`
+	RemainVotePowers        []string `json:"remain_vote_powers"`
+	Donations               []string `json:"donations"`
+	WithdrawProposals       []string `json:"withdraw_proposals"`
+	WithdrawsForNeed        []string `json:"withdraws_for_need"`
+	IsUpdated               bool     `json:"is_updated"`
 }
 
 type HealthInsuranceNeed struct {
-	ID                ID       `json:"id"`
-	ChildID           string   `json:"child"`
-	Year              string   `json:"year"`
-	YearChanges       []string `json:"year_changes"`
-	Value             string   `json:"value"`
-	SupportedYears    []string `json:"supported_years"`
-	Donors            []string `json:"donors"`
-	Donations         []string `json:"donations"`
-	WithdrawProposals []string `json:"withdraw_proposals"`
-	WithdrawsForNeed  []string `json:"withdraws_for_need"`
-	IsUpdated         bool     `json:"is_updated"`
+	ID                      ID       `json:"id"`
+	ChildID                 string   `json:"child"`
+	Year                    string   `json:"year"`
+	YearChanges             []string `json:"year_changes"`
+	ValueChanges            []string `json:"value_changes"`
+	Value                   string   `json:"value"`
+	SupportedYears          []string `json:"supported_years"`
+	Donors                  []string `json:"donors"`
+	DonorTotalContributions []string `json:"donor_total_contributions"`
+	RemainVotePowers        []string `json:"remain_vote_powers"`
+	Donations               []string `json:"donations"`
+	WithdrawProposals       []string `json:"withdraw_proposals"`
+	WithdrawsForNeed        []string `json:"withdraws_for_need"`
+	IsUpdated               bool     `json:"is_updated"`
 }
 
 type MealSupportDuration struct {
@@ -63,21 +69,26 @@ type WrapDurationFields struct {
 }
 
 type MealNeed struct {
-	ID                   ID                    `json:"id"`
-	ChildID              string                `json:"child"`
-	Year                 string                `json:"year"`
-	Value                string                `json:"value"`
-	Donors               []string              `json:"donors"`
-	Donations            []string              `json:"donations"`
-	Durations            []MealSupportDuration `json:"durations"`
-	TotalSupportedMonths string                `json:"total_supported_months"`
-	SupportedYears       WrapVecMap            `json:"supported_years"`
-	ProvideMealDates     []string              `json:"provide_meal_dates"`
-	ProvideMealPeriods   []string              `json:"provide_meal_periods"`
-	ProvideMealStaffs    []string              `json:"provide_meal_staffs"`
-	WithdrawProposals    []string              `json:"withdraw_proposals"`
-	WithdrawsForNeed     []string              `json:"withdraws_for_need"`
-	IsUpdated            bool                  `json:"is_updated"`
+	ID                      ID                    `json:"id"`
+	ChildID                 string                `json:"child"`
+	Year                    string                `json:"year"`
+	Value                   string                `json:"value"`
+	YearChanges             []string              `json:"year_changes"`
+	ValueChanges            []string              `json:"value_changes"`
+	Donors                  []string              `json:"donors"`
+	DonorTotalContributions []string              `json:"donor_total_contributions"`
+	RemainVotePowers        []string              `json:"remain_vote_powers"`
+	Donations               []string              `json:"donations"`
+	Durations               []MealSupportDuration `json:"durations"`
+	TotalSupportedMonths    string                `json:"total_supported_months"`
+	SupportedYears          WrapVecMap            `json:"supported_years"`
+	ProvideMealDates        []string              `json:"provide_meal_dates"`
+	ProvideMealPeriods      []string              `json:"provide_meal_periods"`
+	ProvideMealStaffs       []string              `json:"provide_meal_staffs"`
+	ProvideMealImageBlobIDs []string              `json:"provide_meal_image_blob_ids"`
+	WithdrawProposals       []string              `json:"withdraw_proposals"`
+	WithdrawsForNeed        []string              `json:"withdraws_for_need"`
+	IsUpdated               bool                  `json:"is_updated"`
 }
 
 type OffChainMealSupportDuration struct {

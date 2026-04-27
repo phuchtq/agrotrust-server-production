@@ -545,11 +545,6 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "boolean",
-                        "name": "is_available_to_confirm",
-                        "in": "query"
-                    },
-                    {
-                        "type": "boolean",
                         "name": "is_closed",
                         "in": "query"
                     },
@@ -778,9 +773,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Success",
                         "schema": {
-                            "$ref": "#/definitions/response.BuildTransactionResponse"
+                            "$ref": "#/definitions/response.MessageAPIResponse"
                         }
                     },
                     "400": {
@@ -1278,61 +1273,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/child-upload-reqs/{id}/confirm": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Prepares and builds a transaction for registering new child information on-chain",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Child Upload Request"
-                ],
-                "summary": "Confirm and store a child information to Sui Blockhain",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "UploadChild Request ID (UUID)",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/response.BuildTransactionResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid data. Please try again.",
-                        "schema": {
-                            "$ref": "#/definitions/response.MessageAPIResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "You have no rights to access this action.",
-                        "schema": {
-                            "$ref": "#/definitions/response.MessageAPIResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "There is something wrong in the system during the process. Please try again later.",
-                        "schema": {
-                            "$ref": "#/definitions/response.MessageAPIResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/child-upload-reqs/{id}/review": {
             "post": {
                 "security": [
@@ -1351,64 +1291,6 @@ const docTemplate = `{
                     "Child Upload Request"
                 ],
                 "summary": "Review an upload-child request",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Upload Child Request ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Voting details (e.g., vote type, comments)",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/request.VoteRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/response.MessageAPIResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid data. Please try again.",
-                        "schema": {
-                            "$ref": "#/definitions/response.MessageAPIResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "There is something wrong in the system during the process. Please try again later.",
-                        "schema": {
-                            "$ref": "#/definitions/response.MessageAPIResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/child-upload-reqs/{id}/vote": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Submit an approval or refusal vote for a specific child upload request using its ID.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Child Upload Request"
-                ],
-                "summary": "Vote on an upload-child request",
                 "parameters": [
                     {
                         "type": "string",
@@ -3494,7 +3376,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Prepares and builds a transaction for approve and upload Payment on-chain",
+                "description": "Prepares and builds a transaction for approve and upload Payment with method as Manual Bank on-chain",
                 "consumes": [
                     "application/json"
                 ],
@@ -3504,7 +3386,7 @@ const docTemplate = `{
                 "tags": [
                     "payment"
                 ],
-                "summary": "Approve a Payment and upload to Sui Blockchain",
+                "summary": "Approve a Payment with method as Manual Bank and upload to Sui Blockchain",
                 "parameters": [
                     {
                         "type": "string",
@@ -3516,9 +3398,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Success",
                         "schema": {
-                            "$ref": "#/definitions/response.BuildTransactionResponse"
+                            "$ref": "#/definitions/response.MessageAPIResponse"
                         }
                     },
                     "400": {
@@ -5433,11 +5315,6 @@ const docTemplate = `{
                     },
                     {
                         "type": "boolean",
-                        "name": "is_available_to_confirm",
-                        "in": "query"
-                    },
-                    {
-                        "type": "boolean",
                         "name": "is_closed",
                         "in": "query"
                     },
@@ -5672,9 +5549,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Success",
                         "schema": {
-                            "$ref": "#/definitions/response.BuildTransactionResponse"
+                            "$ref": "#/definitions/response.MessageAPIResponse"
                         }
                     },
                     "400": {
@@ -6788,9 +6665,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created",
+                        "description": "Success",
                         "schema": {
-                            "$ref": "#/definitions/response.BuildTransactionResponse"
+                            "$ref": "#/definitions/response.MessageAPIResponse"
                         }
                     },
                     "400": {
@@ -7001,24 +6878,13 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
-                    },
-                    {
-                        "type": "boolean",
-                        "name": "is_vote_yes",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "name": "refuse_reason",
-                        "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Success",
                         "schema": {
-                            "$ref": "#/definitions/response.BuildTransactionResponse"
+                            "$ref": "#/definitions/response.MessageAPIResponse"
                         }
                     },
                     "400": {
@@ -7108,9 +6974,6 @@ const docTemplate = `{
                 },
                 "image_blob_id": {
                     "type": "string"
-                },
-                "isAvailableToConfirm": {
-                    "type": "boolean"
                 },
                 "is_confirm_register": {
                     "description": "Default as false, when status aprroved, user clicks to update to true, call smart contract to register role",
@@ -7414,9 +7277,6 @@ const docTemplate = `{
                 "identity_code": {
                     "type": "string"
                 },
-                "isAvailableToConfirm": {
-                    "type": "boolean"
-                },
                 "is_confirm_register": {
                     "description": "Default as false, when status aprroved, user clicks to update to true, call smart contract to register role",
                     "type": "boolean"
@@ -7503,19 +7363,10 @@ const docTemplate = `{
                 "ai_evaluation": {
                     "type": "string"
                 },
-                "approvers": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
                 "avatar_blob_id": {
                     "type": "string"
                 },
                 "birth_certificate_blob_id": {
-                    "type": "string"
-                },
-                "closed_at": {
                     "type": "string"
                 },
                 "created_at": {
@@ -7558,23 +7409,7 @@ const docTemplate = `{
                 "profile_id": {
                     "type": "string"
                 },
-                "refuse_reasons": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
-                "refusers": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
-                },
                 "region": {
-                    "type": "string"
-                },
-                "review_status": {
-                    "description": "e.g. \"Pending\", \"Approved\", \"Refused\"",
                     "type": "string"
                 },
                 "reviewed_by": {

@@ -20,7 +20,6 @@ type RegisterStaffArguments struct {
 }
 
 type RegisterAdminArguments struct {
-	CapID              string
 	IdentityCode       string
 	IdentityCardBlobID string
 	AvatarBlobID       string
@@ -30,6 +29,8 @@ type RegisterAdminArguments struct {
 	DateOfBirth        string
 	PhoneNumber        string
 	Email              string
+	Owner              string
+	Sender             string
 }
 
 type RegisterVolunteerArguments struct {
@@ -73,8 +74,8 @@ func InitializeModuleStaff() IModuleStaff {
 // ToRegisterAdminArguments implements IModuleStaff.
 func (m *moduleStaff) ToRegisterAdminArguments(args RegisterAdminArguments) []interface{} {
 	return []interface{}{
+		os.Getenv(env.ADMIN_CAP_ID_1),
 		os.Getenv(env.MANAGE_OBJECT_ID),
-		args.CapID,
 		args.IdentityCode,
 		args.IdentityCardBlobID,
 		args.AvatarBlobID,
@@ -92,7 +93,6 @@ func (m *moduleStaff) ToRegisterAdminArguments(args RegisterAdminArguments) []in
 func (m *moduleStaff) ToRegisterLeaderArguments(args RegisterLeaderArguments) []interface{} {
 	return []interface{}{
 		os.Getenv(env.MANAGE_OBJECT_ID),
-		args.CapID,
 		args.IdentityCode,
 		args.IdentityCardBlobID,
 		args.AvatarBlobID,
@@ -114,7 +114,6 @@ func (m *moduleStaff) ToRegisterLeaderArguments(args RegisterLeaderArguments) []
 func (m *moduleStaff) ToRegisterVolunteerArguments(args RegisterVolunteerArguments) []interface{} {
 	return []interface{}{
 		os.Getenv(env.MANAGE_OBJECT_ID),
-		args.CapID,
 		args.IdentityCode,
 		args.IdentityCardBlobID,
 		args.AvatarBlobID,
@@ -133,8 +132,8 @@ func (m *moduleStaff) ToRegisterVolunteerArguments(args RegisterVolunteerArgumen
 func (m *moduleStaff) ToRegisterNormalStaffArguments(args RegisterNormalStaffArguments) []interface{} {
 	if args.LocalPoolID == "" {
 		return []interface{}{
+			os.Getenv(env.ADMIN_CAP_ID_1),
 			os.Getenv(env.MANAGE_OBJECT_ID),
-			args.CapID,
 			args.IdentityCode,
 			args.IdentityCardBlobID,
 			args.AvatarBlobID,
@@ -150,8 +149,8 @@ func (m *moduleStaff) ToRegisterNormalStaffArguments(args RegisterNormalStaffArg
 	}
 
 	return []interface{}{
+		os.Getenv(env.ADMIN_CAP_ID_1),
 		os.Getenv(env.MANAGE_OBJECT_ID),
-		args.CapID,
 		args.LocalPoolID,
 		args.IdentityCode,
 		args.IdentityCardBlobID,
@@ -171,7 +170,6 @@ func (m *moduleStaff) ToRegisterNormalStaffArguments(args RegisterNormalStaffArg
 func (m *moduleStaff) ToRegisterStaffArguments(args RegisterStaffArguments) []interface{} {
 	return []interface{}{
 		os.Getenv(env.MANAGE_OBJECT_ID),
-
 		os.Getenv(env.POOL_ID),
 		args.IdentityCode,
 		args.IdentityCardBlobID,

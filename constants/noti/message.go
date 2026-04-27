@@ -48,7 +48,7 @@ const (
 
 	WITHDRAW_PROPOSAL_CLOSED_MESSAGE string = "This withdraw proposal has been closed."
 
-	HAVE_TO_DONATE_TO_VOTE string = "You have to donate to RaiseChild Platform to vote this request."
+	HAVE_TO_DONATE_TO_VOTE string = "You have to donate to AgroTrust Platform to vote this request."
 
 	WITHDRAW_PROPOSAL_EXECUTED_MESSSAGE string = "This withdraw proposal has been executed."
 
