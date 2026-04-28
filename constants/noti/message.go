@@ -64,6 +64,8 @@ const (
 
 	WITHDRAW_PROPOSAL_IN_PROCESS_MESSAGE string = "This withdraw proposal is in process."
 
+	NEED_ALREADY_WITHDRAWN_MESSAGE string = "This need was already withdrawn."
+
 	SPECIAL_NEED_PROPOSAL_CONFIRMED_MESSAGE string = "This special need proposal has been confirmed."
 
 	PROPOSAL_FAIL_CONDITION_TO_CONFIRM_MESSAGE string = "This proposal fails the required condition to get confirmation."

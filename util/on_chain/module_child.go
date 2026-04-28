@@ -166,6 +166,7 @@ type CreateChildNormalNeedWithdrawProposalArguments struct {
 	ChildID     string
 	LocalPool   string
 	Description string
+	ProofBlobID *string
 	ClosedAt    int64
 	Sender      string
 }
@@ -205,6 +206,7 @@ type CreateChildSpecialNeedWithdrawProposalArguments struct {
 	ChildID        string
 	WithdrawAmount int64
 	Description    string
+	ProofBlobID    *string
 	ClosedAt       int64
 	Sender         string
 }
@@ -731,6 +733,11 @@ func (m *moduleChild) ToConfirmProvideMealForChildArguments(args ConfirmProvideM
 
 // ToCreateChildSpecialNeedWithdrawProposalArguments implements IModuleChild.
 func (m *moduleChild) ToCreateChildSpecialNeedWithdrawProposalArguments(args CreateChildSpecialNeedWithdrawProposalArguments) []interface{} {
+	var proofBlobId string
+	if args.ProofBlobID != nil {
+		proofBlobId = *args.ProofBlobID
+	}
+
 	return []interface{}{
 		os.Getenv(env.ADMIN_CAP_ID_1),
 		os.Getenv(env.MANAGE_OBJECT_ID),
@@ -740,6 +747,7 @@ func (m *moduleChild) ToCreateChildSpecialNeedWithdrawProposalArguments(args Cre
 		args.ChildID,
 		uint64(args.WithdrawAmount),
 		args.Description,
+		proofBlobId,
 		uint64(args.ClosedAt),
 		args.Sender,
 		sui.CLOCK_OBJECT_ID,
@@ -782,6 +790,11 @@ func (m *moduleChild) ToConfirmChildSpecialNeedProposalArguments(args ConfirmChi
 
 // ToCreateChildNormalNeedWithdrawProposalArguments implements IModuleChild.
 func (m *moduleChild) ToCreateChildNormalNeedWithdrawProposalArguments(args CreateChildNormalNeedWithdrawProposalArguments) []interface{} {
+	var proofBlobId string
+	if args.ProofBlobID != nil {
+		proofBlobId = *args.ProofBlobID
+	}
+
 	return []interface{}{
 		os.Getenv(env.ADMIN_CAP_ID_1),
 		os.Getenv(env.MANAGE_OBJECT_ID),
@@ -790,6 +803,7 @@ func (m *moduleChild) ToCreateChildNormalNeedWithdrawProposalArguments(args Crea
 		args.NeedID,
 		args.ChildID,
 		args.Description,
+		proofBlobId,
 		uint64(args.ClosedAt),
 		args.Sender,
 		sui.CLOCK_OBJECT_ID,

@@ -2547,8 +2547,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Create books need withdraw proposal from a child and wait for admin
-        to review the proposal
+      description: Create books need withdraw proposal
       parameters:
       - description: Create Books Need Withdraw Proposal Detail
         in: body
@@ -2560,9 +2559,9 @@ paths:
       - application/json
       responses:
         "201":
-          description: Created
+          description: Success
           schema:
-            $ref: '#/definitions/entities.PendingWithdrawProposal'
+            $ref: '#/definitions/response.MessageAPIResponse'
         "400":
           description: Invalid data. Please try again.
           schema:
@@ -2659,8 +2658,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Create health insurance need withdraw proposal from a child and
-        wait for admin to review the proposal
+      description: Create health insurance need withdraw proposal
       parameters:
       - description: Create Health Insurance Need Withdraw Proposal Detail
         in: body
@@ -2672,9 +2670,9 @@ paths:
       - application/json
       responses:
         "201":
-          description: Created
+          description: Success
           schema:
-            $ref: '#/definitions/entities.PendingWithdrawProposal'
+            $ref: '#/definitions/response.MessageAPIResponse'
         "400":
           description: Invalid data. Please try again.
           schema:
@@ -2777,8 +2775,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Create meal need withdraw proposal from a child and wait for admin
-        to review the proposal
+      description: Create meal need withdraw proposal
       parameters:
       - description: Create Meal Need Withdraw Proposal Detail
         in: body
@@ -2790,9 +2787,9 @@ paths:
       - application/json
       responses:
         "201":
-          description: Created
+          description: Success
           schema:
-            $ref: '#/definitions/entities.PendingWithdrawProposal'
+            $ref: '#/definitions/response.MessageAPIResponse'
         "400":
           description: Invalid data. Please try again.
           schema:
@@ -2975,8 +2972,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Create special need withdraw proposal from a child and wait for
-        admin to review the proposal
+      description: Create special need withdraw proposal from a child
       parameters:
       - description: Create Special Need Campaign Withdraw Proposal Detail
         in: body
@@ -2988,9 +2984,9 @@ paths:
       - application/json
       responses:
         "201":
-          description: Created
+          description: Success
           schema:
-            $ref: '#/definitions/entities.PendingWithdrawProposal'
+            $ref: '#/definitions/response.MessageAPIResponse'
         "400":
           description: Invalid data. Please try again.
           schema:

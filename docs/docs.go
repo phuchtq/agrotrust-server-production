@@ -1636,7 +1636,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Create books need withdraw proposal from a child and wait for admin to review the proposal",
+                "description": "Create books need withdraw proposal",
                 "consumes": [
                     "application/json"
                 ],
@@ -1660,9 +1660,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created",
+                        "description": "Success",
                         "schema": {
-                            "$ref": "#/definitions/entities.PendingWithdrawProposal"
+                            "$ref": "#/definitions/response.MessageAPIResponse"
                         }
                     },
                     "400": {
@@ -1805,7 +1805,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Create health insurance need withdraw proposal from a child and wait for admin to review the proposal",
+                "description": "Create health insurance need withdraw proposal",
                 "consumes": [
                     "application/json"
                 ],
@@ -1829,9 +1829,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created",
+                        "description": "Success",
                         "schema": {
-                            "$ref": "#/definitions/entities.PendingWithdrawProposal"
+                            "$ref": "#/definitions/response.MessageAPIResponse"
                         }
                     },
                     "400": {
@@ -1974,7 +1974,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Create meal need withdraw proposal from a child and wait for admin to review the proposal",
+                "description": "Create meal need withdraw proposal",
                 "consumes": [
                     "application/json"
                 ],
@@ -1998,9 +1998,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created",
+                        "description": "Success",
                         "schema": {
-                            "$ref": "#/definitions/entities.PendingWithdrawProposal"
+                            "$ref": "#/definitions/response.MessageAPIResponse"
                         }
                     },
                     "400": {
@@ -2271,7 +2271,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Create special need withdraw proposal from a child and wait for admin to review the proposal",
+                "description": "Create special need withdraw proposal from a child",
                 "consumes": [
                     "application/json"
                 ],
@@ -2295,9 +2295,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created",
+                        "description": "Success",
                         "schema": {
-                            "$ref": "#/definitions/entities.PendingWithdrawProposal"
+                            "$ref": "#/definitions/response.MessageAPIResponse"
                         }
                     },
                     "400": {

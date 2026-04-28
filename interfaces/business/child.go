@@ -7,6 +7,11 @@ import (
 	"raise-child/model/entities"
 )
 
+// CreateBooksNeedWithdrawProposal(req request.CreateNormalNeedWithdrawProposalRequest, ctx context.Context) (response.BuildTransactionResponse, error)
+// 	CreateMealNeedWithdrawProposal(req request.CreateNormalNeedWithdrawProposalRequest, ctx context.Context) (response.BuildTransactionResponse, error)
+// 	CreateSpecialNeedWithdrawProposal(req request.CreateSpecialNeedWithdrawProposalRequest, ctx context.Context) (response.BuildTransactionResponse, error)
+//	ConfirmProvideMealForChild(id string, req request.ConfirmProvideMealForChildRequest, ctx context.Context) (response.BuildTransactionResponse, error)
+
 type IChildService interface {
 	GetChildren(req request.GetChildrenRequest, ctx context.Context) (response.PaginationDataResponse, error)
 	GetChild(id string, ctx context.Context) (response.ChildResponse, error)
@@ -18,9 +23,10 @@ type IChildService interface {
 	SupportMealNeed(id string, req request.SupportMealNeadRequest, ctx context.Context) (response.PaymentUrlResponse, error)
 	SupportSpecialNeed(id string, req request.SupportSpecialNeedRequest, ctx context.Context) (response.PaymentUrlResponse, error)
 	ConfirmProvideMealForChild(id string, req request.ConfirmProvideMealForChildRequest, ctx context.Context) (response.BuildTransactionResponse, error)
-	CreateBooksNeedWithdrawProposal(req request.CreateNormalNeedWithdrawProposalRequest, ctx context.Context) (response.BuildTransactionResponse, error)
-	CreateMealNeedWithdrawProposal(req request.CreateNormalNeedWithdrawProposalRequest, ctx context.Context) (response.BuildTransactionResponse, error)
-	CreateSpecialNeedWithdrawProposal(req request.CreateSpecialNeedWithdrawProposalRequest, ctx context.Context) (response.BuildTransactionResponse, error)
+	CreateBooksNeedWithdrawProposal(req request.CreateNormalNeedWithdrawProposalRequest, ctx context.Context) error
+	CreateMealNeedWithdrawProposal(req request.CreateNormalNeedWithdrawProposalRequest, ctx context.Context) error
+	CreateSpecialNeedWithdrawProposal(req request.CreateSpecialNeedWithdrawProposalRequest, ctx context.Context) error
+	CreateHealthInsuranceNeedWithdrawProposal(req request.CreateNormalNeedWithdrawProposalRequest, ctx context.Context) error
 	CreateBooksNeedWithdrawProposalV2(req request.CreateNormalNeedWithdrawProposalRequest, ctx context.Context) (*entities.PendingWithdrawProposal, error)
 	CreateMealNeedWithdrawProposalV2(req request.CreateNormalNeedWithdrawProposalRequest, ctx context.Context) (*entities.PendingWithdrawProposal, error)
 	CreateSpecialNeedWithdrawProposalV2(req request.CreateSpecialNeedWithdrawProposalRequest, ctx context.Context) (*entities.PendingWithdrawProposal, error)

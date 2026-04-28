@@ -361,13 +361,13 @@ func ConfirmProvideMealForChild(ctx *gin.Context) {
 
 // CreateBooksNeedWithdrawProposal godoc
 // @Summary      Create books need withdraw proposal
-// @Description  Create books need withdraw proposal from a child and wait for admin to review the proposal
+// @Description  Create books need withdraw proposal
 // @Tags         children
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
 // @Param        request  body      request.CreateNormalNeedWithdrawProposalRequest   true  "Create Books Need Withdraw Proposal Detail"
-// @Success      201      {object}  entities.PendingWithdrawProposal
+// @Success      201      {object}  response.MessageAPIResponse "Success"
 // @Failure      400      {object}  response.MessageAPIResponse "Invalid data. Please try again."
 // @Failure      401      {object}  response.MessageAPIResponse "You have no rights to access this action."
 // @Failure      500      {object}  response.MessageAPIResponse "There is something wrong in the system during the process. Please try again later."
@@ -398,13 +398,13 @@ func CreateBooksNeedWithdrawProposal(ctx *gin.Context) {
 
 // CreateMealNeedWithdrawProposal godoc
 // @Summary      Create meal need withdraw proposal
-// @Description  Create meal need withdraw proposal from a child and wait for admin to review the proposal
+// @Description  Create meal need withdraw proposal
 // @Tags         children
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
 // @Param        request  body      request.CreateNormalNeedWithdrawProposalRequest   true  "Create Meal Need Withdraw Proposal Detail"
-// @Success      201      {object}  entities.PendingWithdrawProposal
+// @Success      201      {object}  response.MessageAPIResponse "Success"
 // @Failure      400      {object}  response.MessageAPIResponse "Invalid data. Please try again."
 // @Failure      401      {object}  response.MessageAPIResponse "You have no rights to access this action."
 // @Failure      500      {object}  response.MessageAPIResponse "There is something wrong in the system during the process. Please try again later."
@@ -435,13 +435,13 @@ func CreateMealNeedWithdrawProposal(ctx *gin.Context) {
 
 // CreateHealthInsuranceNeedWithdrawProposal godoc
 // @Summary      Create health insurance need withdraw proposal
-// @Description  Create health insurance need withdraw proposal from a child and wait for admin to review the proposal
+// @Description  Create health insurance need withdraw proposal
 // @Tags         children
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
 // @Param        request  body      request.CreateNormalNeedWithdrawProposalRequest   true  "Create Health Insurance Need Withdraw Proposal Detail"
-// @Success      201      {object}  entities.PendingWithdrawProposal
+// @Success      201      {object}  response.MessageAPIResponse "Success"
 // @Failure      400      {object}  response.MessageAPIResponse "Invalid data. Please try again."
 // @Failure      401      {object}  response.MessageAPIResponse "You have no rights to access this action."
 // @Failure      500      {object}  response.MessageAPIResponse "There is something wrong in the system during the process. Please try again later."
@@ -472,13 +472,13 @@ func CreateHealthInsuranceNeedWithdrawProposal(ctx *gin.Context) {
 
 // CreateSpecialNeedWithdrawProposal godoc
 // @Summary      Create special need campaign withdraw proposal
-// @Description  Create special need withdraw proposal from a child and wait for admin to review the proposal
+// @Description  Create special need withdraw proposal from a child
 // @Tags         children
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
 // @Param        request  body      request.CreateSpecialNeedWithdrawProposalRequest   true  "Create Special Need Campaign Withdraw Proposal Detail"
-// @Success      201      {object}  entities.PendingWithdrawProposal
+// @Success      201      {object}  response.MessageAPIResponse "Success"
 // @Failure      400      {object}  response.MessageAPIResponse "Invalid data. Please try again."
 // @Failure      401      {object}  response.MessageAPIResponse "You have no rights to access this action."
 // @Failure      500      {object}  response.MessageAPIResponse "There is something wrong in the system during the process. Please try again later."
@@ -496,12 +496,8 @@ func CreateSpecialNeedWithdrawProposal(ctx *gin.Context) {
 		return
 	}
 
-	res, err := service.CreateSpecialNeedWithdrawProposalV2(request, ctx)
-
 	util.ProcessResponse(response.APIResponse{
-		Data1:    res,
-		Data2:    res,
-		ErrMsg:   err,
+		ErrMsg:   service.CreateSpecialNeedWithdrawProposal(request, ctx),
 		Context:  ctx,
 		PostType: action_type.CREATE_ACTION,
 	})
