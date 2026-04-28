@@ -158,6 +158,7 @@ type ConfirmProvideMealForChildArgumentsV2 struct {
 	ImageBlobID string
 	ProvideDate string
 	Actor       string
+	Sender      string
 }
 
 type CreateChildNormalNeedWithdrawProposalArguments struct {
@@ -166,6 +167,7 @@ type CreateChildNormalNeedWithdrawProposalArguments struct {
 	LocalPool   string
 	Description string
 	ClosedAt    int64
+	Sender      string
 }
 
 type CreateChildNormalNeedWithdrawProposalArgumentsV2 struct {
@@ -184,6 +186,7 @@ type CreateChildSpecialNeedProposalArguments struct {
 	Target      int64
 	Description string
 	ClosedAt    int64
+	Sender      string
 }
 
 type CreateChildSpecialNeedProposalArgumentsV2 struct {
@@ -203,6 +206,7 @@ type CreateChildSpecialNeedWithdrawProposalArguments struct {
 	WithdrawAmount int64
 	Description    string
 	ClosedAt       int64
+	Sender         string
 }
 
 type CreateChildSpecialNeedWithdrawProposalArgumentsV2 struct {
@@ -219,6 +223,7 @@ type CreateChildSpecialNeedWithdrawProposalArgumentsV2 struct {
 type ConfirmChildSpecialNeedProposalArguments struct {
 	ProposalID string
 	ChildID    string
+	Sender     string
 }
 
 type WithdrawFromNeedArguments struct {
@@ -251,6 +256,7 @@ type UpdateChildNeedArguments struct {
 	NeedID   string
 	Year     int
 	Value    int64
+	Sender   string
 }
 
 type IModuleChild interface {
@@ -566,6 +572,7 @@ func (m *moduleChild) ToUpdateChildNeedArguments(args UpdateChildNeedArguments) 
 		args.NeedID,
 		uint64(args.Year),
 		uint64(args.Value),
+		args.Sender,
 		sui.CLOCK_OBJECT_ID,
 	}
 }
@@ -628,12 +635,14 @@ func (m *moduleChild) GetFunctionSubmitTask() string {
 // ToConfirmProvideMealForChildArgumentsV2 implements IModuleChild.
 func (m *moduleChild) ToConfirmProvideMealForChildArgumentsV2(args ConfirmProvideMealForChildArgumentsV2) []interface{} {
 	return []interface{}{
+		os.Getenv(env.ADMIN_CAP_ID_1),
 		args.ChildID,
 		args.NeedID,
 		args.StaffNft,
 		args.ImageBlobID,
 		args.ProvideDate,
 		args.Actor,
+		args.Sender,
 		sui.CLOCK_OBJECT_ID,
 	}
 }
@@ -723,6 +732,7 @@ func (m *moduleChild) ToConfirmProvideMealForChildArguments(args ConfirmProvideM
 // ToCreateChildSpecialNeedWithdrawProposalArguments implements IModuleChild.
 func (m *moduleChild) ToCreateChildSpecialNeedWithdrawProposalArguments(args CreateChildSpecialNeedWithdrawProposalArguments) []interface{} {
 	return []interface{}{
+		os.Getenv(env.ADMIN_CAP_ID_1),
 		os.Getenv(env.MANAGE_OBJECT_ID),
 		os.Getenv(env.POOL_ID),
 		args.LocalPool,
@@ -731,6 +741,7 @@ func (m *moduleChild) ToCreateChildSpecialNeedWithdrawProposalArguments(args Cre
 		uint64(args.WithdrawAmount),
 		args.Description,
 		uint64(args.ClosedAt),
+		args.Sender,
 		sui.CLOCK_OBJECT_ID,
 	}
 }
@@ -760,9 +771,11 @@ func (m *moduleChild) ToSupportChildSpeicalNeedArguments(args SupportChildSpeica
 // ToConfirmChildSpecialNeedProposalArguments implements IModuleChild.
 func (m *moduleChild) ToConfirmChildSpecialNeedProposalArguments(args ConfirmChildSpecialNeedProposalArguments) []interface{} {
 	return []interface{}{
+		os.Getenv(env.ADMIN_CAP_ID_1),
 		os.Getenv(env.SPECIAL_NEED_DAO_ID), // SpecialNeedDao
 		args.ProposalID,
 		args.ChildID,
+		args.Sender,
 		sui.CLOCK_OBJECT_ID,
 	}
 }
@@ -770,6 +783,7 @@ func (m *moduleChild) ToConfirmChildSpecialNeedProposalArguments(args ConfirmChi
 // ToCreateChildNormalNeedWithdrawProposalArguments implements IModuleChild.
 func (m *moduleChild) ToCreateChildNormalNeedWithdrawProposalArguments(args CreateChildNormalNeedWithdrawProposalArguments) []interface{} {
 	return []interface{}{
+		os.Getenv(env.ADMIN_CAP_ID_1),
 		os.Getenv(env.MANAGE_OBJECT_ID),
 		os.Getenv(env.POOL_ID),
 		args.LocalPool,
@@ -777,6 +791,7 @@ func (m *moduleChild) ToCreateChildNormalNeedWithdrawProposalArguments(args Crea
 		args.ChildID,
 		args.Description,
 		uint64(args.ClosedAt),
+		args.Sender,
 		sui.CLOCK_OBJECT_ID,
 	}
 }
@@ -791,6 +806,7 @@ func (m *moduleChild) ToCreateChildSpecialNeedProposalArguments(args CreateChild
 		uint64(args.Target),
 		args.Description,
 		uint64(args.ClosedAt),
+		args.Sender,
 		sui.CLOCK_OBJECT_ID,
 	}
 }
@@ -820,6 +836,7 @@ func (m *moduleChild) ToSupportChildBooksNeedArguments(args SupportChildBooksNee
 // ToSupportChildMealNeedArguments implements IModuleChild.
 func (m *moduleChild) ToSupportChildMealNeedArguments(args SupportChildMealNeedArguments) []interface{} {
 	return []interface{}{
+		os.Getenv(env.ADMIN_CAP_ID_1),
 		os.Getenv(env.MANAGE_OBJECT_ID),
 		os.Getenv(env.POOL_ID),
 		args.NeedID,
@@ -835,6 +852,7 @@ func (m *moduleChild) ToSupportChildMealNeedArguments(args SupportChildMealNeedA
 		args.PhoneNumber,
 		args.Email,
 		args.Message,
+		args.Sender,
 		sui.CLOCK_OBJECT_ID,
 	}
 }

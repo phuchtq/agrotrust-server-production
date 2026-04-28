@@ -83,63 +83,208 @@ func GenerateTaskProofService() (business.ITaskProofService, error) {
 	), nil
 }
 
+// // ApproveTaskProof implements business.ITaskProofService.
+// func (t *taskProofService) ApproveTaskProof(id string, ctx context.Context) (response.BuildTransactionResponse, error) {
+// 	proof, err := t.taskProofRepo.GetTaskProof(id, ctx)
+// 	if err != nil {
+// 		return response.BuildTransactionResponse{}, err
+// 	}
+
+// 	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
+// 	if proof == nil {
+// 		return response.BuildTransactionResponse{}, genericErr
+// 	}
+
+// 	if proof.ReviewStatus != request_pending_status {
+// 		return response.BuildTransactionResponse{}, errors.New(noti.TASK_PROOF_REVIEWED_MESSAGE)
+// 	}
+
+// 	task, err := t.taskRepo.GetTask(proof.TaskID, ctx)
+// 	if err != nil {
+// 		return response.BuildTransactionResponse{}, err
+// 	}
+
+// 	var sender string = ctx.Value("address").(string)
+// 	var staffModule = on_chain.InitializeModuleStaff()
+// 	var client = t.clients[constant.SuiTestnet]
+// 	staffNfts, err := on_chain.GetOnChainOwnedObjects[entities.StaffNft](on_chain.GetOnChainOwnedObjectsRequest{
+// 		Client:       client,
+// 		OwnerAddress: sender,
+// 		StructType:   fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), staffModule.GetModule, staffModule.GetStaffNftObjectStruct()),
+// 		ErrLogger:    t.errLogger,
+// 	}, ctx)
+// 	if err != nil {
+// 		return response.BuildTransactionResponse{}, err
+// 	}
+
+// 	if staffNfts == nil || len(staffNfts) == 0 {
+// 		return response.BuildTransactionResponse{}, errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+// 	}
+
+// 	var leaderNftId string
+// 	for _, nft := range staffNfts {
+// 		if nft.Region == task.Region && nft.Role == local_leader_role {
+// 			leaderNftId = nft.ID.ID
+// 			break
+// 		}
+// 	}
+
+// 	if leaderNftId == "" {
+// 		return response.BuildTransactionResponse{}, errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+// 	}
+
+// 	profile, err := t.profileRepo.GetProfile(ctx.Value("sub").(string), ctx)
+// 	if err != nil {
+// 		return response.BuildTransactionResponse{}, err
+// 	}
+
+// 	if profile.Status == "Suspended" {
+// 		return response.BuildTransactionResponse{}, errors.New(noti.CURRENTLY_SUSPENDED_MESSAGE)
+// 	}
+
+// 	var args []interface{}
+// 	var function string
+// 	var childModule = on_chain.InitializeModuleChild()
+// 	if task.IsChildTask {
+// 		detail, err := t.childTaskDetailRepo.GetChildTaskDetail(*task.ChildTaskDetailID, ctx)
+// 		if err != nil {
+// 			return response.BuildTransactionResponse{}, err
+// 		}
+
+// 		switch detail.Purpose {
+// 		case string(entities.MEAL_NEED_PURPOSE):
+// 			function = childModule.GetFunctionConfirmProvideMealForChildV2()
+// 			args = childModule.ToConfirmProvideMealForChildArgumentsV2(on_chain.ConfirmProvideMealForChildArgumentsV2{
+// 				ChildID:     detail.ChildID,
+// 				NeedID:      detail.Target,
+// 				StaffNft:    leaderNftId,
+// 				ImageBlobID: proof.ImageBlobID,
+// 				ProvideDate: proof.RawSubmitDate,
+// 				Actor:       proof.ActorAddress,
+// 			})
+// 			// Other cases in future if have
+// 		}
+// 	} else {
+// 		var manageObj entities.Manage
+// 		if !t.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
+// 			res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+// 				Client:    t.clients[constant.SuiTestnet],
+// 				ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+// 				ErrLogger: t.errLogger,
+// 			}, ctx)
+// 			if err != nil {
+// 				return response.BuildTransactionResponse{}, err
+// 			}
+
+// 			if res != nil {
+// 				t.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
+// 				manageObj = *res
+// 			}
+// 		}
+
+// 		var centerId string
+// 		for i, region := range manageObj.LocalRegions {
+// 			if region == task.Region {
+// 				centerId = manageObj.ChildrenCenters[i]
+// 				break
+// 			}
+// 		}
+
+// 		function = childModule.GetFunctionSubmitTask()
+// 		args = childModule.ToSubmitTaskArguments(on_chain.SubmitTaskArguments{
+// 			Center:      centerId,
+// 			StaffNft:    leaderNftId,
+// 			Description: task.Description,
+// 			ImageBlobID: proof.ImageBlobID,
+// 			Actor:       proof.ActorAddress,
+// 		})
+// 	}
+
+// 	txBytes, err := on_chain.BuildTransaction(on_chain.BuildTransactionRequest{
+// 		Client:    client,
+// 		Sender:    sender,
+// 		Module:    childModule.GetModule(),
+// 		Function:  function,
+// 		Arguments: args,
+// 		ErrLogger: t.errLogger,
+// 	}, ctx)
+// 	if err != nil {
+// 		return response.BuildTransactionResponse{}, err
+// 	}
+
+// 	proof.ReviewedBy = &sender
+// 	proof.ReviewStatus = request_approved_status
+
+// 	return response.BuildTransactionResponse{
+// 		TxBytes: txBytes,
+// 	}, t.taskProofRepo.UpdateTaskProof(*proof, ctx)
+// }
+
 // ApproveTaskProof implements business.ITaskProofService.
-func (t *taskProofService) ApproveTaskProof(id string, ctx context.Context) (response.BuildTransactionResponse, error) {
+func (t *taskProofService) ApproveTaskProof(id string, ctx context.Context) error {
 	proof, err := t.taskProofRepo.GetTaskProof(id, ctx)
 	if err != nil {
-		return response.BuildTransactionResponse{}, err
+		return err
 	}
 
 	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
 	if proof == nil {
-		return response.BuildTransactionResponse{}, genericErr
+		return genericErr
 	}
 
 	if proof.ReviewStatus != request_pending_status {
-		return response.BuildTransactionResponse{}, errors.New(noti.TASK_PROOF_REVIEWED_MESSAGE)
+		return errors.New(noti.TASK_PROOF_REVIEWED_MESSAGE)
 	}
 
 	task, err := t.taskRepo.GetTask(proof.TaskID, ctx)
 	if err != nil {
-		return response.BuildTransactionResponse{}, err
+		return err
+	}
+
+	var client = t.clients[constant.SuiTestnet]
+	manage, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: t.errLogger,
+	}, ctx)
+	if err != nil {
+		return err
+	}
+
+	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
+	if manage == nil {
+		return internalErr
 	}
 
 	var sender string = ctx.Value("address").(string)
-	var staffModule = on_chain.InitializeModuleStaff()
-	var client = t.clients[constant.SuiTestnet]
-	staffNfts, err := on_chain.GetOnChainOwnedObjects[entities.StaffNft](on_chain.GetOnChainOwnedObjectsRequest{
-		Client:       client,
-		OwnerAddress: sender,
-		StructType:   fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), staffModule.GetModule, staffModule.GetStaffNftObjectStruct()),
-		ErrLogger:    t.errLogger,
-	}, ctx)
-	if err != nil {
-		return response.BuildTransactionResponse{}, err
-	}
-
-	if staffNfts == nil || len(staffNfts) == 0 {
-		return response.BuildTransactionResponse{}, errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
-	}
-
-	var leaderNftId string
-	for _, nft := range staffNfts {
-		if nft.Region == task.Region && nft.Role == local_leader_role {
-			leaderNftId = nft.ID.ID
+	var foundIdx int = -1
+	for i, leader := range manage.LocalLeaderIds {
+		if leader == sender {
+			foundIdx = i
 			break
 		}
 	}
 
-	if leaderNftId == "" {
-		return response.BuildTransactionResponse{}, errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+	var genericRightErr error = errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+	if foundIdx == -1 {
+		return genericRightErr
 	}
 
-	profile, err := t.profileRepo.GetProfile(ctx.Value("sub").(string), ctx)
+	leaderNft, err := on_chain.GetOnChainObject[entities.StaffNft](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  manage.LocalLeaderNfts[foundIdx],
+		ErrLogger: t.errLogger,
+	}, ctx)
 	if err != nil {
-		return response.BuildTransactionResponse{}, err
+		return err
 	}
 
-	if profile.Status == "Suspended" {
-		return response.BuildTransactionResponse{}, errors.New(noti.CURRENTLY_SUSPENDED_MESSAGE)
+	if leaderNft == nil {
+		return internalErr
+	}
+
+	if leaderNft.Region != task.Region {
+		return genericRightErr
 	}
 
 	var args []interface{}
@@ -148,7 +293,7 @@ func (t *taskProofService) ApproveTaskProof(id string, ctx context.Context) (res
 	if task.IsChildTask {
 		detail, err := t.childTaskDetailRepo.GetChildTaskDetail(*task.ChildTaskDetailID, ctx)
 		if err != nil {
-			return response.BuildTransactionResponse{}, err
+			return err
 		}
 
 		switch detail.Purpose {
@@ -157,35 +302,19 @@ func (t *taskProofService) ApproveTaskProof(id string, ctx context.Context) (res
 			args = childModule.ToConfirmProvideMealForChildArgumentsV2(on_chain.ConfirmProvideMealForChildArgumentsV2{
 				ChildID:     detail.ChildID,
 				NeedID:      detail.Target,
-				StaffNft:    leaderNftId,
+				StaffNft:    leaderNft.ID.ID,
 				ImageBlobID: proof.ImageBlobID,
 				ProvideDate: proof.RawSubmitDate,
 				Actor:       proof.ActorAddress,
+				Sender:      sender,
 			})
 			// Other cases in future if have
 		}
 	} else {
-		var manageObj entities.Manage
-		if !t.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
-			res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-				Client:    t.clients[constant.SuiTestnet],
-				ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-				ErrLogger: t.errLogger,
-			}, ctx)
-			if err != nil {
-				return response.BuildTransactionResponse{}, err
-			}
-
-			if res != nil {
-				t.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
-				manageObj = *res
-			}
-		}
-
 		var centerId string
-		for i, region := range manageObj.LocalRegions {
+		for i, region := range manage.LocalRegions {
 			if region == task.Region {
-				centerId = manageObj.ChildrenCenters[i]
+				centerId = manage.ChildrenCenters[i]
 				break
 			}
 		}
@@ -193,31 +322,34 @@ func (t *taskProofService) ApproveTaskProof(id string, ctx context.Context) (res
 		function = childModule.GetFunctionSubmitTask()
 		args = childModule.ToSubmitTaskArguments(on_chain.SubmitTaskArguments{
 			Center:      centerId,
-			StaffNft:    leaderNftId,
+			StaffNft:    leaderNft.ID.ID,
 			Description: task.Description,
 			ImageBlobID: proof.ImageBlobID,
 			Actor:       proof.ActorAddress,
 		})
 	}
 
-	txBytes, err := on_chain.BuildTransaction(on_chain.BuildTransactionRequest{
+	proof.ReviewedBy = &sender
+	proof.ReviewStatus = request_approved_status
+	if err := t.taskProofRepo.UpdateTaskProof(*proof, ctx); err != nil {
+		return err
+	}
+
+	var req = on_chain.ExecuteTransactionRequestV2{
 		Client:    client,
-		Sender:    sender,
 		Module:    childModule.GetModule(),
 		Function:  function,
 		Arguments: args,
 		ErrLogger: t.errLogger,
-	}, ctx)
-	if err != nil {
-		return response.BuildTransactionResponse{}, err
 	}
 
-	proof.ReviewedBy = &sender
-	proof.ReviewStatus = request_approved_status
+	for i := 1; i <= 3; i++ {
+		if _, err := on_chain.ExecuteTransactionV2(req, ctx); err == nil {
+			return nil
+		}
+	}
 
-	return response.BuildTransactionResponse{
-		TxBytes: txBytes,
-	}, t.taskProofRepo.UpdateTaskProof(*proof, ctx)
+	return internalErr
 }
 
 // GetTaskProof implements business.ITaskProofService.

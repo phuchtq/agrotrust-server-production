@@ -5248,9 +5248,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Success
           schema:
-            $ref: '#/definitions/response.BuildTransactionResponse'
+            $ref: '#/definitions/response.MessageAPIResponse'
         "400":
           description: Invalid data. Please try again.
           schema:

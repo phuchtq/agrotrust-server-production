@@ -11,6 +11,7 @@ import (
 	"raise-child/interfaces/repository"
 	"raise-child/model/dtos/request"
 	"raise-child/model/entities"
+	"time"
 )
 
 type taskProofRepo struct {
@@ -169,12 +170,12 @@ func (t *taskProofRepo) IsTaskProofSumittedWithDetail(taskId string, description
 // UpdateTaskProof implements repository.ITaskProofRepository.
 func (t *taskProofRepo) UpdateTaskProof(proof entities.TaskProof, ctx context.Context) error {
 	var query string = "UPDATE " + task_proof_table + " SET " +
-		"reviewed_by = $1, review_status = $2 WHERE id = $3"
+		"reviewed_by = $1, review_status = $2, updated_at = $3 WHERE id = $4"
 
 	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.TASK_PROOF_REPOSITORY) + "UpdateTaskProof - "
 	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
 
-	res, err := t.db.ExecContext(ctx, query, proof.ReviewedBy, proof.ReviewStatus, proof.ID)
+	res, err := t.db.ExecContext(ctx, query, proof.ReviewedBy, proof.ReviewStatus, time.Now(), proof.ID)
 	if err != nil {
 		t.errLogger.Println(errLogMsg + err.Error())
 		return internalErr

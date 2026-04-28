@@ -5966,9 +5966,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Success",
                         "schema": {
-                            "$ref": "#/definitions/response.BuildTransactionResponse"
+                            "$ref": "#/definitions/response.MessageAPIResponse"
                         }
                     },
                     "400": {

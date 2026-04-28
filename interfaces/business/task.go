@@ -15,10 +15,12 @@ type ITaskService interface {
 	ReviewAssignedProfileOfTask(id string, req request.VoteRequest, ctx context.Context) error
 }
 
+// ApproveTaskProof(id string, ctx context.Context) (response.BuildTransactionResponse, error)
+
 type ITaskProofService interface {
 	GetTaskProofs(req request.GetTaskProofsRequest, ctx context.Context) (response.PaginationDataResponse, error)
 	GetTaskProof(id string, ctx context.Context) (*entities.TaskProof, error)
 	SubmitTaskProof(id string, req request.SubmitTaskProofRequest, ctx context.Context) error
-	ApproveTaskProof(id string, ctx context.Context) (response.BuildTransactionResponse, error)
+	ApproveTaskProof(id string, ctx context.Context) error
 	RefuseTaskProof(id string, ctx context.Context) error
 }
