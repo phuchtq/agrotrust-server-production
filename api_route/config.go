@@ -26,4 +26,5 @@ func InitializeConfigRoutes(server *gin.Engine) {
 	adminGroup.PUT("/books-need-edit-dates", transport.UpdateChildEditBooksNeedDates)
 	adminGroup.PUT("/meal-need-edit-dates", transport.UpdateChildEditMealNeedDates)
 	adminGroup.PUT("/health-insurance-need-edit-dates", transport.UpdateChildEditHealthInsuranceNeedDates)
+	adminGroup.PUT("/child-special-need-dao", transport.EditSpecialNeedDao)
 }

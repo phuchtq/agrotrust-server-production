@@ -279,10 +279,6 @@ func (t *taskProofService) ApproveTaskProof(id string, ctx context.Context) erro
 		return err
 	}
 
-	if leaderNft == nil {
-		return internalErr
-	}
-
 	if leaderNft.Region != task.Region {
 		return genericRightErr
 	}

@@ -11,6 +11,12 @@ import (
 // 	CreateMealNeedWithdrawProposal(req request.CreateNormalNeedWithdrawProposalRequest, ctx context.Context) (response.BuildTransactionResponse, error)
 // 	CreateSpecialNeedWithdrawProposal(req request.CreateSpecialNeedWithdrawProposalRequest, ctx context.Context) (response.BuildTransactionResponse, error)
 //	ConfirmProvideMealForChild(id string, req request.ConfirmProvideMealForChildRequest, ctx context.Context) (response.BuildTransactionResponse, error)
+// ConfirmSpecialNeedProposal(id string, ctx context.Context) (response.BuildTransactionResponse, error)
+// 	VoteSpecialNeedProposal(id string, req request.VoteRequest, ctx context.Context) (response.BuildTransactionResponse, error)
+// 	EditSpecialNeedDao(req request.EditDaoRequest, ctx context.Context) (response.BuildTransactionResponse, error)
+// 	UpdateBooksNeed(req request.UpdateChildNeedRequest, ctx context.Context) (response.BuildTransactionResponse, error)
+// 	UpdateMealNeed(req request.UpdateChildNeedRequest, ctx context.Context) (response.BuildTransactionResponse, error)
+// 	UpdateHealthInsuranceNeed(req request.UpdateChildNeedRequest, ctx context.Context) (response.BuildTransactionResponse, error)
 
 type IChildService interface {
 	GetChildren(req request.GetChildrenRequest, ctx context.Context) (response.PaginationDataResponse, error)
@@ -33,10 +39,9 @@ type IChildService interface {
 	CreateHealthInsuranceNeedWithdrawProposalV2(req request.CreateNormalNeedWithdrawProposalRequest, ctx context.Context) (*entities.PendingWithdrawProposal, error)
 	CreateSpecialNeedProposal(req request.CreateSpecialNeedProposalRequest, ctx context.Context) (response.BuildTransactionResponse, error)
 	CreateSpecialNeedProposalV2(req request.CreateSpecialNeedProposalRequest, ctx context.Context) (*entities.PendingChildSpecialNeedProposal, error)
-	ConfirmSpecialNeedProposal(id string, ctx context.Context) (response.BuildTransactionResponse, error)
-	VoteSpecialNeedProposal(id string, req request.VoteRequest, ctx context.Context) (response.BuildTransactionResponse, error)
-	EditSpecialNeedDao(req request.EditDaoRequest, ctx context.Context) (response.BuildTransactionResponse, error)
-	UpdateBooksNeed(req request.UpdateChildNeedRequest, ctx context.Context) (response.BuildTransactionResponse, error)
-	UpdateMealNeed(req request.UpdateChildNeedRequest, ctx context.Context) (response.BuildTransactionResponse, error)
-	UpdateHealthInsuranceNeed(req request.UpdateChildNeedRequest, ctx context.Context) (response.BuildTransactionResponse, error)
+	ConfirmSpecialNeedProposal(id string, ctx context.Context) error
+	VoteSpecialNeedProposal(id string, req request.VoteRequest, ctx context.Context) error
+	UpdateBooksNeed(req request.UpdateChildNeedRequest, ctx context.Context) error
+	UpdateMealNeed(req request.UpdateChildNeedRequest, ctx context.Context) error
+	UpdateHealthInsuranceNeed(req request.UpdateChildNeedRequest, ctx context.Context) error
 }

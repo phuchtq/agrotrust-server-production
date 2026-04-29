@@ -1579,7 +1579,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Prepares and builds a transaction for updating a child's books need on-chain",
+                "description": "Prepares and executes a transaction for updating a child's books need on-chain",
                 "consumes": [
                     "application/json"
                 ],
@@ -1603,9 +1603,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Success",
                         "schema": {
-                            "$ref": "#/definitions/response.BuildTransactionResponse"
+                            "$ref": "#/definitions/response.MessageAPIResponse"
                         }
                     },
                     "400": {
@@ -1748,7 +1748,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Prepares and builds a transaction for updating a child's health insurance need on-chain",
+                "description": "Prepares and executes a transaction for updating a child's health insurance need on-chain",
                 "consumes": [
                     "application/json"
                 ],
@@ -1772,9 +1772,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Success",
                         "schema": {
-                            "$ref": "#/definitions/response.BuildTransactionResponse"
+                            "$ref": "#/definitions/response.MessageAPIResponse"
                         }
                     },
                     "400": {
@@ -1917,7 +1917,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Prepares and builds a transaction for updating a child's meal need on-chain",
+                "description": "Prepares and executes a transaction for updating a child's meal need on-chain",
                 "consumes": [
                     "application/json"
                 ],
@@ -1941,9 +1941,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Success",
                         "schema": {
-                            "$ref": "#/definitions/response.BuildTransactionResponse"
+                            "$ref": "#/definitions/response.MessageAPIResponse"
                         }
                     },
                     "400": {
@@ -2152,7 +2152,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Prepares and builds a transaction for confirming a special need proposal for a child if accepted to create a new campaign on-chain",
+                "description": "Prepares and executes a transaction for confirming a special need proposal for a child if accepted to create a new campaign on-chain",
                 "consumes": [
                     "application/json"
                 ],
@@ -2174,9 +2174,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Success",
                         "schema": {
-                            "$ref": "#/definitions/response.BuildTransactionResponse"
+                            "$ref": "#/definitions/response.MessageAPIResponse"
                         }
                     },
                     "400": {
@@ -2207,7 +2207,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Prepares and builds a transaction for voting a special need proposal of a child on-chain",
+                "description": "Prepares and executes a transaction for voting a special need proposal of a child on-chain",
                 "consumes": [
                     "application/json"
                 ],
@@ -2238,9 +2238,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Success",
                         "schema": {
-                            "$ref": "#/definitions/response.BuildTransactionResponse"
+                            "$ref": "#/definitions/response.MessageAPIResponse"
                         }
                     },
                     "400": {
@@ -2500,7 +2500,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Prepares and builds a transaction for updating child books need edit dates on-chain",
+                "description": "Prepares and executes a transaction for updating child books need edit dates on-chain",
                 "consumes": [
                     "application/json"
                 ],
@@ -2524,9 +2524,66 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Success",
                         "schema": {
-                            "$ref": "#/definitions/response.BuildTransactionResponse"
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid data. Please try again.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "You have no rights to access this action.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "There is something wrong in the system during the process. Please try again later.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/configs/child-special-need-dao": {
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Prepares and executes a transaction for updating child special need dao on-chain",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "configs"
+                ],
+                "summary": "Update child special need dao",
+                "parameters": [
+                    {
+                        "description": "Edit Child Special Need DAO Request Detail",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.EditDaoRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
                         }
                     },
                     "400": {
@@ -2557,7 +2614,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Prepares and builds a transaction for updating child health insurance need edit dates on-chain",
+                "description": "Prepares and executes a transaction for updating child health insurance need edit dates on-chain",
                 "consumes": [
                     "application/json"
                 ],
@@ -2581,9 +2638,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Success",
                         "schema": {
-                            "$ref": "#/definitions/response.BuildTransactionResponse"
+                            "$ref": "#/definitions/response.MessageAPIResponse"
                         }
                     },
                     "400": {
@@ -2614,7 +2671,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Prepares and builds a transaction for updating child meal need edit dates on-chain",
+                "description": "Prepares and executes a transaction for updating child meal need edit dates on-chain",
                 "consumes": [
                     "application/json"
                 ],
@@ -7961,6 +8018,17 @@ const docTemplate = `{
                 },
                 "pool_id": {
                     "type": "string"
+                }
+            }
+        },
+        "request.EditDaoRequest": {
+            "type": "object",
+            "properties": {
+                "min_rate": {
+                    "type": "integer"
+                },
+                "min_voters": {
+                    "type": "integer"
                 }
             }
         },

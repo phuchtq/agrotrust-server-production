@@ -10,6 +10,7 @@ import (
 type EditSpecialNeedProposalDaoArguments struct {
 	MinVoters int
 	MinRate   int64
+	Sender    string
 }
 
 type VoteSpecialNeedProposalArguments struct {
@@ -17,12 +18,14 @@ type VoteSpecialNeedProposalArguments struct {
 	DonorNft     string
 	IsApprove    bool
 	RefuseReason string
+	Sender       string
 }
 
 type EditUpdateNeedDatesArguments struct {
 	EditDatesID string
 	StartDate   string
 	EndDate     string
+	Sender      string
 }
 
 type VoteChildNeedWithdrawProposalArguments struct {
@@ -124,10 +127,12 @@ func (m *moduleNeed) GetFunctionEditUpdateMealNeedDates() string {
 // ToEditUpdateNeedDatesArguments implements IModuleNeed.
 func (m *moduleNeed) ToEditUpdateNeedDatesArguments(args EditUpdateNeedDatesArguments) []interface{} {
 	return []interface{}{
+		os.Getenv(env.ADMIN_CAP_ID_1),
 		os.Getenv(env.MANAGE_OBJECT_ID),
 		args.EditDatesID,
 		args.StartDate,
 		args.EndDate,
+		args.Sender,
 	}
 }
 
@@ -135,20 +140,24 @@ func (m *moduleNeed) ToEditUpdateNeedDatesArguments(args EditUpdateNeedDatesArgu
 func (m *moduleNeed) ToEditSpecialNeedProposalDaoArguments(args EditSpecialNeedProposalDaoArguments) []interface{} {
 	return []interface{}{
 		os.Getenv(env.ADMIN_CAP_ID_1),
+		os.Getenv(env.MANAGE_OBJECT_ID),
 		os.Getenv(env.SPECIAL_NEED_DAO_ID),
 		fmt.Sprintf("%d", args.MinRate),
-		args.MinVoters,
+		fmt.Sprintf("%d", args.MinVoters),
+		args.Sender,
 	}
 }
 
 // ToVoteSpecialNeedProposalArguments implements IModuleNeed.
 func (m *moduleNeed) ToVoteSpecialNeedProposalArguments(args VoteSpecialNeedProposalArguments) []interface{} {
 	return []interface{}{
+		os.Getenv(env.ADMIN_CAP_ID_1),
 		os.Getenv(env.SPECIAL_NEED_DAO_ID),
 		args.ProposalID,
 		args.DonorNft,
 		args.IsApprove,
 		args.RefuseReason,
+		args.Sender,
 		sui.CLOCK_OBJECT_ID,
 	}
 }

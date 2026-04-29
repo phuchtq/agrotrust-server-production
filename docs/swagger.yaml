@@ -628,6 +628,13 @@ definitions:
     - amount
     - pool_id
     type: object
+  request.EditDaoRequest:
+    properties:
+      min_rate:
+        type: integer
+      min_voters:
+        type: integer
+    type: object
   request.ExecuteTransactionRequest:
     properties:
       center_req:
@@ -2497,7 +2504,7 @@ paths:
     put:
       consumes:
       - application/json
-      description: Prepares and builds a transaction for updating a child's books
+      description: Prepares and executes a transaction for updating a child's books
         need on-chain
       parameters:
       - description: Update Child Books Need Detail
@@ -2510,9 +2517,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Success
           schema:
-            $ref: '#/definitions/response.BuildTransactionResponse'
+            $ref: '#/definitions/response.MessageAPIResponse'
         "400":
           description: Invalid data. Please try again.
           schema:
@@ -2608,7 +2615,7 @@ paths:
     put:
       consumes:
       - application/json
-      description: Prepares and builds a transaction for updating a child's health
+      description: Prepares and executes a transaction for updating a child's health
         insurance need on-chain
       parameters:
       - description: Update Child Health Insurance Need Detail
@@ -2621,9 +2628,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Success
           schema:
-            $ref: '#/definitions/response.BuildTransactionResponse'
+            $ref: '#/definitions/response.MessageAPIResponse'
         "400":
           description: Invalid data. Please try again.
           schema:
@@ -2719,8 +2726,8 @@ paths:
     put:
       consumes:
       - application/json
-      description: Prepares and builds a transaction for updating a child's meal need
-        on-chain
+      description: Prepares and executes a transaction for updating a child's meal
+        need on-chain
       parameters:
       - description: Update Child Meal Need Detail
         in: body
@@ -2732,9 +2739,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Success
           schema:
-            $ref: '#/definitions/response.BuildTransactionResponse'
+            $ref: '#/definitions/response.MessageAPIResponse'
         "400":
           description: Invalid data. Please try again.
           schema:
@@ -2916,7 +2923,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Prepares and builds a transaction for confirming a special need
+      description: Prepares and executes a transaction for confirming a special need
         proposal for a child if accepted to create a new campaign on-chain
       parameters:
       - description: Special Need Proposal ID
@@ -2928,9 +2935,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Success
           schema:
-            $ref: '#/definitions/response.BuildTransactionResponse'
+            $ref: '#/definitions/response.MessageAPIResponse'
         "400":
           description: Invalid data. Please try again.
           schema:
@@ -2953,7 +2960,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Prepares and builds a transaction for voting a special need proposal
+      description: Prepares and executes a transaction for voting a special need proposal
         of a child on-chain
       parameters:
       - description: Special Need Proposal ID
@@ -2971,9 +2978,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Success
           schema:
-            $ref: '#/definitions/response.BuildTransactionResponse'
+            $ref: '#/definitions/response.MessageAPIResponse'
         "400":
           description: Invalid data. Please try again.
           schema:
@@ -3033,7 +3040,7 @@ paths:
     put:
       consumes:
       - application/json
-      description: Prepares and builds a transaction for updating child books need
+      description: Prepares and executes a transaction for updating child books need
         edit dates on-chain
       parameters:
       - description: Update Child Books Need Edit Dates Detail
@@ -3046,9 +3053,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Success
           schema:
-            $ref: '#/definitions/response.BuildTransactionResponse'
+            $ref: '#/definitions/response.MessageAPIResponse'
         "400":
           description: Invalid data. Please try again.
           schema:
@@ -3067,11 +3074,49 @@ paths:
       summary: Update child books need edit dates
       tags:
       - configs
+  /configs/child-special-need-dao:
+    put:
+      consumes:
+      - application/json
+      description: Prepares and executes a transaction for updating child special
+        need dao on-chain
+      parameters:
+      - description: Edit Child Special Need DAO Request Detail
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.EditDaoRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "400":
+          description: Invalid data. Please try again.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "401":
+          description: You have no rights to access this action.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "500":
+          description: There is something wrong in the system during the process.
+            Please try again later.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+      security:
+      - BearerAuth: []
+      summary: Update child special need dao
+      tags:
+      - configs
   /configs/health-insurance-need-edit-dates:
     put:
       consumes:
       - application/json
-      description: Prepares and builds a transaction for updating child health insurance
+      description: Prepares and executes a transaction for updating child health insurance
         need edit dates on-chain
       parameters:
       - description: Update Child Health Insurance Need Edit Dates Detail
@@ -3084,9 +3129,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Success
           schema:
-            $ref: '#/definitions/response.BuildTransactionResponse'
+            $ref: '#/definitions/response.MessageAPIResponse'
         "400":
           description: Invalid data. Please try again.
           schema:
@@ -3109,7 +3154,7 @@ paths:
     put:
       consumes:
       - application/json
-      description: Prepares and builds a transaction for updating child meal need
+      description: Prepares and executes a transaction for updating child meal need
         edit dates on-chain
       parameters:
       - description: Update Child Meal Need Edit Dates Detail
