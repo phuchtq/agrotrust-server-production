@@ -44,6 +44,42 @@ func GetTasks(ctx *gin.Context) {
 	})
 }
 
+// GetTasksOfRegionOnUser godoc
+// @Summary      List tasks of staff's region
+// @Description  Retrieve a list of tasks of staff's region with optional query filters
+// @Tags         tasks
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Param        id   path      string  true  "Staff Wallet Address"
+// @Param        request  query     request.GetTasksRequest  true  "Filter Criteria"
+// @Success      200      {object}  response.PaginationDataResponse
+// @Failure      400      {object}  response.MessageAPIResponse "Invalid data. Please try again."
+// @Failure      500      {object}  response.MessageAPIResponse "There is something wrong in the system during the process. Please try again later."
+// @Router       /tasks/staff/{id} [get]
+func GetTasksOfRegionOnUser(ctx *gin.Context) {
+	var request request.GetTasksRequest
+	if ctx.ShouldBindQuery(&request) != nil {
+		util.ProcessResponse(util.GenerateInvalidRequestAndSystemProblemModel(ctx, nil))
+		return
+	}
+
+	service, err := business.GenerateTaskService()
+	if err != nil {
+		util.ProcessResponse(util.GenerateInvalidRequestAndSystemProblemModel(ctx, err))
+		return
+	}
+
+	res, err := service.GetTasksOfRegionOnUser(ctx.Param("id"), request, ctx)
+	util.ProcessResponse(response.APIResponse{
+		Data1:    res,
+		Data2:    res,
+		ErrMsg:   err,
+		Context:  ctx,
+		PostType: action_type.NON_POST,
+	})
+}
+
 // GetTaskProof godoc
 // @Summary      Get a task
 // @Description  Retrieve details of a task by its ID

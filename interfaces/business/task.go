@@ -9,6 +9,7 @@ import (
 
 type ITaskService interface {
 	GetTasks(req request.GetTasksRequest, ctx context.Context) (response.PaginationDataResponse, error)
+	GetTasksOfRegionOnUser(wallet string, req request.GetTasksRequest, ctx context.Context) (response.PaginationDataResponse, error)
 	GetTask(id string, ctx context.Context) (*entities.Task, error)
 	CreateTask(req request.CreateTaskRequest, ctx context.Context) (*entities.Task, error)
 	ClaimTask(id string, ctx context.Context) error

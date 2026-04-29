@@ -286,6 +286,113 @@ func (t *taskService) GetTasks(req request.GetTasksRequest, ctx context.Context)
 	return res, nil
 }
 
+// GetTasksOfRegionOnUser implements business.ITaskService.
+func (t *taskService) GetTasksOfRegionOnUser(wallet string, req request.GetTasksRequest, ctx context.Context) (response.PaginationDataResponse, error) {
+	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
+	if util.IsValidSuiAddressStrict(wallet) {
+		return response.PaginationDataResponse{}, genericErr
+	}
+
+	var client = t.clients[constant.SuiTestnet]
+	manage, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: t.errLogger,
+	}, ctx)
+	if err != nil {
+		return response.PaginationDataResponse{}, err
+	}
+
+	var searchLen int
+	if len(manage.VolunteerIds) > len(manage.LocalLeaderIds) {
+		searchLen = len(manage.VolunteerIds)
+	} else {
+		searchLen = len(manage.LocalLeaderIds)
+	}
+
+	var foundIdx int = -1
+	var isVolunteer bool = true
+	for i := 0; i < searchLen; i++ {
+		if i < len(manage.VolunteerIds) {
+			if manage.VolunteerIds[i] == wallet {
+				foundIdx = i
+				break
+			}
+		}
+
+		if i < len(manage.LocalLeaderIds) {
+			if manage.LocalLeaderIds[i] == wallet {
+				foundIdx = i
+				isVolunteer = false
+				break
+			}
+		}
+	}
+
+	if foundIdx == -1 {
+		return response.PaginationDataResponse{}, nil
+	}
+
+	var nftId string
+	if isVolunteer {
+		nftId = manage.VolunteerNfts[foundIdx]
+	} else {
+		nftId = manage.LocalLeaderNfts[foundIdx]
+	}
+
+	nft, err := on_chain.GetOnChainObject[entities.StaffNft](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  nftId,
+		ErrLogger: t.errLogger,
+	}, ctx)
+	if err != nil {
+		return response.PaginationDataResponse{}, err
+	}
+
+	req.SortOrder = util.StandardizeSortOrder(req.SortOrder)
+	req.Keyword = strings.TrimSpace(req.Keyword)
+	if req.Page < 1 {
+		req.Page = 1
+	}
+
+	if req.PageSize < 1 {
+		req.PageSize = default_page_size
+	}
+
+	if req.AssignedStaff != "" {
+		if !util.IsValidSuiAddressStrict(req.AssignedStaff) {
+			return response.PaginationDataResponse{}, genericErr
+		}
+	}
+
+	if req.ReviewedBy != "" {
+		if !util.IsValidSuiAddressStrict(req.ReviewedBy) {
+			return response.PaginationDataResponse{}, genericErr
+		}
+	}
+
+	req.Region = nft.Region
+
+	data, pages, err := t.taskRepo.GetTasks(req, ctx)
+	if err != nil {
+		return response.PaginationDataResponse{}, err
+	}
+
+	var amount int
+	if data == nil || len(data) == 0 {
+		amount = 0
+	} else {
+		amount = len(data)
+	}
+
+	return response.PaginationDataResponse{
+		Data:       data,
+		Amount:     amount,
+		Page:       req.Page,
+		TotalPages: pages,
+	}, nil
+}
+
 // ReviewAssignedProfileOfTask implements business.ITaskService.
 func (t *taskService) ReviewAssignedProfileOfTask(id string, req request.VoteRequest, ctx context.Context) error {
 	task, err := t.taskRepo.GetTask(id, ctx)

@@ -265,7 +265,7 @@ func (c *centerRequestRepo) UpdateRegistrationRequest(req entities.CenterRequest
 
 // GetPendingRequests implements repository.ICenterRequestRepository.
 func (c *centerRequestRepo) GetPendingRequests(ctx context.Context) ([]entities.BackgroundRecord, []entities.BackgroundRecord, error) {
-	var query string = "SELECT id, approvers, refusers, created_by, status FROM " + center_request_table + " WHERE is_available_to_confirm = false AND closed_at <= NOW() AND (status = 'Pending' OR status = 'Approved')"
+	var query string = "SELECT id, approvers, refusers, created_by, status FROM " + center_request_table + " WHERE closed_at <= NOW() AND (status = 'Pending' OR status = 'Approved')"
 	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.CENTER_REQUEST_REPOSITORY) + "GetPendingRequests - "
 	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
 
@@ -302,7 +302,7 @@ func (c *centerRequestRepo) SetApprovedStatuses(reqs []entities.BackgroundRecord
 		return nil
 	}
 
-	var query string = "UPDATE " + center_request_table + " SET status = 'Approved', is_available_to_confirm = true, updated_at = $1 WHERE "
+	var query string = "UPDATE " + center_request_table + " SET status = 'Approved', updated_at = $1 WHERE "
 	for i, req := range reqs {
 		query += fmt.Sprintf("id = '%s'", req.ID)
 		if i < len(reqs)-1 {

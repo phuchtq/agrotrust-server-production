@@ -40,6 +40,7 @@ func InitializeTaskRoutes(server *gin.Engine) {
 	// Staff group
 	var staffGroup = server.Group(contextPath, middleware.Authorize, middleware.StaffRoleAuthorize)
 	staffGroup.POST("/:id/claim", transport.ClaimTask)
+	staffGroup.GET("/staff/:id", transport.GetTasksOfRegionOnUser)
 
 	// Manager group
 	var managerGroup = server.Group(contextPath, middleware.Authorize, middleware.ManagerRoleAuthorize)

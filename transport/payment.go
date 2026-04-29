@@ -135,7 +135,7 @@ func RefusePayment(ctx *gin.Context) {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        request  body      request.DonateRequest  true  "Donation Details"
-// @Success      200      {object}  response.UrlAPIResponse
+// @Success      200      {object}  response.PaymentUrlResponse
 // @Failure      400      {object}  response.MessageAPIResponse "Invalid data. Please try again."
 // @Failure      401      {object}  response.MessageAPIResponse "You have no rights to access this action."
 // @Failure      500      {object}  response.MessageAPIResponse "There is something wrong in the system during the process. Please try again later."
@@ -153,7 +153,7 @@ func Donate(ctx *gin.Context) {
 		return
 	}
 
-	res, err := service.Donate(request, ctx)
+	res, err := service.DonateV2(request, ctx)
 
 	util.ProcessResponse(response.APIResponse{
 		Data1:    res,

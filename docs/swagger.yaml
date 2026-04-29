@@ -1283,11 +1283,6 @@ definitions:
       pool_name:
         type: string
     type: object
-  response.UrlAPIResponse:
-    properties:
-      url:
-        type: string
-    type: object
   response.WithdrawProposalResponse:
     properties:
       approve_weight:
@@ -3636,7 +3631,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.UrlAPIResponse'
+            $ref: '#/definitions/response.PaymentUrlResponse'
         "400":
           description: Invalid data. Please try again.
           schema:
@@ -4422,6 +4417,35 @@ paths:
       tags:
       - pool-campaigns
   /profiles/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get a profile
+      parameters:
+      - description: Profile ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.PersonalWalletProfileResponse'
+        "400":
+          description: Invalid data. Please try again.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "500":
+          description: There is something wrong in the system during the process.
+            Please try again later.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+      summary: Get a profile
+      tags:
+      - profile
     post:
       consumes:
       - application/json
@@ -5543,6 +5567,63 @@ paths:
       security:
       - BearerAuth: []
       summary: Review a task
+      tags:
+      - tasks
+  /tasks/staff/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of tasks of staff's region with optional query
+        filters
+      parameters:
+      - description: Staff Wallet Address
+        in: path
+        name: id
+        required: true
+        type: string
+      - in: query
+        name: assgined_staff
+        type: string
+      - in: query
+        name: keyword
+        type: string
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: page_size
+        type: integer
+      - in: query
+        name: region
+        type: string
+      - in: query
+        name: reviewed_by
+        type: string
+      - in: query
+        name: sort_order
+        type: string
+      - in: query
+        name: status
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.PaginationDataResponse'
+        "400":
+          description: Invalid data. Please try again.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "500":
+          description: There is something wrong in the system during the process.
+            Please try again later.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+      security:
+      - BearerAuth: []
+      summary: List tasks of staff's region
       tags:
       - tasks
   /tx-records:

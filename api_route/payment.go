@@ -49,7 +49,7 @@ func InitializePaymentsRoutes(server *gin.Engine) {
 	var norGroup = server.Group(contextPath)
 	norGroup.GET("/callback/:id", transport.CallbackTransaction)
 	norGroup.GET("", transport.GetPayments)
-	norGroup.GET("/:id", transport.GetPayments)
+	norGroup.GET("/:id", transport.GetPayment)
 
 	// Auth group
 	var authGroup = server.Group(contextPath, middleware.Authorize)

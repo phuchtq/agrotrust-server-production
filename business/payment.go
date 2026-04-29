@@ -888,18 +888,22 @@ func (p *paymentService) RefusePayment(id string, ctx context.Context) error {
 
 // CallbackV2 implements business.IPaymentService.
 func (p *paymentService) CallbackV2(id string, ctx context.Context) error {
+	log.Println("Payment ID:", id)
+
 	payment, err := p.paymentRepo.GetPaymentById(id, ctx)
 	if err != nil {
 		return err
 	}
 
 	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
-	if payment == nil || payment.Method == shared.MANUAL_BANK_METHOD || payment.Status != payment_pending_status || !payment.IsTransferred || payment.TransferredAt != nil {
+	if payment == nil || payment.Method == shared.MANUAL_BANK_METHOD || payment.Status != payment_pending_status || payment.IsTransferred || payment.TransferredAt != nil {
+		p.errLogger.Println("Fail check 1")
 		return genericErr
 	}
 
 	// Expired
-	if payment.ExpiredAt.Before(time.Now()) {
+	var curTime time.Time = time.Now()
+	if payment.ExpiredAt.Before(curTime) {
 		return nil
 	}
 
@@ -909,7 +913,6 @@ func (p *paymentService) CallbackV2(id string, ctx context.Context) error {
 		return errors.New(noti.INTERNALL_ERR_MSG)
 	}
 
-	var curTime time.Time = time.Now()
 	switch data.Status {
 	case shared.PAYOS_PAID_STATUS:
 		payment.ReviewStatus = request_approved_status
@@ -923,6 +926,7 @@ func (p *paymentService) CallbackV2(id string, ctx context.Context) error {
 			payment.CancelReason = data.CancellationReason
 		}
 	default:
+		p.errLogger.Println("Fail check 2")
 		return genericErr
 	}
 
