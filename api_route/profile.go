@@ -34,7 +34,7 @@ func InitializeProfileRoutes(server *gin.Engine) {
 	// Normal group
 	var norGroup = server.Group(contextPath)
 	norGroup.GET("/personal-wallet-profile/:id", transport.GetWalletPersonalProfile)
-	norGroup.GET("/:id", transport.GetTask)
+	norGroup.GET("/:id", transport.GetProfile)
 
 	// Auth group
 	var authGroup = server.Group(contextPath, middleware.Authorize)

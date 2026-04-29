@@ -181,7 +181,7 @@ func (p *profileRepo) GetProfile(id string, ctx context.Context) (*entities.Prof
 	if err := p.db.QueryRowContext(ctx, query, id).Scan(
 		&res.ID, &res.Salt, &res.Status, &res.IdentityCode, &res.FirstName, &res.LastName,
 		&res.Gender, &res.DateOfBirth, &res.PhoneNumber, &res.Email,
-		&res.Token, &res.UpdatedAt, &res.CreatedAt); err != nil {
+		&res.Token, &res.CreatedAt, &res.CreatedAt); err != nil {
 
 		if err == sql.ErrNoRows {
 			return nil, nil
