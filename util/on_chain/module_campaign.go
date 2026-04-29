@@ -1,6 +1,7 @@
 package onchain
 
 import (
+	"fmt"
 	"os"
 	"raise-child/constants/env"
 	"raise-child/constants/on-chain/sui"
@@ -172,7 +173,7 @@ func (m *moduleCampaign) ToWithdrawFromCampaignArgumentsV2(args WithdrawFromCamp
 		os.Getenv(env.POOL_ID),
 		args.CampaignID,
 		args.ProposalID,
-		uint64(args.TransferredAt),
+		fmt.Sprintf("%d", args.TransferredAt),
 		args.Creator,
 		args.Sender,
 		sui.CLOCK_OBJECT_ID,
@@ -190,7 +191,7 @@ func (m *moduleCampaign) ToCreateCampaignForMainPoolArguments(args CreateCampaig
 		os.Getenv(env.MANAGE_OBJECT_ID),
 		os.Getenv(env.POOL_ID),
 		args.Creator,
-		uint64(args.Target),
+		fmt.Sprintf("%d", args.Target),
 		args.Description,
 		proofBlobId,
 		sui.CLOCK_OBJECT_ID,
@@ -209,7 +210,7 @@ func (m *moduleCampaign) ToCreateCampaignForRegionPoolArguments(args CreateCampa
 		os.Getenv(env.POOL_ID),
 		args.LocalPoolID,
 		args.Creator,
-		uint64(args.Target),
+		fmt.Sprintf("%d", args.Target),
 		args.Description,
 		proofBlobId,
 		sui.CLOCK_OBJECT_ID,
@@ -228,10 +229,10 @@ func (m *moduleCampaign) ToCreateCampaignWithdrawProposalArguments(args CreateCa
 		os.Getenv(env.POOL_ID),
 		args.LocalPoolID,
 		args.CampaignID,
-		uint64(args.WithdrawAmount),
+		fmt.Sprintf("%d", args.WithdrawAmount),
 		args.Description,
 		proofBlobId,
-		uint64(args.ClosedAt),
+		fmt.Sprintf("%d", args.ClosedAt),
 		args.Creator,
 		sui.CLOCK_OBJECT_ID,
 	}
@@ -246,7 +247,7 @@ func (m *moduleCampaign) ToSupportCampaignArguments(args SupportCampaignArgument
 		args.LocalPoolID,
 		args.CampaignID,
 		args.DonorNFT,
-		uint64(args.Amount),
+		fmt.Sprintf("%d", args.Amount),
 		args.FirstName,
 		args.LastName,
 		args.Gender,
@@ -266,7 +267,7 @@ func (m *moduleCampaign) ToSupportCampaignArgumentsV2(args SupportCampaignArgume
 		args.LocalPoolID,
 		args.CampaignID,
 		args.DonorNFT,
-		uint64(args.Amount),
+		fmt.Sprintf("%d", args.Amount),
 		args.FirstName,
 		args.LastName,
 		args.Gender,
@@ -274,7 +275,7 @@ func (m *moduleCampaign) ToSupportCampaignArgumentsV2(args SupportCampaignArgume
 		args.Email,
 		args.Message,
 		args.Creator,
-		uint64(args.CreatedAt),
+		fmt.Sprintf("%d", args.CreatedAt),
 	}
 }
 

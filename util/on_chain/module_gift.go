@@ -1,6 +1,7 @@
 package onchain
 
 import (
+	"fmt"
 	"os"
 	"raise-child/constants/env"
 	"raise-child/constants/on-chain/sui"
@@ -124,7 +125,7 @@ func (m *moduleGift) ToCreateGiftForCenterArguments(args CreateGiftForCenterArgu
 		args.Carrier,
 		args.GiftImageBlobID,
 		args.Category,
-		uint64(args.Amount),
+		fmt.Sprintf("%d", args.Amount),
 		args.FirstName,
 		args.LastName,
 		args.Gender,
@@ -147,7 +148,7 @@ func (m *moduleGift) ToCreateGiftForChildArguments(args CreateGiftForChildArgume
 		args.Carrier,
 		args.GiftImageBlobID,
 		args.Category,
-		uint64(args.Amount),
+		fmt.Sprintf("%d", args.Amount),
 		args.FirstName,
 		args.LastName,
 		args.Gender,

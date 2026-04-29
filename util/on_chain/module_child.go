@@ -1,6 +1,7 @@
 package onchain
 
 import (
+	"fmt"
 	"os"
 	"raise-child/constants/env"
 	"raise-child/constants/on-chain/sui"
@@ -390,7 +391,7 @@ func (m *moduleChild) ToCreateChildNormalNeedWithdrawProposalArgumentsV2(args Cr
 		args.ChildID,
 		args.Description,
 		proofBlobId,
-		uint64(args.ClosedAt),
+		fmt.Sprintf("%d", args.ClosedAt),
 		args.Creator,
 		sui.CLOCK_OBJECT_ID,
 	}
@@ -407,10 +408,10 @@ func (m *moduleChild) ToCreateChildSpecialNeedProposalArgumentsV2(args CreateChi
 		os.Getenv(env.MANAGE_OBJECT_ID),
 		args.ChildID,
 		args.LocalPool,
-		uint64(args.Target),
+		fmt.Sprintf("%d", args.Target),
 		args.Description,
 		proofBlobId,
-		uint64(args.ClosedAt),
+		fmt.Sprintf("%d", args.ClosedAt),
 		args.Creator,
 		sui.CLOCK_OBJECT_ID,
 	}
@@ -430,10 +431,10 @@ func (m *moduleChild) ToCreateChildSpecialNeedWithdrawProposalArgumentsV2(args C
 		args.LocalPool,
 		args.CampaignID,
 		args.ChildID,
-		uint64(args.WithdrawAmount),
+		fmt.Sprintf("%d", args.WithdrawAmount),
 		args.Description,
 		proofBlobId,
-		uint64(args.ClosedAt),
+		fmt.Sprintf("%d", args.ClosedAt),
 		args.Creator,
 		sui.CLOCK_OBJECT_ID,
 	}
@@ -454,7 +455,7 @@ func (m *moduleChild) ToSupportChildHealthInsuranceNeedArguments(args SupportChi
 		args.NeedID,
 		args.ChildID,
 		args.DonorNft,
-		uint64(args.Amount),
+		fmt.Sprintf("%d", args.Amount),
 		args.FirstName,
 		args.LastName,
 		args.Gender,
@@ -475,7 +476,7 @@ func (m *moduleChild) ToSupportChildBooksNeedArgumentsV2(args SupportChildBooksN
 		args.LocalPool,
 		args.ChildID,
 		args.DonorNft,
-		uint64(args.Amount),
+		fmt.Sprintf("%d", args.Amount),
 		args.FirstName,
 		args.LastName,
 		args.Gender,
@@ -483,7 +484,7 @@ func (m *moduleChild) ToSupportChildBooksNeedArgumentsV2(args SupportChildBooksN
 		args.Email,
 		args.Message,
 		args.Creator,
-		uint64(args.CreatedAt),
+		fmt.Sprintf("%d", args.CreatedAt),
 	}
 }
 
@@ -496,7 +497,7 @@ func (m *moduleChild) ToSupportChildHealthInsuranceNeedArgumentsV2(args SupportC
 		args.LocalPool,
 		args.ChildID,
 		args.DonorNft,
-		uint64(args.Amount),
+		fmt.Sprintf("%d", args.Amount),
 		args.FirstName,
 		args.LastName,
 		args.Gender,
@@ -504,7 +505,7 @@ func (m *moduleChild) ToSupportChildHealthInsuranceNeedArgumentsV2(args SupportC
 		args.Email,
 		args.Message,
 		args.Creator,
-		uint64(args.CreatedAt),
+		fmt.Sprintf("%d", args.CreatedAt),
 	}
 }
 
@@ -517,7 +518,7 @@ func (m *moduleChild) ToSupportChildMealNeedArgumentsV2(args SupportChildMealNee
 		args.LocalPool,
 		args.ChildID,
 		args.DonorNft,
-		uint64(args.Amount),
+		fmt.Sprintf("%d", args.Amount),
 		args.StartPeriod,
 		args.EndPeriod,
 		args.FirstName,
@@ -527,7 +528,7 @@ func (m *moduleChild) ToSupportChildMealNeedArgumentsV2(args SupportChildMealNee
 		args.Email,
 		args.Message,
 		args.Creator,
-		uint64(args.CreatedAt),
+		fmt.Sprintf("%d", args.CreatedAt),
 	}
 }
 
@@ -540,14 +541,14 @@ func (m *moduleChild) ToSupportChildSpeicalNeedArgumentsV2(args SupportChildSpei
 		args.ChildID,
 		args.LocalPool,
 		args.DonorNft,
-		uint64(args.Amount),
+		fmt.Sprintf("%d", args.Amount),
 		args.FirstName,
 		args.LastName,
 		args.Gender,
 		args.PhoneNumber,
 		args.Email,
 		args.Creator,
-		uint64(args.CreatedAt),
+		fmt.Sprintf("%d", args.CreatedAt),
 	}
 }
 
@@ -572,8 +573,8 @@ func (m *moduleChild) ToUpdateChildNeedArguments(args UpdateChildNeedArguments) 
 		args.StaffNft,
 		args.ChildID,
 		args.NeedID,
-		uint64(args.Year),
-		uint64(args.Value),
+		fmt.Sprintf("%d", args.Year),
+		fmt.Sprintf("%d", args.Value),
 		args.Sender,
 		sui.CLOCK_OBJECT_ID,
 	}
@@ -745,10 +746,10 @@ func (m *moduleChild) ToCreateChildSpecialNeedWithdrawProposalArguments(args Cre
 		args.LocalPool,
 		args.CampaignID,
 		args.ChildID,
-		uint64(args.WithdrawAmount),
+		fmt.Sprintf("%d", args.WithdrawAmount),
 		args.Description,
 		proofBlobId,
-		uint64(args.ClosedAt),
+		fmt.Sprintf("%d", args.ClosedAt),
 		args.Sender,
 		sui.CLOCK_OBJECT_ID,
 	}
@@ -764,7 +765,7 @@ func (m *moduleChild) ToSupportChildSpeicalNeedArguments(args SupportChildSpeica
 		args.ChildID,
 		args.LocalPool,
 		args.DonorNft,
-		uint64(args.Amount),
+		fmt.Sprintf("%d", args.Amount),
 		args.FirstName,
 		args.LastName,
 		args.Gender,
@@ -804,7 +805,7 @@ func (m *moduleChild) ToCreateChildNormalNeedWithdrawProposalArguments(args Crea
 		args.ChildID,
 		args.Description,
 		proofBlobId,
-		uint64(args.ClosedAt),
+		fmt.Sprintf("%d", args.ClosedAt),
 		args.Sender,
 		sui.CLOCK_OBJECT_ID,
 	}
@@ -817,9 +818,9 @@ func (m *moduleChild) ToCreateChildSpecialNeedProposalArguments(args CreateChild
 		os.Getenv(env.MANAGE_OBJECT_ID),
 		args.ChildID,
 		args.LocalPool,
-		uint64(args.Target),
+		fmt.Sprintf("%d", args.Target),
 		args.Description,
-		uint64(args.ClosedAt),
+		fmt.Sprintf("%d", args.ClosedAt),
 		args.Sender,
 		sui.CLOCK_OBJECT_ID,
 	}
@@ -835,7 +836,7 @@ func (m *moduleChild) ToSupportChildBooksNeedArguments(args SupportChildBooksNee
 		args.NeedID,
 		args.ChildID,
 		args.DonorNft,
-		uint64(args.Amount),
+		fmt.Sprintf("%d", args.Amount),
 		args.FirstName,
 		args.LastName,
 		args.Gender,
@@ -857,7 +858,7 @@ func (m *moduleChild) ToSupportChildMealNeedArguments(args SupportChildMealNeedA
 		args.LocalPool,
 		args.ChildID,
 		args.DonorNft,
-		uint64(args.Amount),
+		fmt.Sprintf("%d", args.Amount),
 		args.StartPeriod,
 		args.EndPeriod,
 		args.FirstName,
@@ -894,7 +895,7 @@ func (m *moduleChild) ToWithdrawFromNeedArgumentsV2(args WithdrawFromNeedArgumen
 		args.LocalPool,
 		args.TargetID,
 		args.ProposalID,
-		uint64(args.TransferredAt),
+		fmt.Sprintf("%d", args.TransferredAt),
 		args.Creator,
 		args.Sender,
 		sui.CLOCK_OBJECT_ID,

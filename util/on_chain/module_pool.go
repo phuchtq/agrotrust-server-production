@@ -1,6 +1,7 @@
 package onchain
 
 import (
+	"fmt"
 	"os"
 	"raise-child/constants/env"
 	"raise-child/constants/on-chain/sui"
@@ -155,7 +156,7 @@ func (m *modulePool) ToDonateToLocalPoolArgumentsV2(args DonateToLocalPoolArgume
 		os.Getenv(env.POOL_ID),
 		args.LocalPoolId,
 		args.DonorID,
-		uint64(args.Amount),
+		fmt.Sprintf("%d", args.Amount),
 		args.FirstName,
 		args.LastName,
 		args.Gender,
@@ -163,7 +164,7 @@ func (m *modulePool) ToDonateToLocalPoolArgumentsV2(args DonateToLocalPoolArgume
 		args.Email,
 		args.Message,
 		args.Creator,
-		uint64(args.CreatedAt),
+		fmt.Sprintf("%d", args.CreatedAt),
 	}
 }
 
@@ -173,7 +174,7 @@ func (m *modulePool) ToDonateToPoolArgumentsV2(args DonateToPoolArgumentsV2) []i
 		os.Getenv(env.MANAGE_OBJECT_ID),
 		os.Getenv(env.POOL_ID),
 		args.DonorID,
-		uint64(args.Amount),
+		fmt.Sprintf("%d", args.Amount),
 		args.FirstName,
 		args.LastName,
 		args.Gender,
@@ -181,7 +182,7 @@ func (m *modulePool) ToDonateToPoolArgumentsV2(args DonateToPoolArgumentsV2) []i
 		args.Email,
 		args.Message,
 		args.Creator,
-		uint64(args.CreatedAt),
+		fmt.Sprintf("%d", args.CreatedAt),
 	}
 }
 
@@ -220,11 +221,11 @@ func (m *modulePool) ToCreateWithdrawProposalArguments(args CreateWithdrawPropos
 		os.Getenv(env.MANAGE_OBJECT_ID),
 		os.Getenv(env.POOL_ID),
 		args.LocalPoolId,
-		uint64(args.WithdrawAmount),
+		fmt.Sprintf("%d", args.WithdrawAmount),
 		args.Description,
 		proofBlobId,
 		args.IsFromLocalPool,
-		uint64(args.ClosedAt),
+		fmt.Sprintf("%d", args.ClosedAt),
 		args.Creator,
 		sui.CLOCK_OBJECT_ID,
 	}
@@ -242,11 +243,11 @@ func (m *modulePool) ToCreateWithdrawProposalV2Arguments(args CreateWithdrawProp
 		os.Getenv(env.MANAGE_OBJECT_ID),
 		os.Getenv(env.POOL_ID),
 		args.LocalPoolId,
-		uint64(args.WithdrawAmount),
+		fmt.Sprintf("%d", args.WithdrawAmount),
 		args.Description,
 		proofBlobId,
 		args.IsFromLocalPool,
-		uint64(args.ClosedAt),
+		fmt.Sprintf("%d", args.ClosedAt),
 		args.Creator,
 		args.Sender,
 		sui.CLOCK_OBJECT_ID,

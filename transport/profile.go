@@ -91,7 +91,7 @@ func GetWalletPersonalProfile(ctx *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        id       path      string                      true  "Profile ID"
-// @Success      200      {object}  response.PersonalWalletProfileResponse
+// @Success      200      {object}  entities.Profile
 // @Failure      400      {object}  response.MessageAPIResponse "Invalid data. Please try again."
 // @Failure      500      {object}  response.MessageAPIResponse "There is something wrong in the system during the process. Please try again later."
 // @Router       /profiles/{id} [get]

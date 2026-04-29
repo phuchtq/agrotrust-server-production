@@ -1,6 +1,7 @@
 package onchain
 
 import (
+	"fmt"
 	"os"
 	"raise-child/constants/env"
 	"raise-child/constants/on-chain/sui"
@@ -135,7 +136,7 @@ func (m *moduleNeed) ToEditSpecialNeedProposalDaoArguments(args EditSpecialNeedP
 	return []interface{}{
 		os.Getenv(env.ADMIN_CAP_ID_1),
 		os.Getenv(env.SPECIAL_NEED_DAO_ID),
-		uint64(args.MinRate),
+		fmt.Sprintf("%d", args.MinRate),
 		args.MinVoters,
 	}
 }
