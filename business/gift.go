@@ -24,9 +24,7 @@ import (
 	"time"
 
 	"github.com/block-vision/sui-go-sdk/constant"
-	"github.com/block-vision/sui-go-sdk/models"
 	"github.com/block-vision/sui-go-sdk/sui"
-	"github.com/block-vision/sui-go-sdk/utils"
 )
 
 type giftService struct {
@@ -63,17 +61,380 @@ const (
 	non_food_category string = "Non-Food Items"
 )
 
-// CancelGift implements business.IGiftService.
-func (g *giftService) CancelGift(id string, req request.CancelGiftRequest, ctx context.Context) (response.BuildTransactionResponse, error) {
-	var sender string = ctx.Value("address").(string)
-	var genericRightErr error = errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
-	if !utils.IsValidSuiAddress(models.SuiAddress(sender)) {
-		return response.BuildTransactionResponse{}, genericRightErr
-	}
+// // CancelGift implements business.IGiftService.
+// func (g *giftService) CancelGift(id string, req request.CancelGiftRequest, ctx context.Context) (response.BuildTransactionResponse, error) {
+// 	var sender string = ctx.Value("address").(string)
+// 	var genericRightErr error = errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+// 	if !utils.IsValidSuiAddress(models.SuiAddress(sender)) {
+// 		return response.BuildTransactionResponse{}, genericRightErr
+// 	}
 
+// 	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
+// 	if !utils.IsValidSuiAddress(models.SuiAddress(id)) {
+// 		return response.BuildTransactionResponse{}, genericErr
+// 	}
+
+// 	var client = g.clients[constant.SuiTestnet]
+// 	gift, err := on_chain.GetOnChainObject[entities.Gift](on_chain.GetOnChainObjectRequest{
+// 		Client:    client,
+// 		ObjectId:  id,
+// 		ErrLogger: g.errLogger,
+// 	}, ctx)
+// 	if err != nil {
+// 		return response.BuildTransactionResponse{}, err
+// 	}
+
+// 	if gift.Status == "Delivered" || gift.Status == "Canceled" {
+// 		return response.BuildTransactionResponse{}, genericErr
+// 	}
+
+// 	if gift.Sender != sender {
+// 		return response.BuildTransactionResponse{}, genericRightErr
+// 	}
+
+// 	var giftModule = on_chain.InitializeModuleGift()
+// 	txBytes, err := on_chain.BuildTransaction(on_chain.BuildTransactionRequest{
+// 		Client:    g.clients[constant.SuiTestnet],
+// 		Sender:    sender,
+// 		Module:    giftModule.GetModule(),
+// 		Function:  giftModule.GetFunctionCancelGift(),
+// 		ErrLogger: g.errLogger,
+// 		Arguments: giftModule.ToCancelGiftArguments(on_chain.CancelGiftArguments{
+// 			GiftID:       id,
+// 			CancelReason: req.CancelReason,
+// 		}),
+// 	}, ctx)
+
+// 	return response.BuildTransactionResponse{
+// 		TxBytes: txBytes,
+// 	}, err
+// }
+
+// // ConfirmReceiveGift implements business.IGiftService.
+// func (g *giftService) ConfirmReceiveGift(id string, req request.ConfirmReceiveGiftRequest, ctx context.Context) (response.BuildTransactionResponse, error) {
+// 	var sender string = ctx.Value("address").(string)
+// 	var genericRightErr error = errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+// 	if !utils.IsValidSuiAddress(models.SuiAddress(sender)) {
+// 		return response.BuildTransactionResponse{}, genericRightErr
+// 	}
+
+// 	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
+// 	if !utils.IsValidSuiAddress(models.SuiAddress(id)) {
+// 		return response.BuildTransactionResponse{}, genericErr
+// 	}
+
+// 	var client = g.clients[constant.SuiTestnet]
+// 	gift, err := on_chain.GetOnChainObject[entities.Gift](on_chain.GetOnChainObjectRequest{
+// 		Client:    client,
+// 		ObjectId:  id,
+// 		ErrLogger: g.errLogger,
+// 	}, ctx)
+// 	if err != nil {
+// 		return response.BuildTransactionResponse{}, err
+// 	}
+
+// 	if gift.Status == "Delivered" || gift.Status == "Canceled" {
+// 		return response.BuildTransactionResponse{}, genericErr
+// 	}
+
+// 	if gift.Sender == sender {
+// 		return response.BuildTransactionResponse{}, genericRightErr
+// 	}
+
+// 	var staffModule = on_chain.InitializeModuleStaff()
+// 	roles, err := on_chain.GetOnChainOwnedObjects[entities.StaffNft](on_chain.GetOnChainOwnedObjectsRequest{
+// 		Client:       client,
+// 		OwnerAddress: sender,
+// 		StructType:   fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), staffModule.GetModule(), staffModule.GetStaffNftObjectStruct()),
+// 		ErrLogger:    g.errLogger,
+// 	}, ctx)
+// 	if err != nil {
+// 		return response.BuildTransactionResponse{}, err
+// 	}
+
+// 	if roles == nil || len(roles) == 0 {
+// 		return response.BuildTransactionResponse{}, genericRightErr
+// 	}
+
+// 	var function string
+// 	var region string
+// 	var recipient string
+// 	var giftModule = on_chain.InitializeModuleGift()
+// 	var getObjReq = on_chain.GetOnChainObjectRequest{
+// 		Client:    client,
+// 		ObjectId:  gift.Recipient,
+// 		ErrLogger: g.errLogger,
+// 	}
+
+// 	if gift.IsForChild {
+// 		child, err := on_chain.GetOnChainObject[entities.Child](getObjReq, ctx)
+// 		if err != nil {
+// 			return response.BuildTransactionResponse{}, err
+// 		}
+
+// 		if child == nil {
+// 			return response.BuildTransactionResponse{}, genericErr
+// 		}
+
+// 		function = giftModule.GetFunctionConfirmReceiveChildGift()
+// 		region = child.Region
+// 		recipient = child.ID.ID
+// 	} else {
+// 		center, err := on_chain.GetOnChainObject[entities.Center](getObjReq, ctx)
+// 		if err != nil {
+// 			return response.BuildTransactionResponse{}, err
+// 		}
+
+// 		if center == nil {
+// 			return response.BuildTransactionResponse{}, genericErr
+// 		}
+
+// 		function = giftModule.GetFunctionConfirmReceiveCenterGift()
+// 		region = center.Region
+// 		recipient = center.ID.ID
+// 	}
+
+// 	var staffId string
+// 	for _, role := range roles {
+// 		if role.Region == region {
+// 			staffId = role.ID.ID
+// 			break
+// 		}
+// 	}
+
+// 	if staffId == "" {
+// 		return response.BuildTransactionResponse{}, genericRightErr
+// 	}
+
+// 	txBytes, err := on_chain.BuildTransaction(on_chain.BuildTransactionRequest{
+// 		Client:    client,
+// 		Sender:    sender,
+// 		Module:    giftModule.GetModule(),
+// 		Function:  function,
+// 		ErrLogger: g.errLogger,
+// 		Arguments: giftModule.ToConfirmReceiveGiftArguments(on_chain.ConfirmReceiveGiftArguments{
+// 			GiftID:      id,
+// 			Recipient:   recipient,
+// 			StaffID:     staffId,
+// 			ImageBlobID: req.DeliveredImageBlobID,
+// 		}),
+// 	}, ctx)
+
+// 	return response.BuildTransactionResponse{
+// 		TxBytes: txBytes,
+// 	}, err
+// }
+
+// // CreateGift implements business.IGiftService.
+// func (g *giftService) CreateGift(req request.CreateGiftRequest, ctx context.Context) (response.BuildTransactionResponse, error) {
+// 	var genericRightErr error = errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+// 	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
+
+// 	var sender string = ctx.Value("address").(string)
+// 	if !utils.IsValidSuiAddress(models.SuiAddress(sender)) {
+// 		return response.BuildTransactionResponse{}, genericRightErr
+// 	}
+
+// 	if !utils.IsValidSuiAddress(models.SuiAddress(req.Recipient)) {
+// 		return response.BuildTransactionResponse{}, genericErr
+// 	}
+
+// 	profile, err := g.profileRepo.GetProfile(ctx.Value("sub").(string), ctx)
+// 	if err != nil {
+// 		return response.BuildTransactionResponse{}, err
+// 	}
+
+// 	if profile.FirstName == nil {
+// 		return response.BuildTransactionResponse{}, errors.New(noti.PROFILE_EMPTY_MESSAGE)
+// 	}
+
+// 	if req.Category == "" {
+// 		req.Category = non_food_category
+// 	}
+
+// 	var giftText string = "Gift"
+// 	var description string = strings.TrimSpace(req.Description)
+// 	var msg string = strings.TrimSpace(req.Message)
+// 	if description == "" {
+// 		description = giftText
+// 	}
+
+// 	if msg == "" {
+// 		msg = giftText
+// 	}
+
+// 	// todo: AI validate other fields
+// 	var client = g.clients[constant.SuiTestnet]
+// 	var donorModule = on_chain.InitializeModuleDonor()
+// 	nfts, err := on_chain.GetOnChainOwnedObjects[entities.Donor](on_chain.GetOnChainOwnedObjectsRequest{
+// 		Client:       client,
+// 		OwnerAddress: sender,
+// 		StructType:   fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), donorModule.GetModule(), donorModule.GetDonorNftStruct()),
+// 		ErrLogger:    g.errLogger,
+// 	}, ctx)
+// 	if err != nil {
+// 		return response.BuildTransactionResponse{}, err
+// 	}
+
+// 	var nftId string
+// 	if nfts == nil || len(nfts) == 0 {
+// 		nftId = os.Getenv(env.PUB_DONOR_NFT_ID)
+// 	} else {
+// 		nftId = nfts[0].ID.ID
+// 	}
+
+// 	var giftModule = on_chain.InitializeModuleGift()
+// 	var function string
+// 	var args []interface{}
+// 	var getRecipientObjReq = on_chain.GetOnChainObjectRequest{
+// 		Client:    client,
+// 		ObjectId:  req.Recipient,
+// 		ErrLogger: g.errLogger,
+// 	}
+
+// 	var child *entities.Child
+// 	var errRes error
+// 	child, errRes = on_chain.GetOnChainObject[entities.Child](getRecipientObjReq, ctx)
+// 	if errRes != nil {
+// 		return response.BuildTransactionResponse{}, errRes
+// 	}
+
+// 	// Gift for child
+// 	if child != nil {
+// 		var manageObj entities.Manage
+// 		if !g.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
+// 			res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+// 				Client:    client,
+// 				ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+// 				ErrLogger: g.errLogger,
+// 			}, ctx)
+// 			if err != nil {
+// 				return response.BuildTransactionResponse{}, err
+// 			}
+
+// 			if res != nil {
+// 				g.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
+// 				manageObj = *res
+// 			}
+// 		}
+
+// 		var centerId string
+// 		for i, region := range manageObj.LocalRegions {
+// 			if region == child.Region {
+// 				centerId = manageObj.ChildrenCenters[i]
+// 				break
+// 			}
+// 		}
+
+// 		function = giftModule.GetFunctionCreateGiftForChild()
+// 		args = giftModule.ToCreateGiftForChildArguments(on_chain.CreateGiftForChildArguments{
+// 			ChildID: req.Recipient,
+// 			CreateGiftForCenterArguments: on_chain.CreateGiftForCenterArguments{
+// 				DonorID:         nftId,
+// 				CenterID:        centerId,
+// 				TrackingCode:    req.TrackingCode,
+// 				Carrier:         req.Carrier,
+// 				GiftImageBlobID: req.GiftImageBlobID,
+// 				Category:        req.Category,
+// 				Amount:          req.GiftValue,
+// 				FirstName:       *profile.FirstName,
+// 				LastName:        *profile.LastName,
+// 				Gender:          *profile.Gender,
+// 				PhoneNumber:     *profile.PhoneNumber,
+// 				Email:           *profile.Email,
+// 				Message:         msg,
+// 				Description:     description,
+// 			},
+// 		})
+// 	} else {
+// 		center, _ := on_chain.GetOnChainObject[entities.Center](getRecipientObjReq, ctx)
+// 		if center == nil {
+// 			return response.BuildTransactionResponse{}, genericErr
+// 		}
+
+// 		function = giftModule.GetFunctionCreateGiftForCenter()
+// 		args = giftModule.ToCreateGiftForCenterArguments(on_chain.CreateGiftForCenterArguments{
+// 			DonorID:         nftId,
+// 			CenterID:        req.Recipient,
+// 			TrackingCode:    req.TrackingCode,
+// 			Carrier:         req.Carrier,
+// 			GiftImageBlobID: req.GiftImageBlobID,
+// 			Category:        req.Category,
+// 			Amount:          req.GiftValue,
+// 			FirstName:       *profile.FirstName,
+// 			LastName:        *profile.LastName,
+// 			Gender:          *profile.Gender,
+// 			PhoneNumber:     *profile.PhoneNumber,
+// 			Email:           *profile.Email,
+// 			Message:         msg,
+// 			Description:     description,
+// 		})
+// 	}
+
+// 	// if child, _ := on_chain.GetOnChainObject[entities.Child](getRecipientObjReq, ctx); child != nil {
+// 	// 	function = giftModule.GetFunctionCreateGiftForChild()
+// 	// 	args = giftModule.ToCreateGiftForChildArguments(on_chain.CreateGiftForChildArguments{
+// 	// 		ChildID: req.Recipient,
+// 	// 		CreateGiftForCenterArguments: on_chain.CreateGiftForCenterArguments{
+// 	// 			DonorID:         nftId,
+// 	// 			TrackingCode:    req.TrackingCode,
+// 	// 			Carrier:         req.Carrier,
+// 	// 			GiftImageBlobID: req.GiftImageBlobID,
+// 	// 			Category:        req.Category,
+// 	// 			Amount:          req.GiftValue,
+// 	// 			FirstName:       profile.FirstName,
+// 	// 			LastName:        profile.LastName,
+// 	// 			Gender:          profile.Gender,
+// 	// 			PhoneNumber:     profile.PhoneNumber,
+// 	// 			Email:           profile.Email,
+// 	// 			Message:         msg,
+// 	// 			Description:     description,
+// 	// 		},
+// 	// 	})
+// 	// } else {
+// 	// 	if center, _ := on_chain.GetOnChainObject[entities.Center](getRecipientObjReq, ctx); center != nil {
+// 	// 		function = giftModule.GetFunctionCreateGiftForCenter()
+// 	// 		args = giftModule.ToCreateGiftForCenterArguments(on_chain.CreateGiftForCenterArguments{
+// 	// 			DonorID:         nftId,
+// 	// 			TrackingCode:    req.TrackingCode,
+// 	// 			Carrier:         req.Carrier,
+// 	// 			GiftImageBlobID: req.GiftImageBlobID,
+// 	// 			Category:        req.Category,
+// 	// 			Amount:          req.GiftValue,
+// 	// 			FirstName:       profile.FirstName,
+// 	// 			LastName:        profile.LastName,
+// 	// 			Gender:          profile.Gender,
+// 	// 			PhoneNumber:     profile.PhoneNumber,
+// 	// 			Email:           profile.Email,
+// 	// 			Message:         msg,
+// 	// 			Description:     description,
+// 	// 		})
+// 	// 	}
+// 	// }
+
+// 	if function == "" {
+// 		return response.BuildTransactionResponse{}, genericErr
+// 	}
+
+// 	txBytes, err := on_chain.BuildTransaction(on_chain.BuildTransactionRequest{
+// 		Client:    client,
+// 		Sender:    sender,
+// 		Module:    giftModule.GetModule(),
+// 		Function:  function,
+// 		ErrLogger: g.errLogger,
+// 		Arguments: args,
+// 	}, ctx)
+
+// 	return response.BuildTransactionResponse{
+// 		TxBytes: txBytes,
+// 	}, err
+// }
+
+// CancelGift implements business.IGiftService.
+func (g *giftService) CancelGift(id string, req request.CancelGiftRequest, ctx context.Context) error {
 	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
-	if !utils.IsValidSuiAddress(models.SuiAddress(id)) {
-		return response.BuildTransactionResponse{}, genericErr
+	if !util.IsValidSuiAddressStrict(id) {
+		return genericErr
 	}
 
 	var client = g.clients[constant.SuiTestnet]
@@ -83,46 +444,39 @@ func (g *giftService) CancelGift(id string, req request.CancelGiftRequest, ctx c
 		ErrLogger: g.errLogger,
 	}, ctx)
 	if err != nil {
-		return response.BuildTransactionResponse{}, err
+		return err
 	}
 
-	if gift.Status == "Delivered" || gift.Status == "Canceled" {
-		return response.BuildTransactionResponse{}, genericErr
+	if gift.Status == "Delivered" || gift.Status == "Cancelled" {
+		return genericErr
 	}
 
+	var sender string = ctx.Value("address").(string)
 	if gift.Sender != sender {
-		return response.BuildTransactionResponse{}, genericRightErr
+		return errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
 	}
 
 	var giftModule = on_chain.InitializeModuleGift()
-	txBytes, err := on_chain.BuildTransaction(on_chain.BuildTransactionRequest{
-		Client:    g.clients[constant.SuiTestnet],
-		Sender:    sender,
+	_, errRes := on_chain.ExecuteTransactionV2(on_chain.ExecuteTransactionRequestV2{
+		Client:    client,
 		Module:    giftModule.GetModule(),
 		Function:  giftModule.GetFunctionCancelGift(),
 		ErrLogger: g.errLogger,
 		Arguments: giftModule.ToCancelGiftArguments(on_chain.CancelGiftArguments{
 			GiftID:       id,
 			CancelReason: req.CancelReason,
+			Sender:       sender,
 		}),
 	}, ctx)
 
-	return response.BuildTransactionResponse{
-		TxBytes: txBytes,
-	}, err
+	return errRes
 }
 
 // ConfirmReceiveGift implements business.IGiftService.
-func (g *giftService) ConfirmReceiveGift(id string, req request.ConfirmReceiveGiftRequest, ctx context.Context) (response.BuildTransactionResponse, error) {
-	var sender string = ctx.Value("address").(string)
-	var genericRightErr error = errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
-	if !utils.IsValidSuiAddress(models.SuiAddress(sender)) {
-		return response.BuildTransactionResponse{}, genericRightErr
-	}
-
+func (g *giftService) ConfirmReceiveGift(id string, req request.ConfirmReceiveGiftRequest, ctx context.Context) error {
 	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
-	if !utils.IsValidSuiAddress(models.SuiAddress(id)) {
-		return response.BuildTransactionResponse{}, genericErr
+	if !util.IsValidSuiAddressStrict(id) {
+		return genericErr
 	}
 
 	var client = g.clients[constant.SuiTestnet]
@@ -132,30 +486,75 @@ func (g *giftService) ConfirmReceiveGift(id string, req request.ConfirmReceiveGi
 		ErrLogger: g.errLogger,
 	}, ctx)
 	if err != nil {
-		return response.BuildTransactionResponse{}, err
+		return err
+	}
+
+	if gift == nil {
+		return genericErr
 	}
 
 	if gift.Status == "Delivered" || gift.Status == "Canceled" {
-		return response.BuildTransactionResponse{}, genericErr
+		return genericErr
 	}
 
+	var sender string = ctx.Value("address").(string)
+	var genericRightErr error = errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
 	if gift.Sender == sender {
-		return response.BuildTransactionResponse{}, genericRightErr
+		return genericRightErr
 	}
 
-	var staffModule = on_chain.InitializeModuleStaff()
-	roles, err := on_chain.GetOnChainOwnedObjects[entities.StaffNft](on_chain.GetOnChainOwnedObjectsRequest{
-		Client:       client,
-		OwnerAddress: sender,
-		StructType:   fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), staffModule.GetModule(), staffModule.GetStaffNftObjectStruct()),
-		ErrLogger:    g.errLogger,
+	manage, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: g.errLogger,
 	}, ctx)
 	if err != nil {
-		return response.BuildTransactionResponse{}, err
+		return err
 	}
 
-	if roles == nil || len(roles) == 0 {
-		return response.BuildTransactionResponse{}, genericRightErr
+	if manage == nil {
+		return errors.New(noti.INTERNALL_ERR_MSG)
+	}
+
+	var searchLen int
+	if len(manage.VolunteerIds) > len(manage.LocalLeaderIds) {
+		searchLen = len(manage.VolunteerIds)
+	} else {
+		searchLen = len(manage.LocalLeaderIds)
+	}
+
+	var staffId string
+	for i := 0; i < searchLen; i++ {
+		if i < len(manage.VolunteerIds) {
+			if sender == manage.VolunteerIds[i] {
+				staffId = manage.VolunteerNfts[i]
+				break
+			}
+		}
+
+		if i < len(manage.LocalLeaderIds) {
+			if sender == manage.LocalLeaderIds[i] {
+				staffId = manage.LocalLeaderNfts[i]
+				break
+			}
+		}
+	}
+
+	if staffId == "" {
+		return genericRightErr
+	}
+
+	staff, err := on_chain.GetOnChainObject[entities.StaffNft](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  staffId,
+		ErrLogger: g.errLogger,
+	}, ctx)
+	if err != nil {
+		return err
+	}
+
+	if staff == nil {
+		return genericRightErr
 	}
 
 	var function string
@@ -171,11 +570,11 @@ func (g *giftService) ConfirmReceiveGift(id string, req request.ConfirmReceiveGi
 	if gift.IsForChild {
 		child, err := on_chain.GetOnChainObject[entities.Child](getObjReq, ctx)
 		if err != nil {
-			return response.BuildTransactionResponse{}, err
+			return err
 		}
 
 		if child == nil {
-			return response.BuildTransactionResponse{}, genericErr
+			return genericErr
 		}
 
 		function = giftModule.GetFunctionConfirmReceiveChildGift()
@@ -184,11 +583,11 @@ func (g *giftService) ConfirmReceiveGift(id string, req request.ConfirmReceiveGi
 	} else {
 		center, err := on_chain.GetOnChainObject[entities.Center](getObjReq, ctx)
 		if err != nil {
-			return response.BuildTransactionResponse{}, err
+			return err
 		}
 
 		if center == nil {
-			return response.BuildTransactionResponse{}, genericErr
+			return genericErr
 		}
 
 		function = giftModule.GetFunctionConfirmReceiveCenterGift()
@@ -196,21 +595,12 @@ func (g *giftService) ConfirmReceiveGift(id string, req request.ConfirmReceiveGi
 		recipient = center.ID.ID
 	}
 
-	var staffId string
-	for _, role := range roles {
-		if role.Region == region {
-			staffId = role.ID.ID
-			break
-		}
+	if staff.Region != region {
+		return genericRightErr
 	}
 
-	if staffId == "" {
-		return response.BuildTransactionResponse{}, genericRightErr
-	}
-
-	txBytes, err := on_chain.BuildTransaction(on_chain.BuildTransactionRequest{
+	_, errRes := on_chain.ExecuteTransactionV2(on_chain.ExecuteTransactionRequestV2{
 		Client:    client,
-		Sender:    sender,
 		Module:    giftModule.GetModule(),
 		Function:  function,
 		ErrLogger: g.errLogger,
@@ -219,35 +609,27 @@ func (g *giftService) ConfirmReceiveGift(id string, req request.ConfirmReceiveGi
 			Recipient:   recipient,
 			StaffID:     staffId,
 			ImageBlobID: req.DeliveredImageBlobID,
+			Sender:      sender,
 		}),
 	}, ctx)
 
-	return response.BuildTransactionResponse{
-		TxBytes: txBytes,
-	}, err
+	return errRes
 }
 
 // CreateGift implements business.IGiftService.
-func (g *giftService) CreateGift(req request.CreateGiftRequest, ctx context.Context) (response.BuildTransactionResponse, error) {
-	var genericRightErr error = errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+func (g *giftService) CreateGift(req request.CreateGiftRequest, ctx context.Context) error {
 	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
-
-	var sender string = ctx.Value("address").(string)
-	if !utils.IsValidSuiAddress(models.SuiAddress(sender)) {
-		return response.BuildTransactionResponse{}, genericRightErr
-	}
-
-	if !utils.IsValidSuiAddress(models.SuiAddress(req.Recipient)) {
-		return response.BuildTransactionResponse{}, genericErr
+	if !util.IsValidSuiAddressStrict(req.Recipient) {
+		return genericErr
 	}
 
 	profile, err := g.profileRepo.GetProfile(ctx.Value("sub").(string), ctx)
 	if err != nil {
-		return response.BuildTransactionResponse{}, err
+		return err
 	}
 
-	if profile.FirstName == nil {
-		return response.BuildTransactionResponse{}, errors.New(noti.PROFILE_EMPTY_MESSAGE)
+	if profile.IdentityCode == nil {
+		return errors.New(noti.PROFILE_EMPTY_MESSAGE)
 	}
 
 	if req.Category == "" {
@@ -267,22 +649,30 @@ func (g *giftService) CreateGift(req request.CreateGiftRequest, ctx context.Cont
 
 	// todo: AI validate other fields
 	var client = g.clients[constant.SuiTestnet]
-	var donorModule = on_chain.InitializeModuleDonor()
-	nfts, err := on_chain.GetOnChainOwnedObjects[entities.Donor](on_chain.GetOnChainOwnedObjectsRequest{
-		Client:       client,
-		OwnerAddress: sender,
-		StructType:   fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), donorModule.GetModule(), donorModule.GetDonorNftStruct()),
-		ErrLogger:    g.errLogger,
+	manage, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: g.errLogger,
 	}, ctx)
 	if err != nil {
-		return response.BuildTransactionResponse{}, err
+		return err
+	}
+
+	if manage == nil {
+		return errors.New(noti.INTERNALL_ERR_MSG)
 	}
 
 	var nftId string
-	if nfts == nil || len(nfts) == 0 {
+	var sender string = ctx.Value("address").(string)
+	for i, donor := range manage.DonorIds {
+		if donor == sender {
+			nftId = manage.DonorNfts[i]
+			break
+		}
+	}
+
+	if nftId == "" {
 		nftId = os.Getenv(env.PUB_DONOR_NFT_ID)
-	} else {
-		nftId = nfts[0].ID.ID
 	}
 
 	var giftModule = on_chain.InitializeModuleGift()
@@ -298,32 +688,15 @@ func (g *giftService) CreateGift(req request.CreateGiftRequest, ctx context.Cont
 	var errRes error
 	child, errRes = on_chain.GetOnChainObject[entities.Child](getRecipientObjReq, ctx)
 	if errRes != nil {
-		return response.BuildTransactionResponse{}, errRes
+		return errRes
 	}
 
 	// Gift for child
 	if child != nil {
-		var manageObj entities.Manage
-		if !g.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
-			res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-				Client:    client,
-				ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-				ErrLogger: g.errLogger,
-			}, ctx)
-			if err != nil {
-				return response.BuildTransactionResponse{}, err
-			}
-
-			if res != nil {
-				g.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
-				manageObj = *res
-			}
-		}
-
 		var centerId string
-		for i, region := range manageObj.LocalRegions {
+		for i, region := range manage.LocalRegions {
 			if region == child.Region {
-				centerId = manageObj.ChildrenCenters[i]
+				centerId = manage.ChildrenCenters[i]
 				break
 			}
 		}
@@ -346,12 +719,13 @@ func (g *giftService) CreateGift(req request.CreateGiftRequest, ctx context.Cont
 				Email:           *profile.Email,
 				Message:         msg,
 				Description:     description,
+				Sender:          sender,
 			},
 		})
 	} else {
 		center, _ := on_chain.GetOnChainObject[entities.Center](getRecipientObjReq, ctx)
 		if center == nil {
-			return response.BuildTransactionResponse{}, genericErr
+			return genericErr
 		}
 
 		function = giftModule.GetFunctionCreateGiftForCenter()
@@ -370,66 +744,23 @@ func (g *giftService) CreateGift(req request.CreateGiftRequest, ctx context.Cont
 			Email:           *profile.Email,
 			Message:         msg,
 			Description:     description,
+			Sender:          sender,
 		})
 	}
 
-	// if child, _ := on_chain.GetOnChainObject[entities.Child](getRecipientObjReq, ctx); child != nil {
-	// 	function = giftModule.GetFunctionCreateGiftForChild()
-	// 	args = giftModule.ToCreateGiftForChildArguments(on_chain.CreateGiftForChildArguments{
-	// 		ChildID: req.Recipient,
-	// 		CreateGiftForCenterArguments: on_chain.CreateGiftForCenterArguments{
-	// 			DonorID:         nftId,
-	// 			TrackingCode:    req.TrackingCode,
-	// 			Carrier:         req.Carrier,
-	// 			GiftImageBlobID: req.GiftImageBlobID,
-	// 			Category:        req.Category,
-	// 			Amount:          req.GiftValue,
-	// 			FirstName:       profile.FirstName,
-	// 			LastName:        profile.LastName,
-	// 			Gender:          profile.Gender,
-	// 			PhoneNumber:     profile.PhoneNumber,
-	// 			Email:           profile.Email,
-	// 			Message:         msg,
-	// 			Description:     description,
-	// 		},
-	// 	})
-	// } else {
-	// 	if center, _ := on_chain.GetOnChainObject[entities.Center](getRecipientObjReq, ctx); center != nil {
-	// 		function = giftModule.GetFunctionCreateGiftForCenter()
-	// 		args = giftModule.ToCreateGiftForCenterArguments(on_chain.CreateGiftForCenterArguments{
-	// 			DonorID:         nftId,
-	// 			TrackingCode:    req.TrackingCode,
-	// 			Carrier:         req.Carrier,
-	// 			GiftImageBlobID: req.GiftImageBlobID,
-	// 			Category:        req.Category,
-	// 			Amount:          req.GiftValue,
-	// 			FirstName:       profile.FirstName,
-	// 			LastName:        profile.LastName,
-	// 			Gender:          profile.Gender,
-	// 			PhoneNumber:     profile.PhoneNumber,
-	// 			Email:           profile.Email,
-	// 			Message:         msg,
-	// 			Description:     description,
-	// 		})
-	// 	}
-	// }
-
 	if function == "" {
-		return response.BuildTransactionResponse{}, genericErr
+		return genericErr
 	}
 
-	txBytes, err := on_chain.BuildTransaction(on_chain.BuildTransactionRequest{
+	_, executeRes := on_chain.ExecuteTransactionV2(on_chain.ExecuteTransactionRequestV2{
 		Client:    client,
-		Sender:    sender,
 		Module:    giftModule.GetModule(),
 		Function:  function,
 		ErrLogger: g.errLogger,
 		Arguments: args,
 	}, ctx)
 
-	return response.BuildTransactionResponse{
-		TxBytes: txBytes,
-	}, err
+	return executeRes
 }
 
 // GetGift implements business.IGiftService.

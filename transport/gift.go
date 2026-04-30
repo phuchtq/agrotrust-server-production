@@ -81,7 +81,7 @@ func GetGiftsOfChild(ctx *gin.Context) {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        request  body      request.CreateGiftRequest   true  "Create gift details"
-// @Success      201  {object}  response.BuildTransactionResponse
+// @Success      201  {object}  response.MessageAPIResponse "Success"
 // @Failure      400  {object}  response.MessageAPIResponse "Invalid data. Please try again."
 // @Failure      401  {object}  response.MessageAPIResponse "You have no rights to access this action."
 // @Failure      500  {object}  response.MessageAPIResponse "There is something wrong in the system during the process. Please try again later."
@@ -99,19 +99,16 @@ func CreateGift(ctx *gin.Context) {
 		return
 	}
 
-	res, err := service.CreateGift(request, ctx)
 	util.ProcessResponse(response.APIResponse{
-		Data1:    res,
-		Data2:    res,
-		ErrMsg:   err,
+		ErrMsg:   service.CreateGift(request, ctx),
 		Context:  ctx,
 		PostType: action_type.CREATE_ACTION,
 	})
 }
 
-// ConfirmWithdrawProposal godoc
-// @Summary      Confirm a withdraw proposal
-// @Description  Finalize and confirm a specific withdraw proposal by ID
+// ConfirmReceiveGift godoc
+// @Summary      Confirm recieve a gift
+// @Description  Confirm recieve a gift
 // @Tags         gift
 // @Accept       json
 // @Produce      json
@@ -136,11 +133,8 @@ func ConfirmReceiveGift(ctx *gin.Context) {
 		return
 	}
 
-	res, err := service.ConfirmReceiveGift(ctx.Param("id"), request, ctx)
 	util.ProcessResponse(response.APIResponse{
-		Data1:    res,
-		Data2:    res,
-		ErrMsg:   err,
+		ErrMsg:   service.ConfirmReceiveGift(ctx.Param("id"), request, ctx),
 		Context:  ctx,
 		PostType: action_type.NON_POST,
 	})

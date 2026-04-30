@@ -2853,9 +2853,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created",
+                        "description": "Success",
                         "schema": {
-                            "$ref": "#/definitions/response.BuildTransactionResponse"
+                            "$ref": "#/definitions/response.MessageAPIResponse"
                         }
                     },
                     "400": {
@@ -3004,7 +3004,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Finalize and confirm a specific withdraw proposal by ID",
+                "description": "Confirm recieve a gift",
                 "consumes": [
                     "application/json"
                 ],
@@ -3014,7 +3014,7 @@ const docTemplate = `{
                 "tags": [
                     "gift"
                 ],
-                "summary": "Confirm a withdraw proposal",
+                "summary": "Confirm recieve a gift",
                 "parameters": [
                     {
                         "type": "string",

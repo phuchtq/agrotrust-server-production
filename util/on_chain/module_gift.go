@@ -22,6 +22,7 @@ type CreateGiftForCenterArguments struct {
 	Email           string
 	Message         string
 	Description     string
+	Sender          string
 }
 
 type CreateGiftForChildArguments struct {
@@ -31,6 +32,7 @@ type CreateGiftForChildArguments struct {
 type CancelGiftArguments struct {
 	GiftID       string
 	CancelReason string
+	Sender       string
 }
 
 type ConfirmReceiveGiftArguments struct {
@@ -38,6 +40,7 @@ type ConfirmReceiveGiftArguments struct {
 	Recipient   string
 	StaffID     string
 	ImageBlobID string
+	Sender      string
 }
 
 type IModuleGift interface {
@@ -98,8 +101,10 @@ func (m *moduleGift) GetModule() string {
 // ToCancelGiftArguments implements IModuleGift.
 func (m *moduleGift) ToCancelGiftArguments(args CancelGiftArguments) []interface{} {
 	return []interface{}{
+		os.Getenv(env.ADMIN_CAP_ID_1),
 		args.GiftID,
 		args.CancelReason,
+		args.Sender,
 		sui.CLOCK_OBJECT_ID,
 	}
 }
@@ -107,10 +112,12 @@ func (m *moduleGift) ToCancelGiftArguments(args CancelGiftArguments) []interface
 // ToConfirmReceiveGiftArguments implements IModuleGift.
 func (m *moduleGift) ToConfirmReceiveGiftArguments(args ConfirmReceiveGiftArguments) []interface{} {
 	return []interface{}{
+		os.Getenv(env.ADMIN_CAP_ID_1),
 		args.GiftID,
 		args.Recipient,
 		args.StaffID,
 		args.ImageBlobID,
+		args.Sender,
 		sui.CLOCK_OBJECT_ID,
 	}
 }
@@ -118,6 +125,7 @@ func (m *moduleGift) ToConfirmReceiveGiftArguments(args ConfirmReceiveGiftArgume
 // ToCreateGiftArguments implements IModuleGift.
 func (m *moduleGift) ToCreateGiftForCenterArguments(args CreateGiftForCenterArguments) []interface{} {
 	return []interface{}{
+		os.Getenv(env.ADMIN_CAP_ID_1),
 		os.Getenv(env.MANAGE_OBJECT_ID),
 		args.DonorID,
 		args.CenterID,
@@ -133,6 +141,7 @@ func (m *moduleGift) ToCreateGiftForCenterArguments(args CreateGiftForCenterArgu
 		args.Email,
 		args.Message,
 		args.Description,
+		args.Sender,
 		sui.CLOCK_OBJECT_ID,
 	}
 }
@@ -140,6 +149,7 @@ func (m *moduleGift) ToCreateGiftForCenterArguments(args CreateGiftForCenterArgu
 // ToCreateGiftForChildArguments implements IModuleGift.
 func (m *moduleGift) ToCreateGiftForChildArguments(args CreateGiftForChildArguments) []interface{} {
 	return []interface{}{
+		os.Getenv(env.ADMIN_CAP_ID_1),
 		os.Getenv(env.MANAGE_OBJECT_ID),
 		args.DonorID,
 		args.ChildID,
@@ -156,6 +166,7 @@ func (m *moduleGift) ToCreateGiftForChildArguments(args CreateGiftForChildArgume
 		args.Email,
 		args.Message,
 		args.Description,
+		args.Sender,
 		sui.CLOCK_OBJECT_ID,
 	}
 }

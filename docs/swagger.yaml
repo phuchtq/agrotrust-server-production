@@ -3271,9 +3271,9 @@ paths:
       - application/json
       responses:
         "201":
-          description: Created
+          description: Success
           schema:
-            $ref: '#/definitions/response.BuildTransactionResponse'
+            $ref: '#/definitions/response.MessageAPIResponse'
         "400":
           description: Invalid data. Please try again.
           schema:
@@ -3326,7 +3326,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Finalize and confirm a specific withdraw proposal by ID
+      description: Confirm recieve a gift
       parameters:
       - description: Gift ID
         in: path
@@ -3361,7 +3361,7 @@ paths:
             $ref: '#/definitions/response.MessageAPIResponse'
       security:
       - BearerAuth: []
-      summary: Confirm a withdraw proposal
+      summary: Confirm recieve a gift
       tags:
       - gift
   /gifts/child/{id}:
