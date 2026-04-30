@@ -210,7 +210,7 @@ func (p *profileService) GetWalletPersonalProfile(id string, req request.GetTran
 
 	nft, err := on_chain.GetOnChainObject[entities.Donor](on_chain.GetOnChainObjectRequest{
 		Client:    client,
-		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ObjectId:  manage.DonorNfts[foundIdx],
 		ErrLogger: p.errLogger,
 	}, ctx)
 	if err != nil {
