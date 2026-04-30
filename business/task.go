@@ -289,7 +289,7 @@ func (t *taskService) GetTasks(req request.GetTasksRequest, ctx context.Context)
 // GetTasksOfRegionOnUser implements business.ITaskService.
 func (t *taskService) GetTasksOfRegionOnUser(wallet string, req request.GetTasksRequest, ctx context.Context) (response.PaginationDataResponse, error) {
 	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
-	if util.IsValidSuiAddressStrict(wallet) {
+	if !util.IsValidSuiAddressStrict(wallet) {
 		return response.PaginationDataResponse{}, genericErr
 	}
 
