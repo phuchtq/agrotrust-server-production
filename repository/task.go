@@ -52,8 +52,8 @@ func (t *taskRepo) GetTask(id string, ctx context.Context) (*entities.Task, erro
 
 	var res entities.Task
 	if err := t.db.QueryRowContext(ctx, query, id).Scan(
-		&res.ID, &res.CreatedBy, &res.AssignedProfileID, &res.AssignedStaff,
-		&res.ReviewProfileStatus, &res.ReviewedBy, &res.Region, &res.Description,
+		&res.ID, &res.IsChildTask, &res.ChildTaskDetailID, &res.CreatedBy, &res.AssignedProfileID,
+		&res.AssignedStaff, &res.ReviewProfileStatus, &res.ReviewedBy, &res.Region, &res.Description,
 		&res.StartPeriod, &res.EndPeriod, &res.CreatedAt, &res.UpdatedAt); err != nil {
 
 		if err == sql.ErrNoRows {
@@ -141,8 +141,8 @@ func (t *taskRepo) GetTasks(req request.GetTasksRequest, ctx context.Context) ([
 		var x entities.Task
 
 		if err := rows.Scan(
-			&x.ID, &x.CreatedBy, &x.AssignedProfileID, &x.AssignedStaff,
-			&x.ReviewProfileStatus, &x.ReviewedBy, &x.Region, &x.Description,
+			&x.ID, &x.IsChildTask, &x.ChildTaskDetailID, &x.CreatedBy, &x.AssignedProfileID,
+			&x.AssignedStaff, &x.ReviewProfileStatus, &x.ReviewedBy, &x.Region, &x.Description,
 			&x.StartPeriod, &x.EndPeriod, &x.CreatedAt, &x.UpdatedAt); err != nil {
 
 			t.errLogger.Println(errLogMsg + err.Error())
