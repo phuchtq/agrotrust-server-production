@@ -93,11 +93,79 @@ func GenerateCampaignService() (business.ICampaignService, error) {
 	), nil
 }
 
+// // CreateCampaignWithdrawProposal implements business.ICampaignService.
+// func (c *campaignService) CreateCampaignWithdrawProposal(req request.CreateCampaignWithdrawProposalRequest, ctx context.Context) (*entities.PendingWithdrawProposal, error) {
+// 	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
+// 	if !util.IsValidSuiAddressStrict(req.CampaignID) {
+// 		return nil, genericErr
+// 	}
+
+// 	var client = c.clients[constant.SuiTestnet]
+// 	campaign, err := on_chain.GetOnChainObject[entities.OnChainCampaign](on_chain.GetOnChainObjectRequest{
+// 		Client:    client,
+// 		ObjectId:  req.CampaignID,
+// 		ErrLogger: c.errLogger,
+// 	}, ctx)
+// 	if err != nil {
+// 		return nil, err
+// 	}
+
+// 	if campaign == nil {
+// 		return nil, genericErr
+// 	}
+
+// 	var sender string = ctx.Value("address").(string)
+// 	if campaign.Creator != sender {
+// 		return nil, errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+// 	}
+
+// 	totalWithdrawAmount, _ := strconv.ParseInt(campaign.WithdrawAmount, 10, 64)
+// 	totalDonation, _ := strconv.ParseInt(campaign.TotalDonated, 10, 64)
+// 	if req.Amount > totalDonation-totalWithdrawAmount {
+// 		return nil, errors.New(noti.CURRENT_BUDGET_NOT_ENOUGH_MESSAGE)
+// 	}
+
+// 	var description string = strings.TrimSpace(req.Description)
+// 	var purpose string = string(entities.CAMPAIGN_PURPOSE)
+// 	var aiEvaluation string
+// 	if req.ProofBlobID != nil {
+// 		proofBytes, _ := c.walrusProvider.FetchBytesImage(*req.ProofBlobID)
+// 		if proofBytes != nil {
+// 			aiEvaluation = c.aiProvider.ValidateWithdrawProposal(ai.ValidateWithdrawProposal{
+// 				Purpose:         purpose,
+// 				WithdrawAmount:  req.Amount,
+// 				Description:     description,
+// 				ProofBytesImage: proofBytes,
+// 			}, ctx)
+// 		}
+// 	}
+
+// 	var curTime time.Time = time.Now()
+// 	var res = entities.PendingWithdrawProposal{
+// 		ID:             util.GenerateId(),
+// 		ProfileID:      ctx.Value("sub").(string),
+// 		Creator:        sender,
+// 		PoolID:         campaign.PoolID,
+// 		PoolName:       campaign.PoolName,
+// 		Purpose:        purpose,
+// 		Target:         req.CampaignID,
+// 		WithdrawAmount: req.Amount,
+// 		ProofBlobID:    req.ProofBlobID,
+// 		Description:    description,
+// 		Status:         request_pending_status,
+// 		AIEvaluation:   aiEvaluation,
+// 		CreatedAt:      curTime,
+// 		UpdatedAt:      curTime,
+// 	}
+
+// 	return &res, c.pendingWithdrawProposalRepo.CreatePendingWithdrawProposal(res, ctx)
+// }
+
 // CreateCampaignWithdrawProposal implements business.ICampaignService.
-func (c *campaignService) CreateCampaignWithdrawProposal(req request.CreateCampaignWithdrawProposalRequest, ctx context.Context) (*entities.PendingWithdrawProposal, error) {
+func (c *campaignService) CreateCampaignWithdrawProposal(req request.CreateCampaignWithdrawProposalRequest, ctx context.Context) error {
 	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
 	if !util.IsValidSuiAddressStrict(req.CampaignID) {
-		return nil, genericErr
+		return genericErr
 	}
 
 	var client = c.clients[constant.SuiTestnet]
@@ -107,58 +175,78 @@ func (c *campaignService) CreateCampaignWithdrawProposal(req request.CreateCampa
 		ErrLogger: c.errLogger,
 	}, ctx)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	if campaign == nil {
-		return nil, genericErr
+		return genericErr
 	}
 
 	var sender string = ctx.Value("address").(string)
 	if campaign.Creator != sender {
-		return nil, errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+		return errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
 	}
 
 	totalWithdrawAmount, _ := strconv.ParseInt(campaign.WithdrawAmount, 10, 64)
 	totalDonation, _ := strconv.ParseInt(campaign.TotalDonated, 10, 64)
 	if req.Amount > totalDonation-totalWithdrawAmount {
-		return nil, errors.New(noti.CURRENT_BUDGET_NOT_ENOUGH_MESSAGE)
+		return errors.New(noti.CURRENT_BUDGET_NOT_ENOUGH_MESSAGE)
 	}
 
-	var description string = strings.TrimSpace(req.Description)
-	var purpose string = string(entities.CAMPAIGN_PURPOSE)
-	var aiEvaluation string
-	if req.ProofBlobID != nil {
-		proofBytes, _ := c.walrusProvider.FetchBytesImage(*req.ProofBlobID)
-		if proofBytes != nil {
-			aiEvaluation = c.aiProvider.ValidateWithdrawProposal(ai.ValidateWithdrawProposal{
-				Purpose:         purpose,
-				WithdrawAmount:  req.Amount,
-				Description:     description,
-				ProofBytesImage: proofBytes,
-			}, ctx)
+	var localPoolId string
+	if campaign.PoolID != os.Getenv(env.POOL_ID) {
+		localPoolId = os.Getenv(env.SHARED_LOCAL_POOL_ID)
+	} else {
+		localPoolId = campaign.PoolID
+	}
+
+	var offchainProposalId string = util.GenerateId()
+	if err := c.withdrawRepo.CreateOffChainWithdrawProposal(entities.OffChainWithdrawProposal{
+		ID:          offchainProposalId,
+		Purpose:     string(entities.CAMPAIGN_PURPOSE),
+		Target:      req.CampaignID,
+		LocalPoolID: localPoolId,
+		CreatedAt:   time.Now(),
+	}, ctx); err != nil {
+		return err
+	}
+
+	var campaignModule = on_chain.InitializeModuleCampaign()
+	res, err := on_chain.ExecuteTransactionV2(on_chain.ExecuteTransactionRequestV2{
+		Client:   client,
+		Module:   campaignModule.GetModule(),
+		Function: campaignModule.GetFunctionCreateCampaignWithdrawProposal(),
+		Arguments: campaignModule.ToCreateCampaignWithdrawProposalArguments(on_chain.CreateCampaignWithdrawProposalArguments{
+			LocalPoolID:    localPoolId,
+			CampaignID:     req.CampaignID,
+			WithdrawAmount: req.Amount,
+			Description:    strings.TrimSpace(req.Description),
+			ProofBlobID:    req.ProofBlobID,
+			ClosedAt:       util.ToMilliseconds(util.GetRequestDuration()),
+			Creator:        sender,
+		}),
+	}, ctx)
+	if err != nil {
+		return err
+	}
+
+	var events = res.Events
+	var poolModule = on_chain.InitializeModulePool()
+	var eventType string = fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), poolModule.GetModule(), poolModule.GetWithdrawProposalEventEmittedStruct())
+	for _, event := range events {
+		if event.Type == eventType {
+			if onChainProposal, ok := event.ParsedJson["id"].(string); ok {
+				for i := 1; i <= 3; i++ {
+					if c.withdrawRepo.SetOnChainProposalIdAfterExecuteTx(offchainProposalId, onChainProposal, ctx) == nil {
+						return nil
+					}
+				}
+				break
+			}
 		}
 	}
 
-	var curTime time.Time = time.Now()
-	var res = entities.PendingWithdrawProposal{
-		ID:             util.GenerateId(),
-		ProfileID:      ctx.Value("sub").(string),
-		Creator:        sender,
-		PoolID:         campaign.PoolID,
-		PoolName:       campaign.PoolName,
-		Purpose:        purpose,
-		Target:         req.CampaignID,
-		WithdrawAmount: req.Amount,
-		ProofBlobID:    req.ProofBlobID,
-		Description:    description,
-		Status:         request_pending_status,
-		AIEvaluation:   aiEvaluation,
-		CreatedAt:      curTime,
-		UpdatedAt:      curTime,
-	}
-
-	return &res, c.pendingWithdrawProposalRepo.CreatePendingWithdrawProposal(res, ctx)
+	return errors.New(noti.INTERNALL_ERR_MSG)
 }
 
 // GetCampaign implements business.ICampaignService.

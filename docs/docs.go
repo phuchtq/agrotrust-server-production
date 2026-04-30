@@ -3756,7 +3756,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Prepares and builds a transaction for approve and upload Pending Pool Campaign on-chain",
+                "description": "Prepares and executes a transaction for approve and upload Pending Pool Campaign on-chain",
                 "consumes": [
                     "application/json"
                 ],
@@ -4024,7 +4024,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Prepares and builds a transaction for approve and upload child pending special need proposal on-chain",
+                "description": "Prepares and executes a transaction for approve and upload child pending special need proposal on-chain",
                 "consumes": [
                     "application/json"
                 ],
@@ -4046,9 +4046,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Success",
                         "schema": {
-                            "$ref": "#/definitions/response.BuildTransactionResponse"
+                            "$ref": "#/definitions/response.MessageAPIResponse"
                         }
                     },
                     "400": {
@@ -4545,7 +4545,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Create Pool Campaign Pending Withdraw Proposal and wait for admin to review it",
+                "description": "Create Pool Campaign Pending Withdraw Proposal",
                 "consumes": [
                     "application/json"
                 ],
@@ -4569,9 +4569,9 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created",
+                        "description": "Success",
                         "schema": {
-                            "$ref": "#/definitions/entities.PendingWithdrawProposal"
+                            "$ref": "#/definitions/response.MessageAPIResponse"
                         }
                     },
                     "400": {

@@ -79,7 +79,7 @@ func GetPendingCampaign(ctx *gin.Context) {
 
 // ApprovePendingCampaign godoc
 // @Summary      Approve a Pending Pool Campaign and upload to Sui Blockchain
-// @Description  Prepares and builds a transaction for approve and upload Pending Pool Campaign on-chain
+// @Description  Prepares and executes a transaction for approve and upload Pending Pool Campaign on-chain
 // @Tags         pending-pool-campaigns
 // @Accept       json
 // @Produce      json
@@ -97,12 +97,8 @@ func ApprovePendingCampaign(ctx *gin.Context) {
 		return
 	}
 
-	res, err := service.ApprovePendingCampaign(ctx.Param("id"), ctx)
-
 	util.ProcessResponse(response.APIResponse{
-		Data1:    res,
-		Data2:    res,
-		ErrMsg:   err,
+		ErrMsg:   service.ApprovePendingCampaign(ctx.Param("id"), ctx),
 		Context:  ctx,
 		PostType: action_type.NON_POST,
 	})

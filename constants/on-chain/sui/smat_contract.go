@@ -39,6 +39,7 @@ const (
 	CREATE_CHILD_MEAL_NEED_WITHDRAW_PROPOSAL_FUNCTION                string = "create_child_meal_need_withdraw_proposal"
 	CREATE_CHILD_SPEICAL_NEED_WITHDRAW_PROPOSAL_FUNCTION             string = "create_special_need_withdraw_proposal"
 	CREATE_CHILD_BOOKS_NEED_WITHDRAW_PROPOSAL_FUNCTION_V2            string = "create_child_books_need_withdraw_proposal_v2"
+	CREATE_CHILD_HEALTH_INSURANCE_NEED_WITHDRAW_PROPOSAL_FUNCTION    string = "create_child_health_insurance_need_withdraw_proposal"
 	CREATE_CHILD_HEALTH_INSURANCE_NEED_WITHDRAW_PROPOSAL_FUNCTION_V2 string = "create_child_health_insurance_need_withdraw_proposal_v2"
 	CREATE_CHILD_MEAL_NEED_WITHDRAW_PROPOSAL_FUNCTION_V2             string = "create_child_meal_need_withdraw_proposal_v2"
 	CREATE_CHILD_SPEICAL_NEED_WITHDRAW_PROPOSAL_FUNCTION_V2          string = "create_special_need_withdraw_proposal_v2"

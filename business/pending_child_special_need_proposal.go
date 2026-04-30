@@ -61,42 +61,142 @@ func GeneratePendingChildSpecialNeedProposalService() (business.IPendingChildSpe
 	), nil
 }
 
+// // ApprovePendingChildSpecialNeedProposal implements business.IPendingChildSpecialNeedProposalService.
+// func (p *pendingChildSpecialNeedProposalService) ApprovePendingChildSpecialNeedProposal(id string, ctx context.Context) (response.BuildTransactionResponse, error) {
+// 	proposal, err := p.pendingChildSpecialNeedProposalRepo.GetPendingChildSpecialNeedProposal(id, ctx)
+// 	if err != nil {
+// 		return response.BuildTransactionResponse{}, err
+// 	}
+
+// 	if proposal == nil {
+// 		return response.BuildTransactionResponse{}, errors.New(noti.GENERIC_ERROR_WARN_MSG)
+// 	}
+
+// 	if proposal.ReviewedBy != nil || proposal.ReviewStatus != request_pending_status {
+// 		return response.BuildTransactionResponse{}, errors.New(noti.REQUEST_REVIEWED_MESSAGE)
+// 	}
+
+// 	var client = p.clients[constant.SuiTestnet]
+// 	var reviewer string = ctx.Value("address").(string)
+// 	var manageObj entities.Manage
+// 	if !p.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
+// 		res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+// 			Client:    p.clients[constant.SuiTestnet],
+// 			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+// 			ErrLogger: p.errLogger,
+// 		}, ctx)
+// 		if err != nil {
+// 			return response.BuildTransactionResponse{}, err
+// 		}
+
+// 		if res != nil {
+// 			p.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
+// 			manageObj = *res
+// 		}
+// 	}
+
+// 	if !slices.Contains(manageObj.AdminIds, reviewer) {
+// 		return response.BuildTransactionResponse{}, errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+// 	}
+
+// 	var pool *entities.MainPool
+// 	var localPoolIds []string
+// 	var mainPoolId string = os.Getenv(env.POOL_ID)
+// 	if p.redisCache.Get(mainPoolId, pool, ctx) {
+// 		localPoolIds = pool.LocalPools
+// 	} else {
+// 		pool, err = on_chain.GetOnChainObject[entities.MainPool](on_chain.GetOnChainObjectRequest{
+// 			Client:    client,
+// 			ObjectId:  mainPoolId,
+// 			ErrLogger: p.errLogger,
+// 		}, ctx)
+// 		if err != nil {
+// 			return response.BuildTransactionResponse{}, err
+// 		}
+
+// 		p.redisCache.Set(mainPoolId, pool, time.Minute*2, ctx)
+// 		localPoolIds = pool.LocalPools
+// 	}
+
+// 	localPools, err := on_chain.GetOnChainObjects[entities.LocalPool](on_chain.GetOnChainObjectsRequest{
+// 		Client:    client,
+// 		ObjectIds: localPoolIds,
+// 		ErrLogger: p.errLogger,
+// 	}, ctx)
+// 	if err != nil {
+// 		return response.BuildTransactionResponse{}, err
+// 	}
+
+// 	var localPoolId string
+// 	for _, localPool := range localPools {
+// 		if localPool.Region == proposal.Region {
+// 			localPoolId = localPool.ID.ID
+// 			break
+// 		}
+// 	}
+
+// 	var childModule = on_chain.InitializeModuleChild()
+// 	txBytes, err := on_chain.BuildTransaction(on_chain.BuildTransactionRequest{
+// 		Client:    client,
+// 		Sender:    reviewer,
+// 		Module:    childModule.GetModule(),
+// 		Function:  childModule.GetFunctionCreateChildSpecialNeedProposalV2(),
+// 		ErrLogger: p.errLogger,
+// 		Arguments: childModule.ToCreateChildSpecialNeedProposalArgumentsV2(on_chain.CreateChildSpecialNeedProposalArgumentsV2{
+// 			ChildID:     proposal.ChildID,
+// 			LocalPool:   localPoolId,
+// 			Target:      proposal.Target,
+// 			Description: proposal.Description,
+// 			ProofBlobID: proposal.ProofBlobID,
+// 			ClosedAt:    util.ToMilliseconds(util.GetRequestDuration()),
+// 			Creator:     proposal.ActorAddress,
+// 		}),
+// 	}, ctx)
+// 	if err != nil {
+// 		return response.BuildTransactionResponse{}, err
+// 	}
+
+// 	proposal.ReviewedBy = &reviewer
+// 	proposal.ReviewStatus = request_approved_status
+
+// 	return response.BuildTransactionResponse{
+// 		TxBytes: txBytes,
+// 	}, p.pendingChildSpecialNeedProposalRepo.UpdatePendingChildSpecialNeedProposal(*proposal, ctx)
+// }
+
 // ApprovePendingChildSpecialNeedProposal implements business.IPendingChildSpecialNeedProposalService.
-func (p *pendingChildSpecialNeedProposalService) ApprovePendingChildSpecialNeedProposal(id string, ctx context.Context) (response.BuildTransactionResponse, error) {
+func (p *pendingChildSpecialNeedProposalService) ApprovePendingChildSpecialNeedProposal(id string, ctx context.Context) error {
 	proposal, err := p.pendingChildSpecialNeedProposalRepo.GetPendingChildSpecialNeedProposal(id, ctx)
 	if err != nil {
-		return response.BuildTransactionResponse{}, err
+		return err
 	}
 
 	if proposal == nil {
-		return response.BuildTransactionResponse{}, errors.New(noti.GENERIC_ERROR_WARN_MSG)
+		return errors.New(noti.GENERIC_ERROR_WARN_MSG)
 	}
 
 	if proposal.ReviewedBy != nil || proposal.ReviewStatus != request_pending_status {
-		return response.BuildTransactionResponse{}, errors.New(noti.REQUEST_REVIEWED_MESSAGE)
+		return errors.New(noti.REQUEST_REVIEWED_MESSAGE)
 	}
 
 	var client = p.clients[constant.SuiTestnet]
-	var reviewer string = ctx.Value("address").(string)
-	var manageObj entities.Manage
-	if !p.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
-		res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-			Client:    p.clients[constant.SuiTestnet],
-			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-			ErrLogger: p.errLogger,
-		}, ctx)
-		if err != nil {
-			return response.BuildTransactionResponse{}, err
-		}
-
-		if res != nil {
-			p.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
-			manageObj = *res
-		}
+	manage, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: p.errLogger,
+	}, ctx)
+	if err != nil {
+		return err
 	}
 
-	if !slices.Contains(manageObj.AdminIds, reviewer) {
-		return response.BuildTransactionResponse{}, errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
+	if manage == nil {
+		return internalErr
+	}
+
+	var reviewer string = ctx.Value("address").(string)
+	if !slices.Contains(manage.AdminIds, reviewer) {
+		return errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
 	}
 
 	var pool *entities.MainPool
@@ -111,7 +211,7 @@ func (p *pendingChildSpecialNeedProposalService) ApprovePendingChildSpecialNeedP
 			ErrLogger: p.errLogger,
 		}, ctx)
 		if err != nil {
-			return response.BuildTransactionResponse{}, err
+			return err
 		}
 
 		p.redisCache.Set(mainPoolId, pool, time.Minute*2, ctx)
@@ -124,7 +224,7 @@ func (p *pendingChildSpecialNeedProposalService) ApprovePendingChildSpecialNeedP
 		ErrLogger: p.errLogger,
 	}, ctx)
 	if err != nil {
-		return response.BuildTransactionResponse{}, err
+		return err
 	}
 
 	var localPoolId string
@@ -135,10 +235,16 @@ func (p *pendingChildSpecialNeedProposalService) ApprovePendingChildSpecialNeedP
 		}
 	}
 
+	proposal.ReviewedBy = &reviewer
+	proposal.ReviewStatus = request_approved_status
+	proposal.UpdatedAt = time.Now()
+	if err := p.pendingChildSpecialNeedProposalRepo.UpdatePendingChildSpecialNeedProposal(*proposal, ctx); err != nil {
+		return err
+	}
+
 	var childModule = on_chain.InitializeModuleChild()
-	txBytes, err := on_chain.BuildTransaction(on_chain.BuildTransactionRequest{
+	var req = on_chain.ExecuteTransactionRequestV2{
 		Client:    client,
-		Sender:    reviewer,
 		Module:    childModule.GetModule(),
 		Function:  childModule.GetFunctionCreateChildSpecialNeedProposalV2(),
 		ErrLogger: p.errLogger,
@@ -150,18 +256,17 @@ func (p *pendingChildSpecialNeedProposalService) ApprovePendingChildSpecialNeedP
 			ProofBlobID: proposal.ProofBlobID,
 			ClosedAt:    util.ToMilliseconds(util.GetRequestDuration()),
 			Creator:     proposal.ActorAddress,
+			Sender:      reviewer,
 		}),
-	}, ctx)
-	if err != nil {
-		return response.BuildTransactionResponse{}, err
 	}
 
-	proposal.ReviewedBy = &reviewer
-	proposal.ReviewStatus = request_approved_status
+	for i := 1; i <= 3; i++ {
+		if _, err := on_chain.ExecuteTransactionV2(req, ctx); err == nil {
+			return nil
+		}
+	}
 
-	return response.BuildTransactionResponse{
-		TxBytes: txBytes,
-	}, p.pendingChildSpecialNeedProposalRepo.UpdatePendingChildSpecialNeedProposal(*proposal, ctx)
+	return internalErr
 }
 
 // GetPendingChildSpecialNeedProposal implements business.IPendingChildSpecialNeedProposalService.

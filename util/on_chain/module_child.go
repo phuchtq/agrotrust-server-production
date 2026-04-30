@@ -199,6 +199,7 @@ type CreateChildSpecialNeedProposalArgumentsV2 struct {
 	ProofBlobID *string
 	ClosedAt    int64
 	Creator     string
+	Sender      string
 }
 
 type CreateChildSpecialNeedWithdrawProposalArguments struct {
@@ -302,6 +303,7 @@ type IModuleChild interface {
 	GetFunctionCreateChildMealNeedWithdrawProposalV2() string
 	GetFunctionCreateChildSpecialNeedWithdrawProposal() string
 	GetFunctionCreateChildSpecialNeedWithdrawProposalV2() string
+	GetFunctionCreateChildHealthInsuranceNeedWithdrawProposal() string
 	GetFunctionCreateChildHealthInsuranceNeedWithdrawProposalV2() string
 	GetFunctionCreateChildSpecialNeedProposal() string
 	GetFunctionCreateChildSpecialNeedProposalV2() string
@@ -405,6 +407,7 @@ func (m *moduleChild) ToCreateChildSpecialNeedProposalArgumentsV2(args CreateChi
 	}
 
 	return []interface{}{
+		os.Getenv(env.ADMIN_CAP_ID_1),
 		os.Getenv(env.MANAGE_OBJECT_ID),
 		args.ChildID,
 		args.LocalPool,
@@ -413,6 +416,7 @@ func (m *moduleChild) ToCreateChildSpecialNeedProposalArgumentsV2(args CreateChi
 		proofBlobId,
 		fmt.Sprintf("%d", args.ClosedAt),
 		args.Creator,
+		args.Sender,
 		sui.CLOCK_OBJECT_ID,
 	}
 }
@@ -608,6 +612,11 @@ func (m *moduleChild) GetFunctionCreateChildBooksNeedWithdrawProposalV2() string
 // GetFunctionCreateChildHealthInsuranceNeedWithdrawProposalV2 implements IModuleChild.
 func (m *moduleChild) GetFunctionCreateChildHealthInsuranceNeedWithdrawProposalV2() string {
 	return sui.CREATE_CHILD_HEALTH_INSURANCE_NEED_WITHDRAW_PROPOSAL_FUNCTION_V2
+}
+
+// GetFunctionCreateChildHealthInsuranceNeedWithdrawProposal implements IModuleChild.
+func (m *moduleChild) GetFunctionCreateChildHealthInsuranceNeedWithdrawProposal() string {
+	return sui.CREATE_CHILD_HEALTH_INSURANCE_NEED_WITHDRAW_PROPOSAL_FUNCTION
 }
 
 // GetFunctionCreateChildMealNeedWithdrawProposalV2 implements IModuleChild.

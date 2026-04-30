@@ -79,13 +79,13 @@ func GetPendingChildSpecialNeedProposal(ctx *gin.Context) {
 
 // ApprovePendingChildSpecialNeedProposal godoc
 // @Summary      Approve a Child Pending Special Need Proposal and upload to Sui Blockchain
-// @Description  Prepares and builds a transaction for approve and upload child pending special need proposal on-chain
+// @Description  Prepares and executes a transaction for approve and upload child pending special need proposal on-chain
 // @Tags         pending-special-needs
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
 // @Param        id   path      string  true  "Pending Child Special Need Proposal ID"
-// @Success      200      {object}  response.BuildTransactionResponse
+// @Success      200      {object}  response.MessageAPIResponse "Success"
 // @Failure      400      {object}  response.MessageAPIResponse "Invalid data. Please try again."
 // @Failure      401      {object}  response.MessageAPIResponse "You have no rights to access this action."
 // @Failure      500      {object}  response.MessageAPIResponse "There is something wrong in the system during the process. Please try again later."
@@ -97,12 +97,8 @@ func ApprovePendingChildSpecialNeedProposal(ctx *gin.Context) {
 		return
 	}
 
-	res, err := service.ApprovePendingChildSpecialNeedProposal(ctx.Param("id"), ctx)
-
 	util.ProcessResponse(response.APIResponse{
-		Data1:    res,
-		Data2:    res,
-		ErrMsg:   err,
+		ErrMsg:   service.ApprovePendingChildSpecialNeedProposal(ctx.Param("id"), ctx),
 		Context:  ctx,
 		PostType: action_type.NON_POST,
 	})

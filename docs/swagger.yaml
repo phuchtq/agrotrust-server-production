@@ -3864,7 +3864,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Prepares and builds a transaction for approve and upload Pending
+      description: Prepares and executes a transaction for approve and upload Pending
         Pool Campaign on-chain
       parameters:
       - description: Pending Pool Campaign ID
@@ -4039,7 +4039,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Prepares and builds a transaction for approve and upload child
+      description: Prepares and executes a transaction for approve and upload child
         pending special need proposal on-chain
       parameters:
       - description: Pending Child Special Need Proposal ID
@@ -4051,9 +4051,9 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Success
           schema:
-            $ref: '#/definitions/response.BuildTransactionResponse'
+            $ref: '#/definitions/response.MessageAPIResponse'
         "400":
           description: Invalid data. Please try again.
           schema:
@@ -4456,8 +4456,7 @@ paths:
     post:
       consumes:
       - application/json
-      description: Create Pool Campaign Pending Withdraw Proposal and wait for admin
-        to review it
+      description: Create Pool Campaign Pending Withdraw Proposal
       parameters:
       - description: Create Pool Campaign Pending Withdraw Proposal Detail
         in: body
@@ -4469,9 +4468,9 @@ paths:
       - application/json
       responses:
         "201":
-          description: Created
+          description: Success
           schema:
-            $ref: '#/definitions/entities.PendingWithdrawProposal'
+            $ref: '#/definitions/response.MessageAPIResponse'
         "400":
           description: Invalid data. Please try again.
           schema:

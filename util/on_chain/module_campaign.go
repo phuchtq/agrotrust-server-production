@@ -12,6 +12,7 @@ type CreateCampaignForMainPoolArguments struct {
 	Target      int64
 	Description string
 	ProofBlobID *string
+	Sender      string
 }
 
 type CreateCampaignForRegionPoolArguments struct {
@@ -188,12 +189,14 @@ func (m *moduleCampaign) ToCreateCampaignForMainPoolArguments(args CreateCampaig
 	}
 
 	return []interface{}{
+		os.Getenv(env.ADMIN_CAP_ID_1),
 		os.Getenv(env.MANAGE_OBJECT_ID),
 		os.Getenv(env.POOL_ID),
 		args.Creator,
 		fmt.Sprintf("%d", args.Target),
 		args.Description,
 		proofBlobId,
+		args.Sender,
 		sui.CLOCK_OBJECT_ID,
 	}
 }
