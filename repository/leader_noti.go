@@ -110,7 +110,22 @@ func (l *leaderNotiRepo) GetCurrentLeaderNotis(req request.GetNotisRequest, lead
 
 // GetNoti implements repository.ILeaderNotiRepository.
 func (l *leaderNotiRepo) GetNoti(id string, ctx context.Context) (*entities.LeaderNoti, error) {
-	panic("unimplemented")
+	var query string = "SELECT * FROM " + leader_noti_table + " WHERE need_id = $1"
+	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.LEADER_NOTI_REPOSITORY) + "GetNoti - "
+
+	var res entities.LeaderNoti
+	if err := l.db.QueryRowContext(ctx, query, id).Scan(res.ID, res.NeedID, res.NeedType, res.ChildID, res.Region,
+		res.AssignedLeaders, res.ExpectedWithdrawPeriods, res.Contents, res.CreatedAt, res.UpdatedAt); err != nil {
+
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+
+		l.errLogger.Println(errLogMsg + err.Error())
+		return nil, errors.New(noti.INTERNALL_ERR_MSG)
+	}
+
+	return &res, nil
 }
 
 // GetNotiByMealNeed implements repository.ILeaderNotiRepository.
