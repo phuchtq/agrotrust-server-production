@@ -102,6 +102,8 @@ const (
 	CREATE_CAMPAIGN_WITHDRAW_PROPOSAL_FUNCTION                       string = "create_campaign_withdraw_proposal"
 	WITHDRAW_FROM_CAMPAIGN_FUNCTION                                  string = "withdraw_from_campaign"
 	WITHDRAW_FROM_CAMPAIGN_FUNCTION_V2                               string = "withdraw_from_campaign_v2"
+	REFUND_POOL_VOTE_POWER_FUNCTION                                  string = "refund_pool_vote_power_to_approvers"
+	ADMIN_REFUND_POOL_VOTE_POWER_FUNCTION                            string = "admin_refund_pool_vote_power_to_approvers"
 	REFUND_POOL_CAMPAIGN_VOTE_POWER_FUNCTION                         string = "refund_pool_campaign_vote_power_to_approvers"
 	ADMIN_REFUND_POOL_CAMPAIGN_VOTE_POWER_FUNCTION                   string = "admin_refund_pool_campaign_vote_power_to_approvers"
 	REFUND_CHILD_SPECIAL_NEED_CAMPAIGN_VOTE_POWER_FUNCTION           string = "refund_child_special_need_campaign_vote_power_to_approvers"

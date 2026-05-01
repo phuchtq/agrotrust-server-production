@@ -20,6 +20,8 @@ type IModuleRefund interface {
 	GetModule() string
 	ToRefundVotePowerArguments(args RefundVotePowerArguments) []interface{}
 	ToAdminRefundVotePowerArguments(args AdminRefundVotePowerArguments) []interface{}
+	GetFunctionRefundPoolVotePower() string
+	GetFunctionAdminRefundPoolVotePower() string
 	GetFunctionRefundPoolCampaignVotePower() string
 	GetFunctionAdminRefundPoolCampaignVotePower() string
 	GetFunctionRefundChildSpecialNeedCampaignVotePower() string
@@ -63,9 +65,19 @@ func (m *moduleRefund) GetFunctionAdminRefundChildSpecialNeedCampaignVotePower()
 	return sui.ADMIN_REFUND_CHILD_SPECIAL_NEED_CAMPAIGN_VOTE_POWER_FUNCTION
 }
 
+// GetFunctionRefundPoolVotePower implements IModuleRefund.
+func (m *moduleRefund) GetFunctionRefundPoolVotePower() string {
+	return sui.ADMIN_REFUND_POOL_VOTE_POWER_FUNCTION
+}
+
 // GetFunctionAdminRefundPoolCampaignVotePower implements IModuleRefund.
 func (m *moduleRefund) GetFunctionAdminRefundPoolCampaignVotePower() string {
 	return sui.ADMIN_REFUND_POOL_CAMPAIGN_VOTE_POWER_FUNCTION
+}
+
+// GetFunctionAdminRefundPoolVotePower implements IModuleRefund.
+func (m *moduleRefund) GetFunctionAdminRefundPoolVotePower() string {
+	return sui.REFUND_POOL_VOTE_POWER_FUNCTION
 }
 
 // GetFunctionRefundChildBooksNeedVotePower implements IModuleRefund.

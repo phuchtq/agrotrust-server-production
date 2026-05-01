@@ -83,10 +83,10 @@ func (b *backgroundService) ProcessRefundVotePower(ctx context.Context) {
 	}
 
 	var curTime time.Time = time.Now()
-	// var modules []string
-	// var functions []string
-	// var args [][]interface{}
-	// var module = on_chain.InitializeModuleRefund()
+	var modules []string
+	var functions []string
+	var args [][]interface{}
+	var module = on_chain.InitializeModuleRefund()
 	for _, proposal := range pendingProposals {
 		miliSecsClosedAt, _ := strconv.ParseInt(proposal.ClosedAt, 10, 64)
 		if util.MilliSecToTime(miliSecsClosedAt).After(curTime) {
@@ -101,9 +101,33 @@ func (b *backgroundService) ProcessRefundVotePower(ctx context.Context) {
 
 		switch proposal.Purpose {
 		case string(entities.BOOKS_NEED_WITHDRAW_PROPOSAL_PURPOSE):
-
+			functions = append(functions, module.GetFunctionRefundChildBooksNeedVotePower())
+		case string(entities.MEAL_NEED_WITHDRAW_PROPOSAL_PURPOSE):
+			functions = append(functions, module.GetFunctionRefundChildMealNeedVotePower())
+		case string(entities.HEALTH_INSURANCE_NEED_WITHDRAW_PROPOSAL_PURPOSE):
+			functions = append(functions, module.GetFunctionRefundChildHealthInsuranceNeedVotePower())
+		case string(entities.SPECIAL_NEED_CAMPAIGN_WITHDRAW_PROPOSAL_PURPOSE):
+			functions = append(functions, module.GetFunctionRefundChildSpecialNeedCampaignVotePower())
+		case string(entities.POOL_CAMPAIGN_WITHDRAW_PROPOSAL_PURPOSE):
+			functions = append(functions, module.GetFunctionRefundPoolCampaignVotePower())
+		case string(entities.POOL_WITHDRAW_PROPOSAL_PURPOSE):
+			functions = append(functions, module.GetFunctionRefundPoolVotePower())
 		}
+
+		modules = append(modules, module.GetModule())
+		args = append(args, module.ToRefundVotePowerArguments(on_chain.RefundVotePowerArguments{
+			TargetID:   proposal.TargetID,
+			ProposalID: proposal.ID.ID,
+		}))
 	}
+
+	on_chain.BuildMultiBackgroundTransactions(on_chain.BuildMultiBackgroundTransactionsRequest{
+		Client:    client,
+		Modules:   modules,
+		Functions: functions,
+		Arguments: args,
+		ErrLogger: b.errLogger,
+	}, ctx)
 }
 
 // ProcessBackgroundCenterRequests implements business.IBackgroundService.
