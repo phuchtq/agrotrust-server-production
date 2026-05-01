@@ -99,24 +99,35 @@ func (b *backgroundService) ProcessRefundVotePower(ctx context.Context) {
 			continue
 		}
 
+		var targetId string
 		switch proposal.Purpose {
 		case string(entities.BOOKS_NEED_WITHDRAW_PROPOSAL_PURPOSE):
 			functions = append(functions, module.GetFunctionRefundChildBooksNeedVotePower())
+			targetId = proposal.TargetID
 		case string(entities.MEAL_NEED_WITHDRAW_PROPOSAL_PURPOSE):
 			functions = append(functions, module.GetFunctionRefundChildMealNeedVotePower())
+			targetId = proposal.TargetID
 		case string(entities.HEALTH_INSURANCE_NEED_WITHDRAW_PROPOSAL_PURPOSE):
 			functions = append(functions, module.GetFunctionRefundChildHealthInsuranceNeedVotePower())
+			targetId = proposal.TargetID
 		case string(entities.SPECIAL_NEED_CAMPAIGN_WITHDRAW_PROPOSAL_PURPOSE):
 			functions = append(functions, module.GetFunctionRefundChildSpecialNeedCampaignVotePower())
+			targetId = proposal.TargetID
 		case string(entities.POOL_CAMPAIGN_WITHDRAW_PROPOSAL_PURPOSE):
 			functions = append(functions, module.GetFunctionRefundPoolCampaignVotePower())
+			targetId = proposal.TargetID
 		case string(entities.POOL_WITHDRAW_PROPOSAL_PURPOSE):
 			functions = append(functions, module.GetFunctionRefundPoolVotePower())
+			if proposal.IsFromLocalPool {
+				targetId = proposal.TargetID
+			} else {
+				targetId = os.Getenv(env.SHARED_LOCAL_POOL_ID)
+			}
 		}
 
 		modules = append(modules, module.GetModule())
 		args = append(args, module.ToRefundVotePowerArguments(on_chain.RefundVotePowerArguments{
-			TargetID:   proposal.TargetID,
+			TargetID:   targetId,
 			ProposalID: proposal.ID.ID,
 		}))
 	}
