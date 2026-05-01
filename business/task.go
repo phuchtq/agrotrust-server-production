@@ -86,31 +86,65 @@ func (t *taskService) ClaimTask(id string, ctx context.Context) error {
 		return errors.New(noti.TASK_CLAIMED_MESSAGE)
 	}
 
-	var sender string = ctx.Value("address").(string)
-	var staffModule = on_chain.InitializeModuleStaff()
-	staffNfts, err := on_chain.GetOnChainOwnedObjects[entities.StaffNft](on_chain.GetOnChainOwnedObjectsRequest{
-		Client:       t.clients[constant.SuiTestnet],
-		OwnerAddress: sender,
-		StructType:   fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), staffModule.GetModule, staffModule.GetStaffNftObjectStruct()),
-		ErrLogger:    t.errLogger,
+	var client = t.clients[constant.SuiTestnet]
+	manage, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: t.errLogger,
 	}, ctx)
 	if err != nil {
 		return err
 	}
 
-	if staffNfts == nil || len(staffNfts) == 0 {
-		return errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
+	if manage == nil {
+		return internalErr
 	}
 
-	var isStaffOfRegion bool = false
-	for _, nft := range staffNfts {
-		if nft.Region == task.Region {
-			isStaffOfRegion = true
-			break
+	var searchLen int
+	if len(manage.VolunteerIds) > len(manage.LocalLeaderIds) {
+		searchLen = len(manage.VolunteerIds)
+	} else {
+		searchLen = len(manage.LocalLeaderIds)
+	}
+
+	var sender string = ctx.Value("address").(string)
+	var staffId string
+	for i := 0; i < searchLen; i++ {
+		if i < len(manage.VolunteerIds) {
+			if sender == manage.VolunteerIds[i] {
+				staffId = manage.VolunteerNfts[i]
+				break
+			}
+		}
+
+		if i < len(manage.LocalLeaderIds) {
+			if sender == manage.LocalLeaderIds[i] {
+				staffId = manage.LocalLeaderNfts[i]
+				break
+			}
 		}
 	}
 
-	if !isStaffOfRegion {
+	var genericRightErr error = errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+	if staffId == "" {
+		return genericRightErr
+	}
+
+	nft, err := on_chain.GetOnChainObject[entities.StaffNft](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  staffId,
+		ErrLogger: t.errLogger,
+	}, ctx)
+	if err != nil {
+		return err
+	}
+
+	if nft == nil {
+		return internalErr
+	}
+
+	if nft.Region != task.Region {
 		return errors.New(noti.NOT_STAFF_OF_REGION_MESSAGE)
 	}
 
@@ -132,27 +166,24 @@ func (t *taskService) ClaimTask(id string, ctx context.Context) error {
 // CreateTask implements business.ITaskService.
 func (t *taskService) CreateTask(req request.CreateTaskRequest, ctx context.Context) (*entities.Task, error) {
 	var client = t.clients[constant.SuiTestnet]
-	var manageObj entities.Manage
-	if !t.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
-		res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-			Client:    client,
-			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-			ErrLogger: t.errLogger,
-		}, ctx)
-		if err != nil {
-			return nil, err
-		}
+	manage, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: t.errLogger,
+	}, ctx)
+	if err != nil {
+		return nil, err
+	}
 
-		if res != nil {
-			t.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
-			manageObj = *res
-		}
+	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
+	if manage == nil {
+		return nil, internalErr
 	}
 
 	var isRegionEstablished bool = false
-	for i, localRegion := range manageObj.LocalRegions {
+	for i, localRegion := range manage.LocalRegions {
 		if localRegion == req.Region {
-			isRegionEstablished = manageObj.CenterConfirmStatuses[i]
+			isRegionEstablished = manage.CenterConfirmStatuses[i]
 			break
 		}
 	}
@@ -162,31 +193,34 @@ func (t *taskService) CreateTask(req request.CreateTaskRequest, ctx context.Cont
 	}
 
 	var sender string = ctx.Value("address").(string)
-	if !slices.Contains(manageObj.AdminIds, sender) {
-		var staffModule = on_chain.InitializeModuleStaff()
-		staffNfts, err := on_chain.GetOnChainOwnedObjects[entities.StaffNft](on_chain.GetOnChainOwnedObjectsRequest{
-			Client:       client,
-			OwnerAddress: sender,
-			StructType:   fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), staffModule.GetModule, staffModule.GetStaffNftObjectStruct()),
-			ErrLogger:    t.errLogger,
+	if !slices.Contains(manage.AdminIds, sender) {
+		var foundIdx int = -1
+		for i, leader := range manage.LocalLeaderIds {
+			if leader == sender {
+				foundIdx = i
+				break
+			}
+		}
+
+		var genericRightErr error = errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+		if foundIdx == -1 {
+			return nil, genericRightErr
+		}
+
+		nft, err := on_chain.GetOnChainObject[entities.StaffNft](on_chain.GetOnChainObjectRequest{
+			Client:    client,
+			ObjectId:  manage.LocalLeaderNfts[foundIdx],
+			ErrLogger: t.errLogger,
 		}, ctx)
 		if err != nil {
 			return nil, err
 		}
 
-		if staffNfts == nil || len(staffNfts) == 0 {
-			return nil, errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+		if nft == nil {
+			return nil, err
 		}
 
-		var isStaffOfRegion bool = false
-		for _, nft := range staffNfts {
-			if nft.Region == req.Region {
-				isStaffOfRegion = true
-				break
-			}
-		}
-
-		if !isStaffOfRegion {
+		if nft.Region != req.Region {
 			return nil, errors.New(noti.NOT_STAFF_OF_REGION_MESSAGE)
 		}
 	}

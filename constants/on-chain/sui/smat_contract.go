@@ -2,16 +2,17 @@ package sui
 
 // Modules
 const (
-	MODULE_MANAGE   string = "manage"
-	MODULE_RECORD   string = "record"
-	MODULE_CHILD    string = "child"
-	MODULE_STAFF    string = "staff"
-	MODULE_DONOR    string = "donor"
-	MODULE_POOL     string = "pool"
-	MODULE_GIFT     string = "gift"
-	MODULE_NEED     string = "need"
-	MODULE_TASK     string = "task"
-	MODULE_CAMPAIGN string = "campaign"
+	MODULE_MANAGE            string = "manage"
+	MODULE_RECORD            string = "record"
+	MODULE_CHILD             string = "child"
+	MODULE_STAFF             string = "staff"
+	MODULE_DONOR             string = "donor"
+	MODULE_POOL              string = "pool"
+	MODULE_GIFT              string = "gift"
+	MODULE_NEED              string = "need"
+	MODULE_TASK              string = "task"
+	MODULE_CAMPAIGN          string = "campaign"
+	MODULE_BACKGROUND_REFUND string = "background_refund"
 )
 
 // Functions
@@ -101,6 +102,16 @@ const (
 	CREATE_CAMPAIGN_WITHDRAW_PROPOSAL_FUNCTION                       string = "create_campaign_withdraw_proposal"
 	WITHDRAW_FROM_CAMPAIGN_FUNCTION                                  string = "withdraw_from_campaign"
 	WITHDRAW_FROM_CAMPAIGN_FUNCTION_V2                               string = "withdraw_from_campaign_v2"
+	REFUND_POOL_CAMPAIGN_VOTE_POWER_FUNCTION                         string = "refund_pool_campaign_vote_power_to_approvers"
+	ADMIN_REFUND_POOL_CAMPAIGN_VOTE_POWER_FUNCTION                   string = "admin_refund_pool_campaign_vote_power_to_approvers"
+	REFUND_CHILD_SPECIAL_NEED_CAMPAIGN_VOTE_POWER_FUNCTION           string = "refund_child_special_need_campaign_vote_power_to_approvers"
+	ADMIN_REFUND_CHILD_SPECIAL_NEED_CAMPAIGN_VOTE_POWER_FUNCTION     string = "admin_refund_child_special_need_campaign_vote_power_to_approvers"
+	REFUND_CHILD_MEAL_NEED_VOTE_POWER_FUNCTION                       string = "refund_child_meal_meed_vote_power_to_approvers"
+	ADMIN_REFUND_CHILD_MEAL_NEED_VOTE_POWER_FUNCTION                 string = "admin_refund_child_meal_meed_vote_power_to_approvers"
+	REFUND_CHILD_BOOKS_NEED_VOTE_POWER_FUNCTION                      string = "refund_child_books_need_vote_power_to_approvers"
+	ADMIN_REFUND_CHILD_BOOKS_NEED_VOTE_POWER_FUNCTION                string = "admin_refund_child_books_need_vote_power_to_approvers"
+	REFUND_CHILD_HEALTH_INSURANCE_NEED_VOTE_POWER_FUNCTION           string = "refund_child_health_insurance_need_vote_power_to_approvers"
+	ADMIN_REFUND_CHILD_HEALTH_INSURANCE_NEED_VOTE_POWER_FUNCTION     string = "admin_refund_child_health_insurance_need_vote_power_to_approvers"
 )
 
 // Structs

@@ -3,6 +3,8 @@ package business
 import (
 	"context"
 	"log"
+	"os"
+	"raise-child/constants/env"
 	"raise-child/constants/shared"
 	"raise-child/interfaces/business"
 	i_repository "raise-child/interfaces/repository"
@@ -11,6 +13,8 @@ import (
 	"raise-child/util"
 	"raise-child/util/db"
 	on_chain "raise-child/util/on_chain"
+	"strconv"
+	"time"
 
 	"github.com/block-vision/sui-go-sdk/constant"
 	"github.com/block-vision/sui-go-sdk/sui"
@@ -55,6 +59,51 @@ func GenerateBackgroundService() (business.IBackgroundService, error) {
 		_networkAliases,
 		errLogger,
 	), nil
+}
+
+// ProcessRefundVotePower implements business.IBackgroundService.
+func (b *backgroundService) ProcessRefundVotePower(ctx context.Context) {
+	var client = b.clients[constant.SuiTestnet]
+	pool, _ := on_chain.GetOnChainObject[entities.MainPool](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  os.Getenv(env.POOL_ID),
+		ErrLogger: b.errLogger,
+	}, ctx)
+	if pool == nil {
+		return
+	}
+
+	pendingProposals, _ := on_chain.GetOnChainObjects[entities.WithdrawProposal](on_chain.GetOnChainObjectsRequest{
+		Client:    client,
+		ObjectIds: pool.PendingWithdrawProposals,
+		ErrLogger: b.errLogger,
+	}, ctx)
+	if pendingProposals == nil || len(pendingProposals) == 0 {
+		return
+	}
+
+	var curTime time.Time = time.Now()
+	// var modules []string
+	// var functions []string
+	// var args [][]interface{}
+	// var module = on_chain.InitializeModuleRefund()
+	for _, proposal := range pendingProposals {
+		miliSecsClosedAt, _ := strconv.ParseInt(proposal.ClosedAt, 10, 64)
+		if util.MilliSecToTime(miliSecsClosedAt).After(curTime) {
+			continue
+		}
+
+		withdrawAmount, _ := strconv.ParseInt(proposal.WithdrawAmount, 10, 64)
+		totalApproveWeight, _ := strconv.ParseInt(proposal.TotalApproveWeight, 10, 64)
+		if totalApproveWeight >= withdrawAmount {
+			continue
+		}
+
+		switch proposal.Purpose {
+		case string(entities.BOOKS_NEED_WITHDRAW_PROPOSAL_PURPOSE):
+
+		}
+	}
 }
 
 // ProcessBackgroundCenterRequests implements business.IBackgroundService.
