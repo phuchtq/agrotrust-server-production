@@ -530,7 +530,7 @@ func (t *taskProofService) SubmitTaskProof(id string, req request.SubmitTaskProo
 	if task.AssignedStaff == nil {
 		return errors.New(noti.TASK_NOT_CLAIMED_MESSAGE)
 	} else {
-		if task.AssignedProfileID != &sender {
+		if task.AssignedStaff != &sender {
 			return errors.New(noti.TASK_NOT_OF_STAFF_MESSAGE)
 		}
 	}
