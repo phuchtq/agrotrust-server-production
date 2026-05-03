@@ -110,7 +110,7 @@ func (l *leaderNotiRepo) GetCurrentLeaderNotis(req request.GetNotisRequest, lead
 
 // GetNoti implements repository.ILeaderNotiRepository.
 func (l *leaderNotiRepo) GetNoti(id string, ctx context.Context) (*entities.LeaderNoti, error) {
-	var query string = "SELECT * FROM " + leader_noti_table + " WHERE need_id = $1"
+	var query string = "SELECT * FROM " + leader_noti_table + " WHERE id = $1"
 	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.LEADER_NOTI_REPOSITORY) + "GetNoti - "
 
 	var res entities.LeaderNoti
@@ -150,7 +150,22 @@ func (l *leaderNotiRepo) GetNotiByMealNeed(id string, ctx context.Context) (*ent
 
 // GetNotiByNeed implements repository.ILeaderNotiRepository.
 func (l *leaderNotiRepo) GetNotiByNeed(id string, ctx context.Context) (*entities.LeaderNoti, error) {
-	panic("unimplemented")
+	var query string = "SELECT * FROM " + leader_noti_table + " WHERE need_id = $1"
+	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.LEADER_NOTI_REPOSITORY) + "GetNotiByNeed - "
+
+	var res entities.LeaderNoti
+	if err := l.db.QueryRowContext(ctx, query, id).Scan(res.ID, res.NeedID, res.NeedType, res.ChildID, res.Region,
+		res.AssignedLeaders, res.ExpectedWithdrawPeriods, res.Contents, res.CreatedAt, res.UpdatedAt); err != nil {
+
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+
+		l.errLogger.Println(errLogMsg + err.Error())
+		return nil, errors.New(noti.INTERNALL_ERR_MSG)
+	}
+
+	return &res, nil
 }
 
 // UpdateNoti implements repository.ILeaderNotiRepository.

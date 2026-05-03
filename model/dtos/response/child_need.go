@@ -3,19 +3,20 @@ package response
 import "time"
 
 type MealNeedResponse struct {
-	ID                   string              `json:"id"`
-	Year                 int                 `json:"year"`
-	Value                int64               `json:"value"`
-	Donors               []string            `json:"donors"`
-	Donations            []string            `json:"donations"`
-	Durations            []WrapDuration      `json:"durations"`
-	TotalSupportedMonths int                 `json:"total_supported_months"`
-	SupportedYears       []WrapSupportedYear `json:"supported_years"`
-	ProvideMealDates     []string            `json:"provide_meal_dates"`
-	ProvideMealPeriods   []time.Time         `json:"provide_meal_periods"`
-	ProvideMealStaffs    []string            `json:"provide_meal_staffs"`
-	WithdrawProposals    []string            `json:"withdraw_proposals"`
-	WithdrawsForNeed     []string            `json:"withdraws_for_need"`
+	ID                      string              `json:"id"`
+	Year                    int                 `json:"year"`
+	Value                   int64               `json:"value"`
+	Donors                  []string            `json:"donors"`
+	Donations               []string            `json:"donations"`
+	Durations               []WrapDuration      `json:"durations"`
+	TotalSupportedMonths    int                 `json:"total_supported_months"`
+	SupportedYears          []WrapSupportedYear `json:"supported_years"`
+	ProvideMealDates        []string            `json:"provide_meal_dates"`
+	ProvideMealPeriods      []time.Time         `json:"provide_meal_periods"`
+	ProvideMealStaffs       []string            `json:"provide_meal_staffs"`
+	ProvideMealImageBlobIDs []string            `json:"provide_meal_image_blob_ids"`
+	WithdrawProposals       []string            `json:"withdraw_proposals"`
+	WithdrawsForNeed        []string            `json:"withdraws_for_need"`
 }
 
 type WrapDuration struct {

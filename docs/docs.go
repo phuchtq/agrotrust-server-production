@@ -8706,6 +8706,12 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
+                "provide_meal_image_blob_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "provide_meal_periods": {
                     "type": "array",
                     "items": {

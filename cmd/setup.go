@@ -107,15 +107,15 @@ func setupPayments(errLogger *log.Logger) {
 }
 
 func setupBackgroundService(ctx context.Context, wg *sync.WaitGroup) {
-	var services = []func(context.Context, *sync.WaitGroup, time.Duration){
-		processRefundVotePowerBackgroundService,
-	}
+	// var services = []func(context.Context, *sync.WaitGroup, time.Duration){
+	// 	processRefundVotePowerBackgroundService,
+	// }
 
-	wg.Add(len(services))
-	var duration time.Duration = time.Minute
-	for _, service := range services {
-		go service(ctx, wg, duration)
-	}
+	// wg.Add(len(services))
+	// var duration time.Duration = time.Minute
+	// for _, service := range services {
+	// 	go service(ctx, wg, duration)
+	// }
 }
 
 func processCenterBackgroundService(ctx context.Context, wg *sync.WaitGroup, duration time.Duration) {

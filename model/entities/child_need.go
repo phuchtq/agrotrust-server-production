@@ -133,19 +133,20 @@ func (m MealNeed) ToMealNeedResponse() response.MealNeedResponse {
 	}
 
 	return response.MealNeedResponse{
-		ID:                   m.ID.ID,
-		Year:                 year,
-		Value:                value,
-		Donors:               m.Donors,
-		Donations:            m.Donations,
-		Durations:            durations,
-		TotalSupportedMonths: totalMonths,
-		SupportedYears:       supportedYears,
-		ProvideMealDates:     m.ProvideMealDates,
-		ProvideMealPeriods:   provideMealPeriods,
-		ProvideMealStaffs:    m.ProvideMealStaffs,
-		WithdrawProposals:    m.WithdrawProposals,
-		WithdrawsForNeed:     m.WithdrawsForNeed,
+		ID:                      m.ID.ID,
+		Year:                    year,
+		Value:                   value,
+		Donors:                  m.Donors,
+		Donations:               m.Donations,
+		Durations:               durations,
+		TotalSupportedMonths:    totalMonths,
+		SupportedYears:          supportedYears,
+		ProvideMealDates:        m.ProvideMealDates,
+		ProvideMealPeriods:      provideMealPeriods,
+		ProvideMealStaffs:       m.ProvideMealStaffs,
+		ProvideMealImageBlobIDs: m.ProvideMealImageBlobIDs,
+		WithdrawProposals:       m.WithdrawProposals,
+		WithdrawsForNeed:        m.WithdrawsForNeed,
 	}
 }
 
