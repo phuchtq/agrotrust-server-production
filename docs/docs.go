@@ -5958,10 +5958,13 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "type": "string",
-                        "name": "image_blob_id",
-                        "in": "query",
-                        "required": true
+                        "description": "Submit Task Proof Detail",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.SubmitTaskProofRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -6241,28 +6244,13 @@ const docTemplate = `{
                 "summary": "Create a task",
                 "parameters": [
                     {
-                        "type": "string",
-                        "name": "description",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "name": "end_period",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "name": "region",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "name": "start_period",
-                        "in": "query",
-                        "required": true
+                        "description": "Create Task Request Detail",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.CreateTaskRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -6508,15 +6496,13 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "type": "boolean",
-                        "name": "is_vote_yes",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "name": "refuse_reason",
-                        "in": "query"
+                        "description": "Review Request Detail",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.VoteRequest"
+                        }
                     }
                 ],
                 "responses": {
@@ -7978,6 +7964,29 @@ const docTemplate = `{
                 }
             }
         },
+        "request.CreateTaskRequest": {
+            "type": "object",
+            "required": [
+                "description",
+                "end_period",
+                "region",
+                "start_period"
+            ],
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "end_period": {
+                    "type": "string"
+                },
+                "region": {
+                    "type": "string"
+                },
+                "start_period": {
+                    "type": "string"
+                }
+            }
+        },
         "request.CreateWithdrawProposalRequest": {
             "type": "object",
             "required": [
@@ -8081,6 +8090,17 @@ const docTemplate = `{
             ],
             "properties": {
                 "proof_blob_id": {
+                    "type": "string"
+                }
+            }
+        },
+        "request.SubmitTaskProofRequest": {
+            "type": "object",
+            "required": [
+                "image_blob_id"
+            ],
+            "properties": {
+                "image_blob_id": {
                     "type": "string"
                 }
             }

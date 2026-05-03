@@ -80,7 +80,7 @@ func GetTaskProof(ctx *gin.Context) {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        id   path      string  true  "Task ID"
-// @Param        request  query     request.SubmitTaskProofRequest  true  "Submit Task Proof Detail"
+// @Param        request  body     request.SubmitTaskProofRequest  true  "Submit Task Proof Detail"
 // @Success      200      {object}  response.MessageAPIResponse "Sucsess"
 // @Failure      400      {object}  response.MessageAPIResponse "Invalid data. Please try again."
 // @Failure      401      {object}  response.MessageAPIResponse "You have no rights to access this action."
@@ -88,7 +88,7 @@ func GetTaskProof(ctx *gin.Context) {
 // @Router       /task-proofs/task/{id}/submit [post]
 func SubmitTaskProof(ctx *gin.Context) {
 	var request request.SubmitTaskProofRequest
-	if ctx.ShouldBindQuery(&request) != nil {
+	if ctx.ShouldBindJSON(&request) != nil {
 		util.ProcessResponse(util.GenerateInvalidRequestAndSystemProblemModel(ctx, nil))
 		return
 	}

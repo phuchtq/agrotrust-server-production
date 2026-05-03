@@ -115,7 +115,7 @@ func GetTask(ctx *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Security     BearerAuth
-// @Param        request  query     request.CreateTaskRequest  true  "Create Task Request Detail"
+// @Param        request  body     request.CreateTaskRequest  true  "Create Task Request Detail"
 // @Success      200      {object}  response.PaginationDataResponse
 // @Failure      400      {object}  response.MessageAPIResponse "Invalid data. Please try again."
 // @Failure      401      {object}  response.MessageAPIResponse "You have no rights to access this action."
@@ -123,7 +123,7 @@ func GetTask(ctx *gin.Context) {
 // @Router       /tasks [post]
 func CreateTask(ctx *gin.Context) {
 	var request request.CreateTaskRequest
-	if ctx.ShouldBindQuery(&request) != nil {
+	if ctx.ShouldBindJSON(&request) != nil {
 		util.ProcessResponse(util.GenerateInvalidRequestAndSystemProblemModel(ctx, nil))
 		return
 	}
@@ -179,7 +179,7 @@ func ClaimTask(ctx *gin.Context) {
 // @Produce      json
 // @Security     BearerAuth
 // @Param        id   path      string  true  "Task ID"
-// @Param        request  query     request.VoteRequest  true  "Review Request Detail"
+// @Param        request  body     request.VoteRequest  true  "Review Request Detail"
 // @Success      200      {object}  response.MessageAPIResponse "Success"
 // @Failure      400      {object}  response.MessageAPIResponse "Invalid data. Please try again."
 // @Failure      401      {object}  response.MessageAPIResponse "You have no rights to access this action."
@@ -187,7 +187,7 @@ func ClaimTask(ctx *gin.Context) {
 // @Router       /tasks/{id}/review [post]
 func ReviewAssignedProfileOfTask(ctx *gin.Context) {
 	var request request.VoteRequest
-	if ctx.ShouldBindQuery(&request) != nil {
+	if ctx.ShouldBindJSON(&request) != nil {
 		util.ProcessResponse(util.GenerateInvalidRequestAndSystemProblemModel(ctx, nil))
 		return
 	}

@@ -598,6 +598,22 @@ definitions:
     - content
     - region
     type: object
+  request.CreateTaskRequest:
+    properties:
+      description:
+        type: string
+      end_period:
+        type: string
+      region:
+        type: string
+      start_period:
+        type: string
+    required:
+    - description
+    - end_period
+    - region
+    - start_period
+    type: object
   request.CreateWithdrawProposalRequest:
     properties:
       description:
@@ -669,6 +685,13 @@ definitions:
         type: string
     required:
     - proof_blob_id
+    type: object
+  request.SubmitTaskProofRequest:
+    properties:
+      image_blob_id:
+        type: string
+    required:
+    - image_blob_id
     type: object
   request.SupportCampaignRequest:
     properties:
@@ -5413,10 +5436,12 @@ paths:
         name: id
         required: true
         type: string
-      - in: query
-        name: image_blob_id
+      - description: Submit Task Proof Detail
+        in: body
+        name: request
         required: true
-        type: string
+        schema:
+          $ref: '#/definitions/request.SubmitTaskProofRequest'
       produces:
       - application/json
       responses:
@@ -5496,22 +5521,12 @@ paths:
       - application/json
       description: Create a task
       parameters:
-      - in: query
-        name: description
+      - description: Create Task Request Detail
+        in: body
+        name: request
         required: true
-        type: string
-      - in: query
-        name: end_period
-        required: true
-        type: string
-      - in: query
-        name: region
-        required: true
-        type: string
-      - in: query
-        name: start_period
-        required: true
-        type: string
+        schema:
+          $ref: '#/definitions/request.CreateTaskRequest'
       produces:
       - application/json
       responses:
@@ -5614,13 +5629,12 @@ paths:
         name: id
         required: true
         type: string
-      - in: query
-        name: is_vote_yes
+      - description: Review Request Detail
+        in: body
+        name: request
         required: true
-        type: boolean
-      - in: query
-        name: refuse_reason
-        type: string
+        schema:
+          $ref: '#/definitions/request.VoteRequest'
       produces:
       - application/json
       responses:

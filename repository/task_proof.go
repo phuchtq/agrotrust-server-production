@@ -114,7 +114,7 @@ func (t *taskProofRepo) GetTaskProofs(req request.GetTaskProofsRequest, ctx cont
 	}
 
 	var query string = generateRetrieveQuery(generateRetrieveQueryRequest{
-		table:       task_table,
+		table:       task_proof_table,
 		limitAmount: req.PageSize,
 		condition:   queryCondition,
 		order:       " ORDER BY created_at " + order,
