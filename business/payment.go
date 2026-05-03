@@ -1090,7 +1090,7 @@ func (p *paymentService) CallbackV2(id string, ctx context.Context) error {
 			case string(entities.HEALTH_INSURANCE_NEED_PURPOSE):
 				need, err := on_chain.GetOnChainObject[entities.HealthInsuranceNeed](on_chain.GetOnChainObjectRequest{
 					Client:    client,
-					ObjectId:  id,
+					ObjectId:  detail.Target,
 					ErrLogger: p.errLogger,
 				}, ctx)
 				if err != nil {
