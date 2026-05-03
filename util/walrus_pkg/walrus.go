@@ -19,8 +19,19 @@ type IWalrusProvider interface {
 
 func InitializeWalrusProvider(errLogger *log.Logger) IWalrusProvider {
 	if _walrusProvider == nil {
+		var walrusClient = walrus_go.NewClient()
+
+		walrusClient.AggregatorURL = []string{
+			"https://walrus.space",
+			"https://nodes.guru",
+		}
+
+		walrusClient.PublisherURL = []string{
+			"https://walrus.space",
+		}
+
 		_walrusProvider = &walrusProvider{
-			client:    walrus_go.NewClient(),
+			client:    walrusClient,
 			errLogger: errLogger,
 		}
 	}
