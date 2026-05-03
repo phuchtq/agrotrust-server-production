@@ -41,10 +41,11 @@ func InitializeWalrusProvider(errLogger *log.Logger) IWalrusProvider {
 
 // FetchBytesImage implements IWalrusProvider.
 func (w *walrusProvider) FetchBytesImage(blobID string) ([]byte, error) {
-	res, err := w.client.Read(blobID, nil)
-	if err != nil {
-		w.errLogger.Println(err.Error())
-	}
 
-	return res, nil
+	// res, err := w.client.Read(blobID, nil)
+	// if err != nil {
+	// 	w.errLogger.Println(err.Error())
+	// }
+
+	return nil, nil
 }

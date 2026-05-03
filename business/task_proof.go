@@ -547,11 +547,11 @@ func (t *taskProofService) SubmitTaskProof(id string, req request.SubmitTaskProo
 	}
 
 	var aiEvaluation string
-	proofBytes, _ := t.walrusProvider.FetchBytesImage(req.ImageBlobID)
-	if proofBytes == nil {
-		t.errLogger.Println("Proof bytes nil")
-		return genericErr
-	}
+	// proofBytes, _ := t.walrusProvider.FetchBytesImage(req.ImageBlobID)
+	// if proofBytes == nil {
+	// 	t.errLogger.Println("Proof bytes nil")
+	// 	return genericErr
+	// }
 
 	if task.IsChildTask {
 		if childTaskDetail, err := t.childTaskDetailRepo.GetChildTaskDetail(*task.ChildTaskDetailID, ctx); err == nil {
@@ -568,7 +568,7 @@ func (t *taskProofService) SubmitTaskProof(id string, req request.SubmitTaskProo
 						ChildAvatarBytesImage: avatarBytes,
 						ValidateTaskProof: ai.ValidateTaskProof{
 							TaskDescription: task.Description,
-							ProofBytesImage: proofBytes,
+							ProofBytesImage: nil,
 							CreatedAt:       curTime,
 						},
 					}, ctx)
@@ -578,7 +578,7 @@ func (t *taskProofService) SubmitTaskProof(id string, req request.SubmitTaskProo
 	} else {
 		aiEvaluation = t.aiProvider.ValidateTaskProof(ai.ValidateTaskProof{
 			TaskDescription: task.Description,
-			ProofBytesImage: proofBytes,
+			ProofBytesImage: nil,
 			CreatedAt:       curTime,
 		}, ctx)
 	}
