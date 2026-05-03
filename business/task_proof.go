@@ -549,6 +549,7 @@ func (t *taskProofService) SubmitTaskProof(id string, req request.SubmitTaskProo
 	var aiEvaluation string
 	proofBytes, _ := t.walrusProvider.FetchBytesImage(req.ImageBlobID)
 	if proofBytes == nil {
+		t.errLogger.Println("Proof bytes nil")
 		return genericErr
 	}
 
