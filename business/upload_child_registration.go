@@ -80,26 +80,19 @@ func (u *uploadChildRequestService) ReviewUploadChildRequest(id string, req requ
 		return errors.New(noti.REQUEST_REVIEWED_MESSAGE)
 	}
 
-	var sender string = ctx.Value("address").(string)
-	var manageObj entities.Manage
-	if !u.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
-		res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-			Client:    u.clients[constant.SuiTestnet],
-			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-			ErrLogger: u.errLogger,
-		}, ctx)
-		if err != nil {
-			return err
-		}
-
-		if res != nil {
-			u.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
-			manageObj = *res
-		}
+	var client = u.clients[constant.SuiTestnet]
+	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: u.errLogger,
+	}, ctx)
+	if err != nil {
+		return err
 	}
 
 	var foundIdx int = -1
 	var centerId string
+	var sender string = ctx.Value("address").(string)
 	for i, leader := range manageObj.LocalLeaderIds {
 		if centerId == "" {
 			if i < len(manageObj.LocalRegions) {
@@ -120,7 +113,6 @@ func (u *uploadChildRequestService) ReviewUploadChildRequest(id string, req requ
 		return genericRightErr
 	}
 
-	var client = u.clients[constant.SuiTestnet]
 	nft, err := on_chain.GetOnChainObject[entities.StaffNft](on_chain.GetOnChainObjectRequest{
 		Client:    client,
 		ObjectId:  manageObj.LocalLeaderNfts[foundIdx],
@@ -291,21 +283,13 @@ func (u *uploadChildRequestService) CreateUploadChildRequest(req request.UploadC
 		return nil, errors.New(noti.CHILD_STILL_REQUESTED_MESSAGE)
 	}
 
-	var manageObj entities.Manage
-	if !u.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
-		res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-			Client:    u.clients[constant.SuiTestnet],
-			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-			ErrLogger: u.errLogger,
-		}, ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		if res != nil {
-			u.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
-			manageObj = *res
-		}
+	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    u.clients[constant.SuiTestnet],
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: u.errLogger,
+	}, ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	var region string = strings.TrimSpace(req.Region)
@@ -424,6 +408,7 @@ func (u *uploadChildRequestService) CreateUploadChildRequest(req request.UploadC
 		FirstGuardianProfile:   firstGuardianProfile,
 		SecondGuardianProfile:  secondGuardianProfile,
 		AIEvaluation:           aiEvaluation,
+		Status:                 request_pending_status,
 		CreatedBy:              ctx.Value("address").(string),
 		CreatedAt:              curTime,
 		UpdatedAt:              curTime,
