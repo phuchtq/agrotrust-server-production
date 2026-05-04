@@ -19,6 +19,7 @@ import (
 // 	UpdateHealthInsuranceNeed(req request.UpdateChildNeedRequest, ctx context.Context) (response.BuildTransactionResponse, error)
 
 type IChildService interface {
+	GetUserSupportedChildren(wallet string, req request.GetChildrenRequest, ctx context.Context) (response.PaginationDataResponse, error)
 	GetChildren(req request.GetChildrenRequest, ctx context.Context) (response.PaginationDataResponse, error)
 	GetChild(id string, ctx context.Context) (response.ChildResponse, error)
 	UploadChild(req request.UploadChildRequest, ctx context.Context) (response.BuildTransactionResponse, error)

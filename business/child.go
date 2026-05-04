@@ -147,6 +147,151 @@ func (c *childService) GetChild(id string, ctx context.Context) (response.ChildR
 	return res, err
 }
 
+// GetUserSupportedChildren implements business.IChildService.
+func (c *childService) GetUserSupportedChildren(wallet string, req request.GetChildrenRequest, ctx context.Context) (response.PaginationDataResponse, error) {
+	if !util.IsValidSuiAddressStrict(wallet) {
+		return response.PaginationDataResponse{}, errors.New(noti.GENERIC_ERROR_WARN_MSG)
+	}
+
+	var client = c.clients[constant.SuiTestnet]
+	manage, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: c.errLogger,
+	}, ctx)
+	if err != nil {
+		return response.PaginationDataResponse{}, err
+	}
+
+	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
+	if manage == nil {
+		return response.PaginationDataResponse{}, internalErr
+	}
+
+	var donorNftId string
+	for i, donor := range manage.DonorIds {
+		if donor == wallet {
+			donorNftId = manage.DonorNfts[i]
+			break
+		}
+	}
+
+	if donorNftId == "" {
+		return response.PaginationDataResponse{
+			Page:       1,
+			TotalPages: 1,
+		}, nil
+	}
+
+	nft, err := on_chain.GetOnChainObject[entities.Donor](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  donorNftId,
+		ErrLogger: c.errLogger,
+	}, ctx)
+	if err != nil {
+		return response.PaginationDataResponse{}, err
+	}
+
+	if nft == nil {
+		return response.PaginationDataResponse{}, internalErr
+	}
+
+	if nft.SupportedChilds == nil || len(nft.SupportedChilds) == 0 {
+		return response.PaginationDataResponse{
+			Page:       1,
+			TotalPages: 1,
+		}, nil
+	}
+
+	children, err := on_chain.GetOnChainObjects[entities.Child](on_chain.GetOnChainObjectsRequest{
+		Client:    client,
+		ObjectIds: nft.SupportedChilds,
+		ErrLogger: c.errLogger,
+	}, ctx)
+	if err != nil {
+		return response.PaginationDataResponse{}, err
+	}
+
+	if children == nil {
+		return response.PaginationDataResponse{}, internalErr
+	}
+
+	req.SortOrder = util.StandardizeSortOrder(req.SortOrder)
+	req.Keyword = util.StandardizeString(req.Keyword)
+	if req.Page < 1 {
+		req.Page = 1
+	}
+
+	if req.PageSize < 1 {
+		req.PageSize = default_page_size
+	}
+
+	var filteredChildren []entities.Child
+	for i := len(children) - 1; i >= 0; i-- {
+		var child entities.Child = children[i]
+
+		if req.Region != "" {
+			if child.Region != req.Region { // Not matched
+				continue
+			}
+		}
+
+		if req.Gender != "" {
+			if child.Gender != req.Gender { // Not matched
+				continue
+			}
+		}
+
+		if req.YearOfBirth != nil {
+			var dob time.Time = util.RawDateToTime(child.DateOfBirth)
+			if dob.Year() != *req.YearOfBirth { // Not matched
+				continue
+			}
+		}
+
+		if req.Keyword != "" {
+			var firstName string = util.StandardizeString(child.FirstName)
+			var lastName string = util.StandardizeString(child.LastName)
+			if !strings.Contains(firstName, req.Keyword) && !strings.Contains(lastName, req.Keyword) && !strings.Contains(child.IdentityCode, req.Keyword) { // Not matched
+				continue
+			}
+		}
+
+		filteredChildren = append(filteredChildren, child)
+	}
+
+	sort.Slice(filteredChildren, func(i, j int) bool {
+		var name1 string = filteredChildren[i].LastName + " " + filteredChildren[i].FirstName
+		var name2 string = filteredChildren[j].LastName + " " + filteredChildren[j].FirstName
+
+		if req.SortOrder == "ASC" {
+			return name1 < name2
+		}
+
+		return name2 > name1
+	})
+
+	var skippedRecords int = (req.Page - 1) * req.PageSize
+	if len(filteredChildren) <= skippedRecords {
+		return response.PaginationDataResponse{}, nil
+	}
+
+	var data []response.ChildResponse
+	for i := skippedRecords; i < len(filteredChildren); i++ {
+		data = append(data, filteredChildren[i].ToMinimumChildResponse())
+		if len(data) == req.PageSize {
+			break
+		}
+	}
+
+	return response.PaginationDataResponse{
+		Data:       data,
+		Amount:     len(data),
+		Page:       req.Page,
+		TotalPages: int(math.Ceil(float64(len(filteredChildren)) / float64(req.PageSize))),
+	}, nil
+}
+
 // GetChilds implements business.IChildService.
 func (c *childService) GetChildren(req request.GetChildrenRequest, ctx context.Context) (response.PaginationDataResponse, error) {
 	req.SortOrder = util.StandardizeSortOrder(req.SortOrder)
@@ -160,27 +305,15 @@ func (c *childService) GetChildren(req request.GetChildrenRequest, ctx context.C
 	}
 
 	var res response.PaginationDataResponse
-	var redisKey string = c.getGetChildrenRediskey(req)
-	if c.redisCache.Get(redisKey, &res, ctx) {
-		return res, nil
-	}
 
 	var client = c.clients[constant.SuiTestnet]
-	var manageObj entities.Manage
-	if !c.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
-		res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-			Client:    client,
-			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-			ErrLogger: c.errLogger,
-		}, ctx)
-		if err != nil {
-			return response.PaginationDataResponse{}, err
-		}
-
-		if res != nil {
-			c.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
-			manageObj = *res
-		}
+	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: c.errLogger,
+	}, ctx)
+	if err != nil {
+		return response.PaginationDataResponse{}, err
 	}
 
 	children, err := on_chain.GetOnChainObjects[entities.Child](on_chain.GetOnChainObjectsRequest{
@@ -269,7 +402,6 @@ func (c *childService) GetChildren(req request.GetChildrenRequest, ctx context.C
 		TotalPages: int(math.Ceil(float64(len(filteredChildren)) / float64(req.PageSize))),
 	}
 
-	c.redisCache.Set(redisKey, res, time.Minute*5, ctx)
 	return res, nil
 }
 
@@ -3262,8 +3394,14 @@ func (c *childService) SupportMealNeed(id string, req request.SupportMealNeadReq
 	}
 
 	var curTime time.Time = time.Now()
-	var lastDuration = need.Durations[len(need.Durations)-1]
-	var endPeriod time.Time = util.RawDateToTime(lastDuration.Fields.EndPeriod)
+	var endPeriod time.Time
+	if need.Durations != nil && len(need.Durations) > 0 {
+		var lastDuration = need.Durations[len(need.Durations)-1]
+		endPeriod = util.RawDateToTime(lastDuration.Fields.EndPeriod)
+	} else {
+		endPeriod = curTime
+	}
+
 	var rawExpectedStart, rawExpectedEnd string
 	var nextStartPeriod time.Time
 	if curTime.Before(endPeriod) { // Donate time: 1/1/2026 | Last supported: 15/7/2026
@@ -3276,12 +3414,6 @@ func (c *childService) SupportMealNeed(id string, req request.SupportMealNeadReq
 	var rawMaxSupportedEndPeriod string = fmt.Sprintf("15/01/%d", nextYear)
 	var nextEndPeriod time.Time = nextStartPeriod.AddDate(0, req.Months, 0)
 	if nextEndPeriod.After(util.RawDateToTime(rawMaxSupportedEndPeriod)) {
-		// Support 6 months -> 16/1/2027 -> Deny
-		c.errLogger.Println("Raw last end period:", lastDuration.Fields.EndPeriod)
-		c.errLogger.Println("Last end period:", endPeriod)
-		c.errLogger.Println("Next year:", nextYear)
-		c.errLogger.Println("Next start period:", nextStartPeriod)
-		c.errLogger.Println("Next end period:", nextEndPeriod)
 		return response.PaymentUrlResponse{}, errors.New(noti.MEAL_NEED_SUPPORT_DURATION_OUT_RANGE_MESSAGE)
 	}
 

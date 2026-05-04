@@ -3063,6 +3063,57 @@ paths:
       summary: Create special need campaign withdraw proposal
       tags:
       - children
+  /children/user/{id}/supported:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of user's supported children based on filter criteria
+      parameters:
+      - description: User Wallet Address
+        in: path
+        name: id
+        required: true
+        type: string
+      - in: query
+        name: gender
+        type: string
+      - in: query
+        name: keyword
+        type: string
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: page_size
+        type: integer
+      - in: query
+        name: region
+        type: string
+      - in: query
+        name: sort_order
+        type: string
+      - in: query
+        name: year_of_birth
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.PaginationDataResponse'
+        "400":
+          description: Invalid data. Please try again.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "500":
+          description: There is something wrong in the system during the process.
+            Please try again later.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+      summary: List of user's supported children
+      tags:
+      - children
   /configs/books-need-edit-dates:
     put:
       consumes:

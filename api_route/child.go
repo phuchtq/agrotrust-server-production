@@ -76,6 +76,7 @@ func InitializeChildRoutes(server *gin.Engine) {
 	// Normal group
 	var norGroup = server.Group(contextPath)
 	norGroup.GET("", transport.GetChildren)
+	norGroup.GET("/user/:id/supported", transport.GetUserSupportedChildren)
 	norGroup.GET("/:id", transport.GetChild)
 
 	// Auth group
