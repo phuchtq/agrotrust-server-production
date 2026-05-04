@@ -65,6 +65,10 @@ func GetOnChainObject[T any](req GetOnChainObjectRequest, ctx context.Context) (
 		return nil, internalErr
 	}
 
+	if res.Data.Content == nil || res.Data.Content.Fields == nil {
+		return nil, nil
+	}
+
 	var jsonData = res.Data.Content.Fields
 	if jsonData == nil {
 		return nil, nil
