@@ -8652,6 +8652,9 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "owner": {
+                    "type": "string"
+                },
                 "phone_number": {
                     "type": "string"
                 },

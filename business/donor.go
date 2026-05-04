@@ -2,11 +2,13 @@ package business
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"math"
 	"os"
 	"raise-child/constants/env"
+	"raise-child/constants/noti"
 	"raise-child/constants/shared"
 	"raise-child/interfaces/business"
 	"raise-child/model/dtos/request"
@@ -46,54 +48,42 @@ const (
 
 // GetDonor implements business.IDonorService.
 func (s *donorService) GetDonor(id string, ctx context.Context) (response.DonorResponse, error) {
-	// if !util.IsValidSuiAddressStrict(id) {
-	// 	return response.DonorResponse{}, errors.New(noti.GENERIC_ERROR_WARN_MSG)
-	// }
-
-	// var client = s.clients[constant.SuiTestnet]
-
-	// var donorModule = on_chain.InitializeModuleDonor()
-	// donors, err := on_chain.GetOnChainOwnedObjects[entities.Donor](on_chain.GetOnChainOwnedObjectsRequest{
-	// 	Client:       client,
-	// 	OwnerAddress: id,
-	// 	StructType:   fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), donorModule.GetModule(), donorModule.GetDonorNftStruct()),
-	// 	ErrLogger:    s.errLogger,
-	// }, ctx)
-	// if err != nil {
-	// 	return response.DonorResponse{}, err
-	// }
-
-	// var res = donors[0].ToDonorResponse()
-	// var recordModule = on_chain.InitializeModuleRecord()
-	// txs, _ := on_chain.GetOnChainOwnedObjects[entities.Transaction](on_chain.GetOnChainOwnedObjectsRequest{
-	// 	Client:       client,
-	// 	OwnerAddress: id,
-	// 	StructType:   fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), recordModule.GetModule(), recordModule.GetTransactionRecordStruct()),
-	// 	ErrLogger:    s.errLogger,
-	// }, ctx)
-
-	// if txs != nil && len(txs) > 0 {
-	// 	var contributions []response.TransactionResponse
-	// 	for _, tx := range txs {
-	// 		contributions = append(contributions, tx.ToTransactionResponse())
-	// 	}
-	// 	res.Contributions = contributions
-	// }
-
-	// // Set donor object ID to user wallet address
-	// res.ID = id
-
-	// return res, nil
-
-	/////////////////////
-	// MOCK DATA
-	for _, donor := range mockDonors {
-		if donor.ID == id {
-			return donor, nil
-		}
+	if !util.IsValidSuiAddressStrict(id) {
+		return response.DonorResponse{}, errors.New(noti.GENERIC_ERROR_WARN_MSG)
 	}
 
-	return response.DonorResponse{}, nil
+	var client = s.clients[constant.SuiTestnet]
+	donor, err := on_chain.GetOnChainObject[entities.Donor](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  id,
+		ErrLogger: s.errLogger,
+	}, ctx)
+	if err != nil {
+		return response.DonorResponse{}, err
+	}
+
+	if donor == nil {
+		return response.DonorResponse{}, nil
+	}
+
+	var recordModule = on_chain.InitializeModuleRecord()
+	txs, _ := on_chain.GetOnChainOwnedObjects[entities.Transaction](on_chain.GetOnChainOwnedObjectsRequest{
+		Client:       client,
+		OwnerAddress: donor.Owner,
+		StructType:   fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), recordModule.GetModule(), recordModule.GetTransactionRecordStruct()),
+		ErrLogger:    s.errLogger,
+	}, ctx)
+
+	var res response.DonorResponse = donor.ToDonorResponse()
+	if txs != nil && len(txs) > 0 {
+		var contributions []response.TransactionResponse
+		for _, tx := range txs {
+			contributions = append(contributions, tx.ToTransactionResponse())
+		}
+		res.Contributions = contributions
+	}
+
+	return res, nil
 }
 
 // GetDonors implements business.IDonorService.
@@ -114,21 +104,13 @@ func (s *donorService) GetDonors(req request.GetDonorsRequest, ctx context.Conte
 	}
 
 	var client = s.clients[constant.SuiTestnet]
-	var manageObj entities.Manage
-	if !s.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
-		res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-			Client:    client,
-			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-			ErrLogger: s.errLogger,
-		}, ctx)
-		if err != nil {
-			return response.PaginationDataResponse{}, err
-		}
-
-		if res != nil {
-			s.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
-			manageObj = *res
-		}
+	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: s.errLogger,
+	}, ctx)
+	if err != nil {
+		return response.PaginationDataResponse{}, err
 	}
 
 	donors, err := on_chain.GetOnChainObjects[entities.Donor](on_chain.GetOnChainObjectsRequest{
@@ -145,7 +127,7 @@ func (s *donorService) GetDonors(req request.GetDonorsRequest, ctx context.Conte
 	}
 
 	var filteredDonors []entities.Donor
-	for i := len(donors) - 1; i >= 0; i++ {
+	for i := len(donors) - 1; i >= 0; i-- {
 		var donor entities.Donor = donors[i]
 
 		if req.Gender != "" {

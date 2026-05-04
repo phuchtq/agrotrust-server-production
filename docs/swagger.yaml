@@ -1011,6 +1011,8 @@ definitions:
         type: string
       name:
         type: string
+      owner:
+        type: string
       phone_number:
         type: string
       supported_childs:
