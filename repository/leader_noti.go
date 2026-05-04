@@ -61,7 +61,7 @@ func (l *leaderNotiRepo) AssignLeader(leader string, region string, ctx context.
 func (l *leaderNotiRepo) CreateNoti(notification entities.LeaderNoti, ctx context.Context) error {
 	var query string = "INSERT INTO " + leader_noti_table +
 		" (id, need_id, need_type, child_id, region, " +
-		"assgined_leaders, expected_withdraw_periods, general_content, contents) " +
+		"assigned_leaders, expected_withdraw_periods, general_content, contents) " +
 		"values ($1, $2, $3, $4, $5, $6, $7, $8, $9)"
 
 	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.LEADER_NOTI_REPOSITORY) + "CreateNoti - "

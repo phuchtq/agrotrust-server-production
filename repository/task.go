@@ -30,13 +30,13 @@ func InitializeTaskRepository(db *sql.DB, errLogger *log.Logger) repository.ITas
 // CreateTask implements repository.ITaskRepository.
 func (t *taskRepo) CreateTask(task entities.Task, ctx context.Context) error {
 	var query string = "INSERT INTO " + task_table +
-		" (id, created_by, region, description, start_period, end_period, created_at, updated_at) " +
-		"values ($1, $2, $3, $4, $5, $6, $7, $8)"
+		" (id, is_Child_task, child_task_detail_id, created_by, region, description, start_period, end_period, created_at, updated_at) " +
+		"values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)"
 
 	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.TASK_REPOSITORY) + "CreateTask - "
 
-	if _, err := t.db.ExecContext(ctx, query, task.ID, task.CreatedBy, task.Region, task.Description,
-		task.StartPeriod, task.EndPeriod, task.CreatedAt, task.UpdatedAt); err != nil {
+	if _, err := t.db.ExecContext(ctx, query, task.ID, task.IsChildTask, task.ChildTaskDetailID, task.CreatedBy,
+		task.Region, task.Description, task.StartPeriod, task.EndPeriod, task.CreatedAt, task.UpdatedAt); err != nil {
 
 		t.errLogger.Println(errLogMsg + err.Error())
 		return errors.New(noti.INTERNALL_ERR_MSG)

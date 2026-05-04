@@ -467,32 +467,46 @@ func (t *taskProofService) RefuseTaskProof(id string, ctx context.Context) error
 		return err
 	}
 
-	var sender string = ctx.Value("address").(string)
-	var staffModule = on_chain.InitializeModuleStaff()
-	staffNfts, err := on_chain.GetOnChainOwnedObjects[entities.StaffNft](on_chain.GetOnChainOwnedObjectsRequest{
-		Client:       t.clients[constant.SuiTestnet],
-		OwnerAddress: sender,
-		StructType:   fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), staffModule.GetModule, staffModule.GetStaffNftObjectStruct()),
-		ErrLogger:    t.errLogger,
+	var client = t.clients[constant.SuiTestnet]
+	manage, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: t.errLogger,
 	}, ctx)
 	if err != nil {
 		return err
 	}
 
-	if staffNfts == nil || len(staffNfts) == 0 {
-		return errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
+	if manage == nil {
+		return internalErr
 	}
 
-	var isLeaderOfRegion bool = false
-	for _, nft := range staffNfts {
-		if nft.Region == task.Region && nft.Role == local_leader_role {
-			isLeaderOfRegion = true
+	var sender string = ctx.Value("address").(string)
+	var foundIdx int = -1
+	for i, leader := range manage.LocalLeaderIds {
+		if leader == sender {
+			foundIdx = i
 			break
 		}
 	}
 
-	if !isLeaderOfRegion {
-		return errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+	var genericRightErr error = errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+	if foundIdx == -1 {
+		return genericRightErr
+	}
+
+	leaderNft, err := on_chain.GetOnChainObject[entities.StaffNft](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  manage.LocalLeaderNfts[foundIdx],
+		ErrLogger: t.errLogger,
+	}, ctx)
+	if err != nil {
+		return err
+	}
+
+	if leaderNft.Region != task.Region {
+		return genericRightErr
 	}
 
 	profile, err := t.profileRepo.GetProfile(ctx.Value("sub").(string), ctx)
