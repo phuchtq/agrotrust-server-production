@@ -236,6 +236,12 @@ func (t *taskProofService) ApproveTaskProof(id string, ctx context.Context) erro
 		return errors.New(noti.TASK_PROOF_REVIEWED_MESSAGE)
 	}
 
+	var genericRightErr error = errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+	var sender string = ctx.Value("address").(string)
+	if proof.ActorAddress == sender {
+		return genericRightErr
+	}
+
 	task, err := t.taskRepo.GetTask(proof.TaskID, ctx)
 	if err != nil {
 		return err
@@ -256,7 +262,6 @@ func (t *taskProofService) ApproveTaskProof(id string, ctx context.Context) erro
 		return internalErr
 	}
 
-	var sender string = ctx.Value("address").(string)
 	var foundIdx int = -1
 	for i, leader := range manage.LocalLeaderIds {
 		if leader == sender {
@@ -265,7 +270,6 @@ func (t *taskProofService) ApproveTaskProof(id string, ctx context.Context) erro
 		}
 	}
 
-	var genericRightErr error = errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
 	if foundIdx == -1 {
 		return genericRightErr
 	}
@@ -392,7 +396,7 @@ func (t *taskProofService) GetTaskProofs(req request.GetTaskProofsRequest, ctx c
 	// 	return res, nil
 	// }
 
-	data, pages, err := t.taskProofRepo.GetTaskProofs(req, ctx)
+	data, pages, err := t.taskProofRepo.GetTaskProofsV2(req, ctx)
 	if err != nil {
 		return response.PaginationDataResponse{}, err
 	}

@@ -13,6 +13,7 @@ type GetTasksRequest struct {
 type GetTaskProofsRequest struct {
 	Keyword      string `form:"keyword"`
 	Status       string `form:"status"`
+	Region       string `json:"region"`
 	ActorAddress string `form:"actor_address"`
 	ReviewedBy   string `form:"reviewed_by"`
 	SortOrder    string `form:"sort_order"`

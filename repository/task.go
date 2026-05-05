@@ -77,7 +77,7 @@ func (t *taskRepo) GetTasks(req request.GetTasksRequest, ctx context.Context) ([
 	var queryCondition string
 	var isHavePreviosCondition bool = false
 	if req.Keyword != "" {
-		queryCondition += fmt.Sprintf("LOWER(description) LIKE LOWER('%s')", req.Keyword)
+		queryCondition += fmt.Sprintf("LOWER(description) LIKE LOWER('%%%s%%')", req.Keyword)
 		isHavePreviosCondition = true
 	}
 

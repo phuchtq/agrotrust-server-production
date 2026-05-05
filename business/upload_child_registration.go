@@ -102,6 +102,7 @@ func (u *uploadChildRequestService) ReviewUploadChildRequest(id string, req requ
 			}
 		}
 
+		u.errLogger.Println("Leader through loop:", leader)
 		if leader == sender {
 			foundIdx = i
 			break
@@ -110,6 +111,7 @@ func (u *uploadChildRequestService) ReviewUploadChildRequest(id string, req requ
 
 	var genericRightErr error = errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
 	if foundIdx == -1 {
+		u.errLogger.Println("Idx not found")
 		return genericRightErr
 	}
 
@@ -123,6 +125,7 @@ func (u *uploadChildRequestService) ReviewUploadChildRequest(id string, req requ
 	}
 
 	if nft.Region != request.Region {
+		u.errLogger.Println("NFT region diff")
 		return genericRightErr
 	}
 

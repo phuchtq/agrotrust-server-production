@@ -86,7 +86,7 @@ func (t *taskProofRepo) GetTaskProofs(req request.GetTaskProofsRequest, ctx cont
 			queryCondition += " AND "
 		}
 
-		queryCondition += fmt.Sprintf("LOWER(status) = LOWER('%s')", req.Status)
+		queryCondition += fmt.Sprintf("LOWER(review_status) = LOWER('%s')", req.Status)
 		isHavePreviosCondition = true
 	}
 
@@ -146,6 +146,105 @@ func (t *taskProofRepo) GetTaskProofs(req request.GetTaskProofsRequest, ctx cont
 
 	var totalRecords int
 	t.db.QueryRowContext(ctx, generateCountTotalRecordsQuery(task_proof_table, queryCondition)).Scan(&totalRecords)
+
+	return res, caculateTotalPages(totalRecords, req.PageSize), nil
+}
+
+// GetTaskProofsV2 implements repository.ITaskProofRepository.
+func (t *taskProofRepo) GetTaskProofsV2(req request.GetTaskProofsRequest, ctx context.Context) ([]entities.TaskProof, int, error) {
+	var retrieveQueryHeader string = "SELECT tp.* "
+	var queryBody string = `FROM task_proofs tp
+							JOIN tasks t ON tp.task_id = t.id`
+
+	var isHavePreviosCondition bool
+	var queryCondition string
+	if req.Keyword != "" {
+		queryCondition += fmt.Sprintf("LOWER(tp.description) LIKE LOWER('%%%s%%')", req.Keyword)
+		isHavePreviosCondition = true
+	}
+
+	if req.Status != "" {
+		if isHavePreviosCondition {
+			queryCondition += " AND "
+		}
+
+		queryCondition += fmt.Sprintf("LOWER(tp.review_status) = LOWER('%s')", req.Status)
+		isHavePreviosCondition = true
+	}
+
+	if req.Region != "" {
+		if isHavePreviosCondition {
+			queryCondition += " AND "
+		}
+
+		queryCondition += fmt.Sprintf("LOWER(t.region) LIKE LOWER('%%%s%%')", req.Region)
+		isHavePreviosCondition = true
+	}
+
+	if req.ActorAddress != "" {
+		if isHavePreviosCondition {
+			queryCondition += " AND "
+		}
+
+		queryCondition += fmt.Sprintf("tp.actor_address = '%s'", req.ActorAddress)
+		isHavePreviosCondition = true
+	}
+
+	if req.ReviewedBy != "" {
+		if isHavePreviosCondition {
+			queryCondition += " AND "
+		}
+
+		queryCondition += fmt.Sprintf("tp.reviewed_by = '%s'", req.ReviewedBy)
+		isHavePreviosCondition = true
+	}
+
+	var order string = "DESC"
+	if req.SortOrder != "" {
+		order = req.SortOrder
+	}
+
+	var offSet int = (req.Page - 1) * req.PageSize
+	var paginationFilterCond string = fmt.Sprintf(" ORDER BY tp.created_at %s LIMIT %d OFFSET %d", order, req.PageSize, offSet)
+
+	var query string = retrieveQueryHeader + queryBody
+	if queryCondition != "" {
+		query += " WHERE " + queryCondition
+	}
+
+	query += paginationFilterCond
+
+	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.TASK_REPOSITORY) + "GetTasks - "
+	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
+	rows, err := t.db.QueryContext(ctx, query)
+	if err != nil {
+		t.errLogger.Println(errLogMsg + err.Error())
+		return nil, 0, internalErr
+	}
+
+	var res []entities.TaskProof
+	for rows.Next() {
+		var x entities.TaskProof
+
+		if err := rows.Scan(
+			&x.ID, &x.TaskID, &x.Description, &x.ActorProfileID, &x.ActorAddress,
+			&x.ImageBlobID, &x.ReviewedBy, &x.AIEvaluation, &x.ReviewStatus,
+			&x.RawSubmitDate, &x.CreatedAt, &x.UpdatedAt); err != nil {
+
+			t.errLogger.Println(errLogMsg + err.Error())
+			return nil, 0, internalErr
+		}
+
+		res = append(res, x)
+	}
+
+	var totalCountQuery string = "SELECT COUNT(*) " + queryBody
+	if queryCondition != "" {
+		totalCountQuery += " WHERE " + queryCondition
+	}
+
+	var totalRecords int
+	t.db.QueryRowContext(ctx, totalCountQuery).Scan(&totalRecords)
 
 	return res, caculateTotalPages(totalRecords, req.PageSize), nil
 }
