@@ -11,6 +11,8 @@ import (
 	"raise-child/interfaces/repository"
 	"raise-child/model/dtos/request"
 	"raise-child/model/entities"
+	"raise-child/util"
+	"time"
 )
 
 type taskRepo struct {
@@ -53,8 +55,8 @@ func (t *taskRepo) GetTask(id string, ctx context.Context) (*entities.Task, erro
 	var res entities.Task
 	if err := t.db.QueryRowContext(ctx, query, id).Scan(
 		&res.ID, &res.IsChildTask, &res.ChildTaskDetailID, &res.CreatedBy, &res.AssignedProfileID,
-		&res.AssignedStaff, &res.ReviewProfileStatus, &res.ReviewedBy, &res.Region, &res.Description,
-		&res.StartPeriod, &res.EndPeriod, &res.CreatedAt, &res.UpdatedAt); err != nil {
+		&res.AssignedStaff, &res.Region, &res.Description, &res.StartPeriod,
+		&res.EndPeriod, &res.CreatedAt, &res.UpdatedAt); err != nil {
 
 		if err == sql.ErrNoRows {
 			return nil, nil
@@ -88,30 +90,12 @@ func (t *taskRepo) GetTasks(req request.GetTasksRequest, ctx context.Context) ([
 		isHavePreviosCondition = true
 	}
 
-	if req.Status != "" {
-		if isHavePreviosCondition {
-			queryCondition += " AND "
-		}
-
-		queryCondition += fmt.Sprintf("LOWER(status) = LOWER('%s')", req.Status)
-		isHavePreviosCondition = true
-	}
-
 	if req.AssignedStaff != "" {
 		if isHavePreviosCondition {
 			queryCondition += " AND "
 		}
 
 		queryCondition += fmt.Sprintf("assgined_staff = '%s'", req.AssignedStaff)
-		isHavePreviosCondition = true
-	}
-
-	if req.ReviewedBy != "" {
-		if isHavePreviosCondition {
-			queryCondition += " AND "
-		}
-
-		queryCondition += fmt.Sprintf("reviewed_by = '%s'", req.ReviewedBy)
 		isHavePreviosCondition = true
 	}
 
@@ -142,7 +126,7 @@ func (t *taskRepo) GetTasks(req request.GetTasksRequest, ctx context.Context) ([
 
 		if err := rows.Scan(
 			&x.ID, &x.IsChildTask, &x.ChildTaskDetailID, &x.CreatedBy, &x.AssignedProfileID,
-			&x.AssignedStaff, &x.ReviewProfileStatus, &x.ReviewedBy, &x.Region, &x.Description,
+			&x.AssignedStaff, &x.Region, &x.Description,
 			&x.StartPeriod, &x.EndPeriod, &x.CreatedAt, &x.UpdatedAt); err != nil {
 
 			t.errLogger.Println(errLogMsg + err.Error())
@@ -158,15 +142,75 @@ func (t *taskRepo) GetTasks(req request.GetTasksRequest, ctx context.Context) ([
 	return res, caculateTotalPages(totalRecords, req.PageSize), nil
 }
 
+// GetTasksOfUser implements repository.ITaskRepository.
+func (t *taskRepo) GetTasksOfUser(req request.GetTasksRequest, ctx context.Context) ([]entities.TaskV2, int, error) {
+	var rawCurTime string = util.TimeToRawDate(time.Now())
+	var query string = `SELECT t.*, 
+							EXISTS (
+								SELECT 1 FROM task_proofs tp
+								WHERE tp.task_id = t.id 
+								AND tp.raw_submit_date = $1
+								AND tp.actor_address = t.assgined_staff
+								AND tp.review_status IN ('Pending', 'Approved')
+							) AS is_submitted
+						FROM tasks t
+						WHERE t.assgined_staff = $2`
+
+	var keywordCond string
+	if req.Keyword != "" {
+		keywordCond = fmt.Sprintf(" AND LOWER(t.description) LIKE LOWER('%%%s%%')", req.Keyword)
+	}
+
+	query += keywordCond
+
+	var order string = "DESC"
+	if req.SortOrder != "" {
+		order = req.SortOrder
+	}
+
+	var offSet int = (req.Page - 1) * req.PageSize
+	var paginationFilterCond string = fmt.Sprintf(" ORDER BY t.created_at %s LIMIT %d OFFSET %d", order, req.PageSize, offSet)
+	query += paginationFilterCond
+
+	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.TASK_REPOSITORY) + "GetTasks - "
+	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
+	rows, err := t.db.QueryContext(ctx, query, rawCurTime, req.AssignedStaff)
+	if err != nil {
+		t.errLogger.Println(errLogMsg + err.Error())
+		return nil, 0, internalErr
+	}
+
+	var res []entities.TaskV2
+	for rows.Next() {
+		var x entities.TaskV2
+
+		if err := rows.Scan(
+			&x.ID, &x.IsChildTask, &x.ChildTaskDetailID, &x.CreatedBy, &x.AssignedProfileID,
+			&x.AssignedStaff, &x.Region, &x.Description, &x.StartPeriod,
+			&x.EndPeriod, &x.CreatedAt, &x.UpdatedAt, &x.IsSubmitted); err != nil {
+
+			t.errLogger.Println(errLogMsg + err.Error())
+			return nil, 0, internalErr
+		}
+
+		res = append(res, x)
+	}
+
+	var totalRecords int
+	t.db.QueryRowContext(ctx, generateCountTotalRecordsQuery(task_table, fmt.Sprintf("assgined_staff = '%s' %s", req.AssignedStaff, keywordCond))).Scan(&totalRecords)
+
+	return res, caculateTotalPages(totalRecords, req.PageSize), nil
+}
+
 // UpdateTask implements repository.ITaskRepository.
 func (t *taskRepo) UpdateTask(task entities.Task, ctx context.Context) error {
 	var query string = "UPDATE " + task_table + " SET " +
-		"assigned_profile_id = $1, assgined_staff = $2, review_profile_status = $3, reviewed_by = $4, description = $5 WHERE id = $6"
+		"assigned_profile_id = $1, assgined_staff = $2, description = $3 WHERE id = $4"
 
 	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.TASK_REPOSITORY) + "UpdateTask - "
 	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
 
-	res, err := t.db.ExecContext(ctx, query, task.AssignedProfileID, task.AssignedStaff, task.ReviewProfileStatus, task.ReviewedBy, task.Description, task.ID)
+	res, err := t.db.ExecContext(ctx, query, task.AssignedProfileID, task.AssignedStaff, task.Description, task.ID)
 	if err != nil {
 		t.errLogger.Println(errLogMsg + err.Error())
 		return internalErr

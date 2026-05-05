@@ -90,7 +90,7 @@ func (p *paymentRepo) GetPayments(req request.GetPaymentsRequest, ctx context.Co
 			queryCondition += " AND "
 		}
 
-		queryCondition += fmt.Sprintf("LOWER(message) LIKE LOWER('%s')", req.Keyword)
+		queryCondition += fmt.Sprintf("LOWER(message) LIKE LOWER('%%%s%%')", req.Keyword)
 		isHavePreviosCondition = true
 	}
 

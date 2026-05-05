@@ -98,9 +98,8 @@ func ApprovePendingChildSpecialNeedProposal(ctx *gin.Context) {
 	}
 
 	util.ProcessResponse(response.APIResponse{
-		ErrMsg:   service.ApprovePendingChildSpecialNeedProposal(ctx.Param("id"), ctx),
-		Context:  ctx,
-		PostType: action_type.NON_POST,
+		ErrMsg:  service.ApprovePendingChildSpecialNeedProposal(ctx.Param("id"), ctx),
+		Context: ctx,
 	})
 }
 
@@ -125,8 +124,7 @@ func RefusePendingChildSpecialNeedProposal(ctx *gin.Context) {
 	}
 
 	util.ProcessResponse(response.APIResponse{
-		ErrMsg:   service.RefusePendingChildSpecialNeedProposal(ctx.Param("id"), ctx),
-		Context:  ctx,
-		PostType: action_type.NON_POST,
+		ErrMsg:  service.RefusePendingChildSpecialNeedProposal(ctx.Param("id"), ctx),
+		Context: ctx,
 	})
 }

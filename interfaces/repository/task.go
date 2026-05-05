@@ -8,6 +8,7 @@ import (
 
 type ITaskRepository interface {
 	GetTasks(req request.GetTasksRequest, ctx context.Context) ([]entities.Task, int, error)
+	GetTasksOfUser(req request.GetTasksRequest, ctx context.Context) ([]entities.TaskV2, int, error)
 	GetTask(id string, ctx context.Context) (*entities.Task, error)
 	CreateTask(task entities.Task, ctx context.Context) error
 	UpdateTask(task entities.Task, ctx context.Context) error

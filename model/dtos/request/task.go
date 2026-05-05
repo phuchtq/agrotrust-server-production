@@ -5,7 +5,6 @@ type GetTasksRequest struct {
 	Region        string `form:"region"`
 	Status        string `form:"status"`
 	AssignedStaff string `form:"assgined_staff"`
-	ReviewedBy    string `form:"reviewed_by"`
 	SortOrder     string `form:"sort_order"`
 	PageSize      int    `form:"page_size"`
 	Page          int    `form:"page"`

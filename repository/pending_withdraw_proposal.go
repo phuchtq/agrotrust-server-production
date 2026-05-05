@@ -79,7 +79,7 @@ func (p *pendingWithdrawProposalRepo) GetPendingWithdrawProposals(req request.Ge
 	var queryCondition string
 	var isHavePreviosCondition bool = false
 	if req.Keyword != "" {
-		queryCondition += fmt.Sprintf("(LOWER(pool_name) LIKE LOWER('%s') OR LOWER(description) LIKE LOWER('%s'))", req.Keyword, req.Keyword)
+		queryCondition += fmt.Sprintf("(LOWER(pool_name) LIKE LOWER('%%%s%%') OR LOWER(description) LIKE LOWER('%%%s%%'))", req.Keyword, req.Keyword)
 		isHavePreviosCondition = true
 	}
 

@@ -103,6 +103,7 @@ func CreatePendingWithdrawProposal(ctx *gin.Context) {
 	}
 
 	res, err := service.CreatePendingWithdrawProposal(request, ctx)
+
 	util.ProcessResponse(response.APIResponse{
 		Data1:    res,
 		Data2:    res,

@@ -100,9 +100,8 @@ func SubmitTaskProof(ctx *gin.Context) {
 	}
 
 	util.ProcessResponse(response.APIResponse{
-		ErrMsg:   service.SubmitTaskProof(ctx.Param("id"), request, ctx),
-		Context:  ctx,
-		PostType: action_type.NON_POST,
+		ErrMsg:  service.SubmitTaskProof(ctx.Param("id"), request, ctx),
+		Context: ctx,
 	})
 }
 
@@ -127,9 +126,8 @@ func ApproveTaskProof(ctx *gin.Context) {
 	}
 
 	util.ProcessResponse(response.APIResponse{
-		ErrMsg:   service.ApproveTaskProof(ctx.Param("id"), ctx),
-		Context:  ctx,
-		PostType: action_type.NON_POST,
+		ErrMsg:  service.ApproveTaskProof(ctx.Param("id"), ctx),
+		Context: ctx,
 	})
 }
 
@@ -154,8 +152,7 @@ func RefuseTaskProof(ctx *gin.Context) {
 	}
 
 	util.ProcessResponse(response.APIResponse{
-		ErrMsg:   service.RefuseTaskProof(ctx.Param("id"), ctx),
-		Context:  ctx,
-		PostType: action_type.NON_POST,
+		ErrMsg:  service.RefuseTaskProof(ctx.Param("id"), ctx),
+		Context: ctx,
 	})
 }

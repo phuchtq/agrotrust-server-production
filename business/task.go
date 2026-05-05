@@ -284,12 +284,6 @@ func (t *taskService) GetTasks(req request.GetTasksRequest, ctx context.Context)
 		}
 	}
 
-	if req.ReviewedBy != "" {
-		if !util.IsValidSuiAddressStrict(req.ReviewedBy) {
-			return response.PaginationDataResponse{}, genericErr
-		}
-	}
-
 	var res response.PaginationDataResponse
 	// var redisKey string = t.getGetTasksRedisKey(req)
 	// if t.redisCache.Get(redisKey, &res, ctx) {
@@ -318,6 +312,43 @@ func (t *taskService) GetTasks(req request.GetTasksRequest, ctx context.Context)
 	// t.redisCache.Set(redisKey, res, time.Minute*5, ctx)
 
 	return res, nil
+}
+
+// GetUserTasks implements business.ITaskService.
+func (t *taskService) GetUserTasks(wallet string, req request.GetTasksRequest, ctx context.Context) (response.PaginationDataResponse, error) {
+	if !util.IsValidSuiAddressStrict(wallet) {
+		return response.PaginationDataResponse{}, errors.New(noti.GENERIC_ERROR_WARN_MSG)
+	}
+
+	req.SortOrder = util.StandardizeSortOrder(req.SortOrder)
+	req.Keyword = strings.TrimSpace(req.Keyword)
+	if req.Page < 1 {
+		req.Page = 1
+	}
+
+	if req.PageSize < 1 {
+		req.PageSize = default_page_size
+	}
+
+	req.AssignedStaff = wallet
+	data, pages, err := t.taskRepo.GetTasksOfUser(req, ctx)
+	if err != nil {
+		return response.PaginationDataResponse{}, err
+	}
+
+	var amount int
+	if data == nil || len(data) == 0 {
+		amount = 0
+	} else {
+		amount = len(data)
+	}
+
+	return response.PaginationDataResponse{
+		Data:       data,
+		Amount:     amount,
+		Page:       req.Page,
+		TotalPages: pages,
+	}, nil
 }
 
 // GetTasksOfRegionOnUser implements business.ITaskService.
@@ -399,12 +430,6 @@ func (t *taskService) GetTasksOfRegionOnUser(wallet string, req request.GetTasks
 		}
 	}
 
-	if req.ReviewedBy != "" {
-		if !util.IsValidSuiAddressStrict(req.ReviewedBy) {
-			return response.PaginationDataResponse{}, genericErr
-		}
-	}
-
 	req.Region = nft.Region
 
 	data, pages, err := t.taskRepo.GetTasks(req, ctx)
@@ -427,96 +452,96 @@ func (t *taskService) GetTasksOfRegionOnUser(wallet string, req request.GetTasks
 	}, nil
 }
 
-// ReviewAssignedProfileOfTask implements business.ITaskService.
-func (t *taskService) ReviewAssignedProfileOfTask(id string, req request.VoteRequest, ctx context.Context) error {
-	task, err := t.taskRepo.GetTask(id, ctx)
-	if err != nil {
-		return err
-	}
+// // ReviewAssignedProfileOfTask implements business.ITaskService.
+// func (t *taskService) ReviewAssignedProfileOfTask(id string, req request.VoteRequest, ctx context.Context) error {
+// 	task, err := t.taskRepo.GetTask(id, ctx)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
-	if task == nil {
-		return genericErr
-	}
+// 	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
+// 	if task == nil {
+// 		return genericErr
+// 	}
 
-	if time.Now().After(task.EndPeriod) {
-		return errors.New(noti.TASK_ENDED_MESSAGE)
-	}
+// 	if time.Now().After(task.EndPeriod) {
+// 		return errors.New(noti.TASK_ENDED_MESSAGE)
+// 	}
 
-	if task.AssignedStaff == nil {
-		return errors.New(noti.TASK_NOT_CLAIMED_MESSAGE)
-	}
+// 	if task.AssignedStaff == nil {
+// 		return errors.New(noti.TASK_NOT_CLAIMED_MESSAGE)
+// 	}
 
-	var sender string = ctx.Value("address").(string)
-	var staffModule = on_chain.InitializeModuleStaff()
-	var client = t.clients[constant.SuiTestnet]
-	staffNfts, err := on_chain.GetOnChainOwnedObjects[entities.StaffNft](on_chain.GetOnChainOwnedObjectsRequest{
-		Client:       client,
-		OwnerAddress: sender,
-		StructType:   fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), staffModule.GetModule, staffModule.GetStaffNftObjectStruct()),
-		ErrLogger:    t.errLogger,
-	}, ctx)
-	if err != nil {
-		return err
-	}
+// 	var sender string = ctx.Value("address").(string)
+// 	var staffModule = on_chain.InitializeModuleStaff()
+// 	var client = t.clients[constant.SuiTestnet]
+// 	staffNfts, err := on_chain.GetOnChainOwnedObjects[entities.StaffNft](on_chain.GetOnChainOwnedObjectsRequest{
+// 		Client:       client,
+// 		OwnerAddress: sender,
+// 		StructType:   fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), staffModule.GetModule, staffModule.GetStaffNftObjectStruct()),
+// 		ErrLogger:    t.errLogger,
+// 	}, ctx)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	var genericRightErr error = errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
-	if staffNfts == nil || len(staffNfts) == 0 {
-		return genericRightErr
-	}
+// 	var genericRightErr error = errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+// 	if staffNfts == nil || len(staffNfts) == 0 {
+// 		return genericRightErr
+// 	}
 
-	var isLeaderOfRegion bool = false
-	for _, nft := range staffNfts {
-		if nft.Region == task.Region && nft.Role == local_leader_role {
-			isLeaderOfRegion = true
-			break
-		}
-	}
+// 	var isLeaderOfRegion bool = false
+// 	for _, nft := range staffNfts {
+// 		if nft.Region == task.Region && nft.Role == local_leader_role {
+// 			isLeaderOfRegion = true
+// 			break
+// 		}
+// 	}
 
-	if !isLeaderOfRegion {
-		var manageObj entities.Manage
-		if !t.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
-			res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-				Client:    t.clients[constant.SuiTestnet],
-				ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-				ErrLogger: t.errLogger,
-			}, ctx)
-			if err != nil {
-				return err
-			}
+// 	if !isLeaderOfRegion {
+// 		var manageObj entities.Manage
+// 		if !t.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
+// 			res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+// 				Client:    t.clients[constant.SuiTestnet],
+// 				ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+// 				ErrLogger: t.errLogger,
+// 			}, ctx)
+// 			if err != nil {
+// 				return err
+// 			}
 
-			if res != nil {
-				t.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
-				manageObj = *res
-			}
-		}
+// 			if res != nil {
+// 				t.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
+// 				manageObj = *res
+// 			}
+// 		}
 
-		if !slices.Contains(manageObj.AdminIds, sender) {
-			return genericRightErr
-		}
-	}
+// 		if !slices.Contains(manageObj.AdminIds, sender) {
+// 			return genericRightErr
+// 		}
+// 	}
 
-	profile, err := t.profileRepo.GetProfile(ctx.Value("sub").(string), ctx)
-	if err != nil {
-		return err
-	}
+// 	profile, err := t.profileRepo.GetProfile(ctx.Value("sub").(string), ctx)
+// 	if err != nil {
+// 		return err
+// 	}
 
-	if profile.Status == "Suspended" {
-		return errors.New(noti.CURRENTLY_SUSPENDED_MESSAGE)
-	}
+// 	if profile.Status == "Suspended" {
+// 		return errors.New(noti.CURRENTLY_SUSPENDED_MESSAGE)
+// 	}
 
-	var reviewStatus string
-	if req.IsVoteYes {
-		reviewStatus = request_approved_status
-	} else {
-		reviewStatus = request_refused_status
-	}
+// 	var reviewStatus string
+// 	if req.IsVoteYes {
+// 		reviewStatus = request_approved_status
+// 	} else {
+// 		reviewStatus = request_refused_status
+// 	}
 
-	task.ReviewedBy = &sender
-	task.ReviewProfileStatus = reviewStatus
+// 	task.ReviewedBy = &sender
+// 	task.ReviewProfileStatus = reviewStatus
 
-	return t.taskRepo.UpdateTask(*task, ctx)
-}
+// 	return t.taskRepo.UpdateTask(*task, ctx)
+// }
 
 func (t *taskService) getGetTasksRedisKey(req request.GetTasksRequest) string {
 	var keyword string = "empty"
@@ -539,11 +564,6 @@ func (t *taskService) getGetTasksRedisKey(req request.GetTasksRequest) string {
 		assignedStaff = req.AssignedStaff
 	}
 
-	var reviewedBy string = "empty"
-	if req.ReviewedBy != "" {
-		reviewedBy = req.ReviewedBy
-	}
-
-	return fmt.Sprintf("task:kw:%s:r:%s:status:%s:assigned:%s:reviewed:%s:o:%s:s:%d:p:%d",
-		keyword, region, status, assignedStaff, reviewedBy, req.SortOrder, req.PageSize, req.Page)
+	return fmt.Sprintf("task:kw:%s:r:%s:status:%s:assigned:%s:o:%s:s:%d:p:%d",
+		keyword, region, status, assignedStaff, req.SortOrder, req.PageSize, req.Page)
 }

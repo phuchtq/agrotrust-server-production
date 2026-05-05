@@ -94,9 +94,8 @@ func ApprovePayment(ctx *gin.Context) {
 	}
 
 	util.ProcessResponse(response.APIResponse{
-		ErrMsg:   service.ApprovePayment(ctx.Param("id"), ctx),
-		Context:  ctx,
-		PostType: action_type.NON_POST,
+		ErrMsg:  service.ApprovePayment(ctx.Param("id"), ctx),
+		Context: ctx,
 	})
 }
 
@@ -121,9 +120,8 @@ func RefusePayment(ctx *gin.Context) {
 	}
 
 	util.ProcessResponse(response.APIResponse{
-		ErrMsg:   service.RefusePayment(ctx.Param("id"), ctx),
-		Context:  ctx,
-		PostType: action_type.NON_POST,
+		ErrMsg:  service.RefusePayment(ctx.Param("id"), ctx),
+		Context: ctx,
 	})
 }
 
@@ -183,9 +181,8 @@ func CallbackTransaction(ctx *gin.Context) {
 	}
 
 	util.ProcessResponse(response.APIResponse{
-		ErrMsg:   service.CallbackV2(ctx.Param("id"), ctx),
-		Context:  ctx,
-		PostType: action_type.NON_POST,
+		ErrMsg:  service.CallbackV2(ctx.Param("id"), ctx),
+		Context: ctx,
 	})
 }
 
@@ -217,8 +214,7 @@ func CallbackWithAuthTransaction(ctx *gin.Context) {
 	}
 
 	util.ProcessResponse(response.APIResponse{
-		ErrMsg:   service.CallbackWithAuthV2(ctx.Param("id"), request, ctx),
-		Context:  ctx,
-		PostType: action_type.NON_POST,
+		ErrMsg:  service.CallbackWithAuthV2(ctx.Param("id"), request, ctx),
+		Context: ctx,
 	})
 }

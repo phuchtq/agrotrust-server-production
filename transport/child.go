@@ -420,14 +420,9 @@ func CreateBooksNeedWithdrawProposal(ctx *gin.Context) {
 		return
 	}
 
-	res, err := service.CreateBooksNeedWithdrawProposalV2(request, ctx)
-
 	util.ProcessResponse(response.APIResponse{
-		Data1:    res,
-		Data2:    res,
-		ErrMsg:   err,
-		Context:  ctx,
-		PostType: action_type.CREATE_ACTION,
+		ErrMsg:  service.CreateBooksNeedWithdrawProposal(request, ctx),
+		Context: ctx,
 	})
 }
 
@@ -457,14 +452,9 @@ func CreateMealNeedWithdrawProposal(ctx *gin.Context) {
 		return
 	}
 
-	res, err := service.CreateMealNeedWithdrawProposalV2(request, ctx)
-
 	util.ProcessResponse(response.APIResponse{
-		Data1:    res,
-		Data2:    res,
-		ErrMsg:   err,
-		Context:  ctx,
-		PostType: action_type.CREATE_ACTION,
+		ErrMsg:  service.CreateMealNeedWithdrawProposal(request, ctx),
+		Context: ctx,
 	})
 }
 
@@ -494,14 +484,9 @@ func CreateHealthInsuranceNeedWithdrawProposal(ctx *gin.Context) {
 		return
 	}
 
-	res, err := service.CreateHealthInsuranceNeedWithdrawProposalV2(request, ctx)
-
 	util.ProcessResponse(response.APIResponse{
-		Data1:    res,
-		Data2:    res,
-		ErrMsg:   err,
-		Context:  ctx,
-		PostType: action_type.CREATE_ACTION,
+		ErrMsg:  service.CreateHealthInsuranceNeedWithdrawProposal(request, ctx),
+		Context: ctx,
 	})
 }
 
@@ -532,9 +517,8 @@ func CreateSpecialNeedWithdrawProposal(ctx *gin.Context) {
 	}
 
 	util.ProcessResponse(response.APIResponse{
-		ErrMsg:   service.CreateSpecialNeedWithdrawProposal(request, ctx),
-		Context:  ctx,
-		PostType: action_type.CREATE_ACTION,
+		ErrMsg:  service.CreateSpecialNeedWithdrawProposal(request, ctx),
+		Context: ctx,
 	})
 }
 
@@ -596,9 +580,8 @@ func ConfirmSpecialNeedProposal(ctx *gin.Context) {
 	}
 
 	util.ProcessResponse(response.APIResponse{
-		ErrMsg:   service.ConfirmSpecialNeedProposal(ctx.Param("id"), ctx),
-		Context:  ctx,
-		PostType: action_type.NON_POST,
+		ErrMsg:  service.ConfirmSpecialNeedProposal(ctx.Param("id"), ctx),
+		Context: ctx,
 	})
 }
 
@@ -630,9 +613,8 @@ func VoteSpecialNeedProposal(ctx *gin.Context) {
 	}
 
 	util.ProcessResponse(response.APIResponse{
-		ErrMsg:   service.VoteSpecialNeedProposal(ctx.Param("id"), request, ctx),
-		Context:  ctx,
-		PostType: action_type.NON_POST,
+		ErrMsg:  service.VoteSpecialNeedProposal(ctx.Param("id"), request, ctx),
+		Context: ctx,
 	})
 }
 
@@ -663,9 +645,8 @@ func UpdateBooksNeed(ctx *gin.Context) {
 	}
 
 	util.ProcessResponse(response.APIResponse{
-		ErrMsg:   service.UpdateBooksNeed(request, ctx),
-		Context:  ctx,
-		PostType: action_type.NON_POST,
+		ErrMsg:  service.UpdateBooksNeed(request, ctx),
+		Context: ctx,
 	})
 }
 
@@ -696,9 +677,8 @@ func UpdateMealNeed(ctx *gin.Context) {
 	}
 
 	util.ProcessResponse(response.APIResponse{
-		ErrMsg:   service.UpdateMealNeed(request, ctx),
-		Context:  ctx,
-		PostType: action_type.NON_POST,
+		ErrMsg:  service.UpdateMealNeed(request, ctx),
+		Context: ctx,
 	})
 }
 
@@ -729,8 +709,7 @@ func UpdateHealthInsuranceNeed(ctx *gin.Context) {
 	}
 
 	util.ProcessResponse(response.APIResponse{
-		ErrMsg:   service.UpdateHealthInsuranceNeed(request, ctx),
-		Context:  ctx,
-		PostType: action_type.NON_POST,
+		ErrMsg:  service.UpdateHealthInsuranceNeed(request, ctx),
+		Context: ctx,
 	})
 }

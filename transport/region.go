@@ -300,8 +300,7 @@ func ReviewRegionSuggestion(ctx *gin.Context) {
 	}
 
 	util.ProcessResponse(response.APIResponse{
-		ErrMsg:   service.ReviewRegionSuggestion(ctx.Param("id"), request, ctx),
-		Context:  ctx,
-		PostType: action_type.NON_POST,
+		ErrMsg:  service.ReviewRegionSuggestion(ctx.Param("id"), request, ctx),
+		Context: ctx,
 	})
 }

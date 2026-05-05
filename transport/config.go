@@ -2,7 +2,6 @@ package transport
 
 import (
 	"raise-child/business"
-	action_type "raise-child/constants/action_type"
 	"raise-child/model/dtos/request"
 	"raise-child/model/dtos/response"
 	"raise-child/util"
@@ -37,9 +36,8 @@ func UpdateChildEditMealNeedDates(ctx *gin.Context) {
 	}
 
 	util.ProcessResponse(response.APIResponse{
-		ErrMsg:   service.UpdateChildEditMealNeedDates(request, ctx),
-		Context:  ctx,
-		PostType: action_type.NON_POST,
+		ErrMsg:  service.UpdateChildEditMealNeedDates(request, ctx),
+		Context: ctx,
 	})
 }
 
@@ -70,9 +68,8 @@ func UpdateChildEditBooksNeedDates(ctx *gin.Context) {
 	}
 
 	util.ProcessResponse(response.APIResponse{
-		ErrMsg:   service.UpdateChildEditBooksNeedDates(request, ctx),
-		Context:  ctx,
-		PostType: action_type.NON_POST,
+		ErrMsg:  service.UpdateChildEditBooksNeedDates(request, ctx),
+		Context: ctx,
 	})
 }
 
@@ -103,9 +100,8 @@ func UpdateChildEditHealthInsuranceNeedDates(ctx *gin.Context) {
 	}
 
 	util.ProcessResponse(response.APIResponse{
-		ErrMsg:   service.UpdateChildEditHealthInsuranceNeedDates(request, ctx),
-		Context:  ctx,
-		PostType: action_type.NON_POST,
+		ErrMsg:  service.UpdateChildEditHealthInsuranceNeedDates(request, ctx),
+		Context: ctx,
 	})
 }
 
@@ -136,8 +132,7 @@ func EditSpecialNeedDao(ctx *gin.Context) {
 	}
 
 	util.ProcessResponse(response.APIResponse{
-		ErrMsg:   service.EditSpecialNeedDao(request, ctx),
-		Context:  ctx,
-		PostType: action_type.NON_POST,
+		ErrMsg:  service.EditSpecialNeedDao(request, ctx),
+		Context: ctx,
 	})
 }

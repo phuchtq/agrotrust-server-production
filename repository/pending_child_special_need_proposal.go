@@ -80,7 +80,7 @@ func (p *pendingChildSpecialNeedProposalRepo) GetPendingChildSpecialNeedProposal
 	var queryCondition string
 	var isHavePreviosCondition bool = false
 	if req.Keyword != "" {
-		queryCondition += fmt.Sprintf("LOWER(description) LIKE LOWER('%s')", req.Keyword)
+		queryCondition += fmt.Sprintf("LOWER(description) LIKE LOWER('%%%s%%')", req.Keyword)
 		isHavePreviosCondition = true
 	}
 
@@ -89,7 +89,7 @@ func (p *pendingChildSpecialNeedProposalRepo) GetPendingChildSpecialNeedProposal
 			queryCondition += " AND "
 		}
 
-		queryCondition += fmt.Sprintf("LOWER(region) = LOWER('%s')", req.Region)
+		queryCondition += fmt.Sprintf("LOWER(region) = LOWER('%%%s%%')", req.Region)
 		isHavePreviosCondition = true
 	}
 

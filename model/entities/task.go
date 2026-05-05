@@ -3,6 +3,21 @@ package entities
 import "time"
 
 type Task struct {
+	ID                string    `json:"id"`
+	IsChildTask       bool      `json:"is_child_task"`
+	ChildTaskDetailID *string   `json:"child_task_detail_id"`
+	CreatedBy         string    `json:"created_by"`
+	AssignedProfileID *string   `json:"assigned_profile_id"`
+	AssignedStaff     *string   `json:"assgined_staff"`
+	Region            string    `json:"region"`
+	Description       string    `json:"description"`
+	StartPeriod       time.Time `json:"start_period"`
+	EndPeriod         time.Time `json:"end_period"`
+	CreatedAt         time.Time `json:"created_at"`
+	UpdatedAt         time.Time `json:"updated_at"`
+}
+
+type TaskV2 struct {
 	ID                  string    `json:"id"`
 	IsChildTask         bool      `json:"is_child_task"`
 	ChildTaskDetailID   *string   `json:"child_task_detail_id"`
@@ -17,6 +32,7 @@ type Task struct {
 	EndPeriod           time.Time `json:"end_period"`
 	CreatedAt           time.Time `json:"created_at"`
 	UpdatedAt           time.Time `json:"updated_at"`
+	IsSubmitted         bool      `json:"is_submitted"`
 }
 
 type ChildTaskDetail struct {

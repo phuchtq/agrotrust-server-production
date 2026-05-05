@@ -166,8 +166,7 @@ func ReviewUploadChildRequest(ctx *gin.Context) {
 	}
 
 	util.ProcessResponse(response.APIResponse{
-		ErrMsg:   service.ReviewUploadChildRequest(ctx.Param("id"), request, ctx),
-		Context:  ctx,
-		PostType: action_type.NON_POST,
+		ErrMsg:  service.ReviewUploadChildRequest(ctx.Param("id"), request, ctx),
+		Context: ctx,
 	})
 }

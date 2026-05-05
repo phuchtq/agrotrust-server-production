@@ -164,9 +164,8 @@ func VoteRegistrationRequest(ctx *gin.Context) {
 	}
 
 	util.ProcessResponse(response.APIResponse{
-		ErrMsg:   service.VoteRegistrationRequest(ctx.Param("id"), request, ctx),
-		Context:  ctx,
-		PostType: action_type.NON_POST,
+		ErrMsg:  service.VoteRegistrationRequest(ctx.Param("id"), request, ctx),
+		Context: ctx,
 	})
 }
 
@@ -191,8 +190,7 @@ func ConfirmRegistrationRequest(ctx *gin.Context) {
 	}
 
 	util.ProcessResponse(response.APIResponse{
-		ErrMsg:   service.ConfirmRegistrationRequest(ctx.Param("id"), ctx),
-		Context:  ctx,
-		PostType: action_type.NON_POST,
+		ErrMsg:  service.ConfirmRegistrationRequest(ctx.Param("id"), ctx),
+		Context: ctx,
 	})
 }

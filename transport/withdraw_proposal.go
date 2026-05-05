@@ -93,9 +93,8 @@ func VoteWithdrawProposal(ctx *gin.Context) {
 	}
 
 	util.ProcessResponse(response.APIResponse{
-		ErrMsg:   service.VoteWithdrawProposal(ctx.Param("id"), ctx),
-		Context:  ctx,
-		PostType: action_type.NON_POST,
+		ErrMsg:  service.VoteWithdrawProposal(ctx.Param("id"), ctx),
+		Context: ctx,
 	})
 }
 
@@ -187,8 +186,7 @@ func CreateWithdrawProposal(ctx *gin.Context) {
 	}
 
 	util.ProcessResponse(response.APIResponse{
-		ErrMsg:   service.CreateWithdrawProposal(request, ctx),
-		Context:  ctx,
-		PostType: action_type.CREATE_ACTION,
+		ErrMsg:  service.CreateWithdrawProposal(request, ctx),
+		Context: ctx,
 	})
 }

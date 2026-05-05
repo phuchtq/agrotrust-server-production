@@ -100,9 +100,8 @@ func CreateGift(ctx *gin.Context) {
 	}
 
 	util.ProcessResponse(response.APIResponse{
-		ErrMsg:   service.CreateGift(request, ctx),
-		Context:  ctx,
-		PostType: action_type.CREATE_ACTION,
+		ErrMsg:  service.CreateGift(request, ctx),
+		Context: ctx,
 	})
 }
 
@@ -134,8 +133,7 @@ func ConfirmReceiveGift(ctx *gin.Context) {
 	}
 
 	util.ProcessResponse(response.APIResponse{
-		ErrMsg:   service.ConfirmReceiveGift(ctx.Param("id"), request, ctx),
-		Context:  ctx,
-		PostType: action_type.NON_POST,
+		ErrMsg:  service.ConfirmReceiveGift(ctx.Param("id"), request, ctx),
+		Context: ctx,
 	})
 }

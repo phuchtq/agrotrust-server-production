@@ -142,8 +142,7 @@ func CreateCampaignWithdrawProposal(ctx *gin.Context) {
 	}
 
 	util.ProcessResponse(response.APIResponse{
-		ErrMsg:   service.CreateCampaignWithdrawProposal(request, ctx),
-		Context:  ctx,
-		PostType: action_type.CREATE_ACTION,
+		ErrMsg:  service.CreateCampaignWithdrawProposal(request, ctx),
+		Context: ctx,
 	})
 }
