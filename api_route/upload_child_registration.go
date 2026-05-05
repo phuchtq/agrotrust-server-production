@@ -62,6 +62,6 @@ func InitializeUploadChildRequestRoute(server *gin.Engine) {
 	authGroup.POST("", transport.CreateUploadChildRequest)
 
 	// Admin group
-	var adminGroup = server.Group(contextPath, middleware.Authorize, middleware.AdminAuthorize)
-	adminGroup.POST("/:id/review", transport.ReviewUploadChildRequest)
+	var leaderGroup = server.Group(contextPath, middleware.Authorize, middleware.LeaderAuthorize)
+	leaderGroup.POST("/:id/review", transport.ReviewUploadChildRequest)
 }
