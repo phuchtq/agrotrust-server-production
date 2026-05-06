@@ -287,7 +287,7 @@ func (w *withdrawProposalService) ProposeChildrenWithdrawRequests(ctx context.Co
 	}
 
 	var curTime time.Time = time.Now()
-	if !w.isChildrenWithdrawProposalDateValid(curTime) {
+	if !isChildrenWithdrawProposalDateValid(curTime) {
 		return errors.New(noti.NOT_CHILDREN_WITHDRAW_PROPOSED_DATE)
 	}
 
@@ -1335,7 +1335,7 @@ func (w *withdrawProposalService) getGetWithdrawProposalsRedisKey(req request.Ge
 		keyword, creator, minAmount, maxAmount, isExecuted, isClosed, sortCriteria, req.SortOrder, req.PageSize, req.Page)
 }
 
-func (w *withdrawProposalService) isChildrenWithdrawProposalDateValid(curTime time.Time) bool {
+func isChildrenWithdrawProposalDateValid(curTime time.Time) bool {
 	var curDateDay int = curTime.Day()
 	return curDateDay == children_withdraw_propososed_first_date || curDateDay == children_withdraw_propososed_second_date || curDateDay == children_withdraw_propososed_third_date || curDateDay == children_withdraw_propososed_fourth_date
 }

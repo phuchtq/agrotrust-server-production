@@ -78,6 +78,28 @@ func (b *backgroundChildrenWithdrawRequestRepo) GetCurrentPendingRequests(ctx co
 	return res, nil
 }
 
+// SetRequestsExecuted implements repository.IBackgroundChildrenWithdrawProposalRequestRepository.
+func (b *backgroundChildrenWithdrawRequestRepo) SetRequestsExecuted(reqs []entities.BackgroundChildrenWithdrawProposalsRequest, ctx context.Context) error {
+	if reqs == nil || len(reqs) == 0 {
+		return nil
+	}
+
+	var query string = "UPDATE " + background_children_withdraw_request_table + " SET is_executed = TRUE, updated_at = $1 WHERE "
+	for i, req := range reqs {
+		query += fmt.Sprintf("id = '%s'", req.ID)
+		if i < len(reqs)-1 {
+			query += " OR "
+		}
+	}
+
+	if _, err := b.db.ExecContext(ctx, query, time.Now()); err != nil {
+		b.errLogger.Println(fmt.Sprintf(noti.REPO_ERR_MSG, shared.BACKGROUND_CHILDREN_WITHDRAW_REQUEST_REPOSITORY) + "SetRequestsExecuted - " + err.Error())
+		return errors.New(noti.INTERNALL_ERR_MSG)
+	}
+
+	return nil
+}
+
 // IsRegionProposed implements repository.IBackgroundChildrenWithdrawProposalRequestRepository.
 func (b *backgroundChildrenWithdrawRequestRepo) IsRegionProposed(region string, ctx context.Context) (bool, error) {
 	var query string = "SELECT id FROM " + background_children_withdraw_request_table + " WHERE region = $1 AND raw_proposed_date = $2 AND is_executed = FALSE LIMIT 1"
