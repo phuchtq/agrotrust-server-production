@@ -199,7 +199,7 @@ func ConfirmMainPoolWithdrawProposal(ctx *gin.Context) {
 // @Router       /withdraw-proposals [post]
 func CreateWithdrawProposal(ctx *gin.Context) {
 	var request request.CreateWithdrawProposalRequest
-	if ctx.ShouldBindQuery(&request) != nil {
+	if ctx.ShouldBindJSON(&request) != nil {
 		util.ProcessResponse(util.GenerateInvalidRequestAndSystemProblemModel(ctx, nil))
 		return
 	}
