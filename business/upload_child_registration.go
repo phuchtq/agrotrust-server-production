@@ -170,6 +170,7 @@ func (u *uploadChildRequestService) ReviewUploadChildRequest(id string, req requ
 			SecondGuardianRelation:           secondGuardianRelation,
 			SecondGuardianIdentityCardBlobID: secondGuardianIdentityCardBlobID,
 		}),
+		ErrLogger: u.errLogger,
 	}, ctx); err != nil {
 		return err
 	}
