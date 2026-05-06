@@ -487,9 +487,10 @@ func (r *registrationRequestService) CreateRegistrationRequest(req request.Creat
 		return nil, err
 	}
 
+	var curTime time.Time = time.Now()
 	if reqs != nil && len(reqs) > 0 {
 		for _, req := range reqs {
-			if req.RegisterRole == role && (req.Status == request_pending_status || req.Status == request_approved_status) {
+			if req.RegisterRole == role && (req.Status == request_pending_status || req.Status == request_approved_status) && curTime.Before(req.ClosedAt) {
 				r.errLogger.Println("Error previous reqs!!!")
 				return nil, genericErr
 			}
@@ -536,7 +537,6 @@ func (r *registrationRequestService) CreateRegistrationRequest(req request.Creat
 	var lastName string = strings.TrimSpace(*profile.LastName)
 
 	// todo: validate identity code
-	var curTime time.Time = time.Now()
 	var request = entities.RegistrationRequest{
 		ID:                 util.GenerateId(),
 		ProfileID:          ctx.Value("sub").(string),
