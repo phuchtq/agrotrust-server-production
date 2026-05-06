@@ -29,14 +29,14 @@ func InitializeOffChainWithdrawProposalRepository(db *sql.DB, errLogger *log.Log
 }
 
 // CreateOffChainWithdrawProposal implements repository.IOffChainWithdrawProposalRepository.
-func (o *offChainWithdrawProposalRepo) CreateOffChainWithdrawProposal(donation entities.OffChainWithdrawProposal, ctx context.Context) error {
+func (o *offChainWithdrawProposalRepo) CreateOffChainWithdrawProposal(proposal entities.OffChainWithdrawProposal, ctx context.Context) error {
 	var query string = "INSERT INTO " + offchain_withdraw_proposal_table +
 		" (id, purpose, proposal_id, target, local_pool_id, created_at) " +
-		"values ($1, $2, $3, $4, $5)"
+		"values ($1, $2, $3, $4, $5, $6)"
 
 	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.OFFCHAIN_WITHDRAW_PROPOSAL_REPOSITORY) + "CreateOffChainWithdrawProposal - "
 
-	if _, err := o.db.ExecContext(ctx, query, donation.ID, donation.Purpose, donation.ProposalID, donation.Target, donation.LocalPoolID, donation.CreatedAt); err != nil {
+	if _, err := o.db.ExecContext(ctx, query, proposal.ID, proposal.Purpose, proposal.ProposalID, proposal.Target, proposal.LocalPoolID, proposal.CreatedAt); err != nil {
 
 		o.errLogger.Println(errLogMsg + err.Error())
 		return errors.New(noti.INTERNALL_ERR_MSG)
