@@ -25,6 +25,7 @@ func InitializeBankProfileRoutes(server *gin.Engine) {
 	// Normal group
 	var norGroup = server.Group(contextPath)
 	norGroup.GET("/:id", transport.GetBankProfile)
+	norGroup.GET("/user/:id", transport.GetBankProfileByOwner)
 
 	// Manager group
 	var authGroup = server.Group(contextPath, middleware.Authorize, middleware.ManagerRoleAuthorize)
