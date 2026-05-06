@@ -509,21 +509,13 @@ func (r *registrationRequestService) CreateRegistrationRequest(req request.Creat
 		}
 	}
 
-	var manageObj entities.Manage
-	if !r.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
-		res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-			Client:    r.clients[constant.SuiTestnet],
-			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-			ErrLogger: r.errLogger,
-		}, ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		if res != nil {
-			r.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
-			manageObj = *res
-		}
+	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    r.clients[constant.SuiTestnet],
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: r.errLogger,
+	}, ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	if role == volunteer_role {
@@ -532,12 +524,12 @@ func (r *registrationRequestService) CreateRegistrationRequest(req request.Creat
 		}
 	}
 
-	identityCardBytes, _ := r.walrusProvider.FetchBytesImage(req.IdentityCardBlobID)
-	avatarBytes, _ := r.walrusProvider.FetchBytesImage(req.AvatarBlobID)
-	if identityCardBytes == nil || avatarBytes == nil {
-		r.errLogger.Println("Err at walrus")
-		return nil, genericErr
-	}
+	// identityCardBytes, _ := r.walrusProvider.FetchBytesImage(req.IdentityCardBlobID)
+	// avatarBytes, _ := r.walrusProvider.FetchBytesImage(req.AvatarBlobID)
+	// if identityCardBytes == nil || avatarBytes == nil {
+	// 	r.errLogger.Println("Err at walrus")
+	// 	return nil, genericErr
+	// }
 
 	var identityCode string = util.StandardizeString(*profile.IdentityCode)
 	var firstName string = strings.TrimSpace(*profile.FirstName)

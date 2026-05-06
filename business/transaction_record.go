@@ -121,22 +121,15 @@ func (t *transactionRecordService) GetTransactionRecordsV2(req request.GetTransa
 			ErrLogger:    t.errLogger,
 		}, ctx)
 	} else {
-		var manageObj entities.Manage
-		if !t.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
-			res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-				Client:    client,
-				ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-				ErrLogger: t.errLogger,
-			}, ctx)
-			if err != nil {
-				return response.GetTransactionRecordsResponse{}, err
-			}
-
-			if res != nil {
-				t.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
-				manageObj = *res
-			}
+		manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+			Client:    client,
+			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+			ErrLogger: t.errLogger,
+		}, ctx)
+		if err != nil {
+			return response.GetTransactionRecordsResponse{}, err
 		}
+
 		txs, errRes = on_chain.GetOnChainObjects[entities.Transaction](on_chain.GetOnChainObjectsRequest{
 			Client:    client,
 			ObjectIds: manageObj.TransactionRecords,
@@ -268,12 +261,10 @@ func (t *transactionRecordService) GetTransactionRecordsV2(req request.GetTransa
 		}
 	}
 
-	res = response.GetTransactionRecordsResponse{
-		Data:       data,
-		Amount:     len(data),
-		Page:       req.Page,
-		TotalPages: int(math.Ceil(float64(len(filteredTxs)) / float64(req.PageSize))),
-	}
+	res.Data = data
+	res.Amount = len(data)
+	res.Page = req.Page
+	res.TotalPages = int(math.Ceil(float64(len(filteredTxs)) / float64(req.PageSize)))
 
 	return res, nil
 }
