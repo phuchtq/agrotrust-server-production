@@ -1024,6 +1024,25 @@ definitions:
       url:
         type: string
     type: object
+  response.GetTransactionRecordsResponse:
+    properties:
+      amount:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/response.TransactionResponse'
+        type: array
+      page:
+        type: integer
+      pool_id:
+        type: string
+      pool_name:
+        type: string
+      pool_total_donation:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
   response.GiftResponse:
     properties:
       cancel_reason:
@@ -1251,6 +1270,15 @@ definitions:
         type: array
       wallet_address:
         type: string
+    type: object
+  response.PoolResponse:
+    properties:
+      id:
+        type: string
+      pool_name:
+        type: string
+      total_donation:
+        type: integer
     type: object
   response.RegionsResponse:
     properties:
@@ -4569,6 +4597,38 @@ paths:
       summary: Create Pool Campaign Pending Withdraw Proposal
       tags:
       - pool-campaigns
+  /pools/leader/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get pool detail of leader's region
+      parameters:
+      - description: Leader Wallet Address
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.PoolResponse'
+        "400":
+          description: Invalid data. Please try again.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "500":
+          description: There is something wrong in the system during the process.
+            Please try again later.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+      security:
+      - BearerAuth: []
+      summary: Get pool detail of leader's region
+      tags:
+      - pools
   /profiles/{id}:
     get:
       consumes:
@@ -5851,7 +5911,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.PaginationDataResponse'
+            $ref: '#/definitions/response.GetTransactionRecordsResponse'
         "400":
           description: Invalid data. Please try again.
           schema:

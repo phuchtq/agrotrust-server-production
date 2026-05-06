@@ -17,7 +17,7 @@ import (
 // @Accept       json
 // @Produce      json
 // @Param        request  query      request.GetTransactionRecordsRequest true  "Filter criteria"
-// @Success      200      {object}  response.PaginationDataResponse
+// @Success      200      {object}  response.GetTransactionRecordsResponse
 // @Failure      400      {object}  response.MessageAPIResponse "Invalid data. Please try again."
 // @Failure      500      {object}  response.MessageAPIResponse "There is something wrong in the system during the process. Please try again later."
 // @Router       /tx-records [get]
@@ -34,7 +34,7 @@ func GetTransactionRecords(ctx *gin.Context) {
 		return
 	}
 
-	res, err := service.GetTransactionRecords(request, ctx)
+	res, err := service.GetTransactionRecordsV2(request, ctx)
 
 	util.ProcessResponse(response.APIResponse{
 		Data1:    res,

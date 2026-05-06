@@ -4793,6 +4793,55 @@ const docTemplate = `{
                 }
             }
         },
+        "/pools/leader/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Get pool detail of leader's region",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "pools"
+                ],
+                "summary": "Get pool detail of leader's region",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Leader Wallet Address",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.PoolResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid data. Please try again.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "There is something wrong in the system during the process. Please try again later.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/profiles/personal-wallet-profile/{id}": {
             "get": {
                 "description": "Get a wallet personal profile",
@@ -6741,7 +6790,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.PaginationDataResponse"
+                            "$ref": "#/definitions/response.GetTransactionRecordsResponse"
                         }
                     },
                     "400": {
@@ -8731,6 +8780,35 @@ const docTemplate = `{
                 }
             }
         },
+        "response.GetTransactionRecordsResponse": {
+            "type": "object",
+            "properties": {
+                "amount": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/response.TransactionResponse"
+                    }
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "pool_id": {
+                    "type": "string"
+                },
+                "pool_name": {
+                    "type": "string"
+                },
+                "pool_total_donation": {
+                    "type": "integer"
+                },
+                "total_pages": {
+                    "type": "integer"
+                }
+            }
+        },
         "response.GiftResponse": {
             "type": "object",
             "properties": {
@@ -9074,6 +9152,20 @@ const docTemplate = `{
                 },
                 "wallet_address": {
                     "type": "string"
+                }
+            }
+        },
+        "response.PoolResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "pool_name": {
+                    "type": "string"
+                },
+                "total_donation": {
+                    "type": "integer"
                 }
             }
         },
