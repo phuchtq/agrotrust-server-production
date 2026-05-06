@@ -33,15 +33,17 @@ import (
 )
 
 type withdrawProposalService struct {
-	paymentRepo     i_repository.IPaymentRepository
-	bankProfileRepo i_repository.IBankProfileRepository
-	withdrawRepo    i_repository.IOffChainWithdrawProposalRepository
-	redisCache      cache.IRedisCache
-	clients         map[string]sui.ISuiAPI
-	errLogger       *log.Logger
+	backgroundChildrenWithdrawRepo i_repository.IBackgroundChildrenWithdrawProposalRequestRepository
+	paymentRepo                    i_repository.IPaymentRepository
+	bankProfileRepo                i_repository.IBankProfileRepository
+	withdrawRepo                   i_repository.IOffChainWithdrawProposalRepository
+	redisCache                     cache.IRedisCache
+	clients                        map[string]sui.ISuiAPI
+	errLogger                      *log.Logger
 }
 
 func initializeWithdrawProposalService(
+	backgroundChildrenWithdrawRepo i_repository.IBackgroundChildrenWithdrawProposalRequestRepository,
 	paymentRepo i_repository.IPaymentRepository,
 	bankProfileRepo i_repository.IBankProfileRepository,
 	withdrawRepo i_repository.IOffChainWithdrawProposalRepository,
@@ -49,12 +51,13 @@ func initializeWithdrawProposalService(
 	errLogger *log.Logger,
 ) business.IWithdrawProposalService {
 	return &withdrawProposalService{
-		paymentRepo:     paymentRepo,
-		bankProfileRepo: bankProfileRepo,
-		withdrawRepo:    withdrawRepo,
-		redisCache:      cache.InitializeRedisCache(),
-		clients:         clients,
-		errLogger:       errLogger,
+		backgroundChildrenWithdrawRepo: backgroundChildrenWithdrawRepo,
+		paymentRepo:                    paymentRepo,
+		bankProfileRepo:                bankProfileRepo,
+		withdrawRepo:                   withdrawRepo,
+		redisCache:                     cache.InitializeRedisCache(),
+		clients:                        clients,
+		errLogger:                      errLogger,
 	}
 }
 
@@ -67,6 +70,7 @@ func GenerateWithdrawProposalService() (business.IWithdrawProposalService, error
 	}
 
 	return initializeWithdrawProposalService(
+		repository.InitializeBackgroundChildrenWithdrawRequestRepository(cnn, errLogger),
 		repository.InitializePaymentRepository(cnn, errLogger),
 		repository.InitializeBankProfileRepository(cnn, errLogger),
 		repository.InitializeOffChainWithdrawProposalRepository(cnn, errLogger),
@@ -79,6 +83,13 @@ const (
 	withdraw_proposal_records_limit    int     = 10
 	min_withdraw_proposal_amount_value int64   = 10_000
 	min_withdraw_proposal_approve_rate float32 = 0.8
+)
+
+const (
+	children_withdraw_propososed_first_date  int = 7
+	children_withdraw_propososed_second_date int = 14
+	children_withdraw_propososed_third_date  int = 21
+	children_withdraw_propososed_fourth_date int = 28
 )
 
 // // CreateWithdrawProposal implements business.IWithdrawProposalService.
@@ -225,6 +236,89 @@ const (
 // 			CreatedAt: time.Now(),
 // 		}, ctx)
 // }
+
+// ProposeChildrenWithdrawRequests implements business.IWithdrawProposalService.
+func (w *withdrawProposalService) ProposeChildrenWithdrawRequests(ctx context.Context) error {
+	var sender string = ctx.Value("address").(string)
+	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
+	if !util.IsValidSuiAddressStrict(sender) {
+		return genericErr
+	}
+
+	var client = w.clients[constant.SuiTestnet]
+	manage, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: w.errLogger,
+	}, ctx)
+	if err != nil {
+		return err
+	}
+
+	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
+	if manage == nil {
+		return internalErr
+	}
+
+	var leaderNftId string
+	for i, leader := range manage.LocalLeaderIds {
+		if leader == sender {
+			leaderNftId = manage.LocalLeaderNfts[i]
+			break
+		}
+	}
+
+	var genericRightErr error = errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+	if leaderNftId == "" {
+		return genericRightErr
+	}
+
+	leaderNft, err := on_chain.GetOnChainObject[entities.StaffNft](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  leaderNftId,
+		ErrLogger: w.errLogger,
+	}, ctx)
+	if err != nil {
+		return err
+	}
+
+	if leaderNft == nil {
+		return internalErr
+	}
+
+	var curTime time.Time = time.Now()
+	if !w.isChildrenWithdrawProposalDateValid(curTime) {
+		return errors.New(noti.NOT_CHILDREN_WITHDRAW_PROPOSED_DATE)
+	}
+
+	isProposed, err := w.backgroundChildrenWithdrawRepo.IsRegionProposed(leaderNft.Region, ctx)
+	if err != nil {
+		return err
+	}
+
+	if isProposed {
+		return errors.New(noti.CHILDREN_WITHDRAW_PROPOSED_MESSAGE)
+	}
+
+	bankProfile, err := w.bankProfileRepo.GetBankProfileByOwner(sender, ctx)
+	if err != nil {
+		return err
+	}
+
+	if bankProfile == nil {
+		return errors.New(noti.LEADER_NOT_UPLOAD_BANK_PROFILE_MESSAGE)
+	}
+
+	return w.backgroundChildrenWithdrawRepo.CreateRequest(entities.BackgroundChildrenWithdrawProposalsRequest{
+		ID:              util.GenerateId(),
+		ProfileID:       ctx.Value("sub").(string),
+		ActorAddress:    sender,
+		Region:          leaderNft.Region,
+		RawProposedDate: util.TimeToRawDate(curTime),
+		CreatedAt:       curTime,
+		UpdatedAt:       curTime,
+	}, ctx)
+}
 
 // CreateWithdrawProposal implements business.IWithdrawProposalService.
 func (w *withdrawProposalService) CreateWithdrawProposal(req request.CreateWithdrawProposalRequest, ctx context.Context) error {
@@ -1239,4 +1333,9 @@ func (w *withdrawProposalService) getGetWithdrawProposalsRedisKey(req request.Ge
 
 	return fmt.Sprintf("off_withdraw_proposal:kw:%s:of:%s:min:%s:max:%s:executed:%s:closed:%s:sc:%s:o:%s:s:%d:p:%d",
 		keyword, creator, minAmount, maxAmount, isExecuted, isClosed, sortCriteria, req.SortOrder, req.PageSize, req.Page)
+}
+
+func (w *withdrawProposalService) isChildrenWithdrawProposalDateValid(curTime time.Time) bool {
+	var curDateDay int = curTime.Day()
+	return curDateDay == children_withdraw_propososed_first_date || curDateDay == children_withdraw_propososed_second_date || curDateDay == children_withdraw_propososed_third_date || curDateDay == children_withdraw_propososed_fourth_date
 }

@@ -525,13 +525,6 @@ func (r *registrationRequestService) CreateRegistrationRequest(req request.Creat
 		}
 	}
 
-	// identityCardBytes, _ := r.walrusProvider.FetchBytesImage(req.IdentityCardBlobID)
-	// avatarBytes, _ := r.walrusProvider.FetchBytesImage(req.AvatarBlobID)
-	// if identityCardBytes == nil || avatarBytes == nil {
-	// 	r.errLogger.Println("Err at walrus")
-	// 	return nil, genericErr
-	// }
-
 	var identityCode string = util.StandardizeString(*profile.IdentityCode)
 	var firstName string = strings.TrimSpace(*profile.FirstName)
 	var lastName string = strings.TrimSpace(*profile.LastName)

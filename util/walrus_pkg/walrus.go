@@ -1,12 +1,16 @@
 package walruspkg
 
 import (
+	"fmt"
+	"io"
 	"log"
+	"net/http"
 
 	walrus_go "github.com/namihq/walrus-go"
 )
 
 type walrusProvider struct {
+	url       string
 	client    *walrus_go.Client
 	errLogger *log.Logger
 }
@@ -31,6 +35,7 @@ func InitializeWalrusProvider(errLogger *log.Logger) IWalrusProvider {
 		}
 
 		_walrusProvider = &walrusProvider{
+			url:       "https://aggregator.walrus-testnet.walrus.space/v1/blobs/",
 			client:    walrusClient,
 			errLogger: errLogger,
 		}
@@ -41,11 +46,17 @@ func InitializeWalrusProvider(errLogger *log.Logger) IWalrusProvider {
 
 // FetchBytesImage implements IWalrusProvider.
 func (w *walrusProvider) FetchBytesImage(blobID string) ([]byte, error) {
+	var postUrl string = w.url + blobID
 
-	// res, err := w.client.Read(blobID, nil)
-	// if err != nil {
-	// 	w.errLogger.Println(err.Error())
-	// }
+	resp, err := http.Get(postUrl)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
 
-	return nil, nil
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("failed to fetch blob: HTTP %d", resp.StatusCode)
+	}
+
+	return io.ReadAll(resp.Body)
 }

@@ -6,6 +6,7 @@ import (
 )
 
 type IBackgroundChildrenWithdrawProposalRequestRepository interface {
-	CreateRequest(req entities.BackgroundChildrenWithdrawProposalsRequest, ctx context.Context) error
 	GetCurrentPendingRequests(ctx context.Context) ([]entities.BackgroundChildrenWithdrawProposalsRequest, error)
+	CreateRequest(req entities.BackgroundChildrenWithdrawProposalsRequest, ctx context.Context) error
+	IsRegionProposed(region string, ctx context.Context) (bool, error)
 }

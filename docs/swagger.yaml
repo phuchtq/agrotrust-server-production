@@ -6230,6 +6230,36 @@ paths:
       summary: Vote on a withdraw proposal
       tags:
       - Withdrawal
+  /withdraw-proposals/children/propose:
+    post:
+      consumes:
+      - application/json
+      description: Propose children withdraw proposals
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "400":
+          description: Invalid data. Please try again.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "401":
+          description: You have no rights to access this action.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "500":
+          description: There is something wrong in the system during the process.
+            Please try again later.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+      security:
+      - BearerAuth: []
+      summary: Propose children withdraw proposals
+      tags:
+      - Withdrawal
 schemes:
 - https
 securityDefinitions:

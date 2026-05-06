@@ -55,6 +55,17 @@ func InitializeWithdrawProposalRoute(server *gin.Engine) {
 	var authGroup = server.Group(contextPath, middleware.Authorize)
 	authGroup.POST("", transport.CreateWithdrawProposal)
 	authGroup.POST("/:id/vote", transport.VoteWithdrawProposal)
-	authGroup.POST("/:id/confirm", transport.ConfirmWithdrawProposal)
 	authGroup.POST("/:id/main-pool-confirm", transport.ConfirmMainPoolWithdrawProposal)
+
+	// Leader group
+	var leaderGroup = server.Group(contextPath, middleware.Authorize, middleware.LeaderAuthorize)
+	leaderGroup.POST("/children/propose", transport.ProposeChildrenWithdrawRequests)
+
+	// Manage group
+	var managerGroup = server.Group(contextPath, middleware.Authorize, middleware.ManagerRoleAuthorize)
+	managerGroup.POST("", transport.CreateWithdrawProposal)
+
+	// Admin Group
+	var adminGroup = server.Group(contextPath, middleware.Authorize, middleware.AdminAuthorize)
+	adminGroup.POST("/:id/confirm", transport.ConfirmWithdrawProposal)
 }

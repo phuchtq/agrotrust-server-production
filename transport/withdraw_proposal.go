@@ -98,6 +98,31 @@ func VoteWithdrawProposal(ctx *gin.Context) {
 	})
 }
 
+// ProposeChildrenWithdrawRequests godoc
+// @Summary      Propose children withdraw proposals
+// @Description  Propose children withdraw proposals
+// @Tags         Withdrawal
+// @Accept       json
+// @Produce      json
+// @Security     BearerAuth
+// @Success      200    {object}  response.MessageAPIResponse "Success"
+// @Failure      400      {object}  response.MessageAPIResponse "Invalid data. Please try again."
+// @Failure      401      {object}  response.MessageAPIResponse "You have no rights to access this action."
+// @Failure      500      {object}  response.MessageAPIResponse "There is something wrong in the system during the process. Please try again later."
+// @Router       /withdraw-proposals/children/propose [post]
+func ProposeChildrenWithdrawRequests(ctx *gin.Context) {
+	service, err := business.GenerateWithdrawProposalService()
+	if err != nil {
+		util.ProcessResponse(util.GenerateInvalidRequestAndSystemProblemModel(ctx, err))
+		return
+	}
+
+	util.ProcessResponse(response.APIResponse{
+		ErrMsg:  service.ProposeChildrenWithdrawRequests(ctx),
+		Context: ctx,
+	})
+}
+
 // ConfirmWithdrawProposal godoc
 // @Summary      Confirm a withdraw proposal
 // @Description  Finalize and confirm a specific withdraw proposal by ID

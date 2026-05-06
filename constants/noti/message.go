@@ -123,6 +123,10 @@ const (
 	STILL_PENDING_PAYMENT_MESSAGE string = "This payment is still pending."
 
 	PAYMENT_NOT_TRANSFERRED_MESSAGE string = "This payment is not transferred yet."
+
+	CHILDREN_WITHDRAW_PROPOSED_MESSAGE string = "Children Withdraw Proposal for this region on this date has been proposed."
+
+	NOT_CHILDREN_WITHDRAW_PROPOSED_DATE string = "This is not date to propose children withdraw proposal."
 )
 
 const (
