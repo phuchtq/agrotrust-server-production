@@ -140,7 +140,7 @@ func BuildMultiBackgroundTransactions(req BuildMultiBackgroundTransactionsReques
 			TxBytes:      res.TxBytes,
 		},
 		PriKey:      signer.PriKey,
-		RequestType: "WaitForLocalExecution",
+		RequestType: defaultRequestType,
 		Options: models.SuiTransactionBlockOptions{
 			ShowEffects: true,
 		},

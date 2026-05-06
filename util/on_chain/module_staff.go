@@ -164,7 +164,7 @@ func (m *moduleStaff) ToRegisterNormalStaffArguments(args RegisterNormalStaffArg
 		args.DateOfBirth,
 		args.PhoneNumber,
 		args.Email,
-		args.Sender,
+		args.Owner,
 		sui.CLOCK_OBJECT_ID,
 	}
 }
