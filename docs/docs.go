@@ -5747,61 +5747,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/registrations/{id}/confirm": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Prepares and builds a transaction for registering new staff information on-chain",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "registration"
-                ],
-                "summary": "Confirm and register a staff role uploaded to Sui Blockhain",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Registration Request ID (UUID)",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "$ref": "#/definitions/response.MessageAPIResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid data. Please try again.",
-                        "schema": {
-                            "$ref": "#/definitions/response.MessageAPIResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "You have no rights to access this action.",
-                        "schema": {
-                            "$ref": "#/definitions/response.MessageAPIResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "There is something wrong in the system during the process. Please try again later.",
-                        "schema": {
-                            "$ref": "#/definitions/response.MessageAPIResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/registrations/{id}/vote": {
             "post": {
                 "security": [

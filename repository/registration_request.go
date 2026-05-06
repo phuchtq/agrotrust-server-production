@@ -311,9 +311,43 @@ func (r *registratioRequestRepo) GetWalletRegistrationRequests(id string, ctx co
 	return res, nil
 }
 
+// GetPendingRequestsV2 implements repository.IRegistrationRequestRepository.
+func (r *registratioRequestRepo) GetPendingRequestsV2(ctx context.Context) ([]entities.RegistrationRequest, error) {
+	var query string = "SELECT * FROM " + registraion_request_table + " WHERE closed_at <= NOW() AND status = 'Pending'"
+	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRAION_REQUEST_REPOSITORY) + "GetPendingRequestsV2 - "
+	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
+
+	rows, err := r.db.QueryContext(ctx, query)
+	if err != nil {
+		r.errLogger.Println(errLogMsg + err.Error())
+		return nil, internalErr
+	}
+
+	defer rows.Close()
+
+	var res []entities.RegistrationRequest
+	for rows.Next() {
+		var x entities.RegistrationRequest
+		if err := rows.Scan(
+			&x.ID, &x.ProfileID, &x.RegisterRole, &x.IdentityCode, &x.IdentityCardBlobID,
+			&x.AvatarBlobID, &x.Region, &x.FirstName, &x.LastName, &x.Gender,
+			&x.DateOfBirth, &x.PhoneNumber, &x.Email, pq.Array(&x.Approvers), pq.Array(&x.Refusers),
+			pq.Array(&x.RefuseReasons), &x.Status, &x.IsConfirmRegister,
+			&x.CreatedBy, &x.CreatedAt, &x.UpdatedAt, &x.ClosedAt); err != nil {
+
+			r.errLogger.Println(errLogMsg + err.Error())
+			return nil, internalErr
+		}
+
+		res = append(res, x)
+	}
+
+	return res, nil
+}
+
 // GetPendingRequests implements repository.IRegistrationRequestRepository.
 func (r *registratioRequestRepo) GetPendingRequests(ctx context.Context) ([]entities.BackgroundRecord, []entities.BackgroundRecord, error) {
-	var query string = "SELECT id, approvers, refusers, register_role, created_by, status FROM " + registraion_request_table + " WHERE closed_at <= NOW() AND (status = 'Pending' OR status = 'Approved')"
+	var query string = "SELECT id, approvers, refusers, register_role, created_by, status FROM " + registraion_request_table + " WHERE closed_at <= NOW() AND status = 'Pending'"
 	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRAION_REQUEST_REPOSITORY) + "GetPendingRequests - "
 	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
 
@@ -322,6 +356,8 @@ func (r *registratioRequestRepo) GetPendingRequests(ctx context.Context) ([]enti
 		r.errLogger.Println(errLogMsg + err.Error())
 		return nil, nil, internalErr
 	}
+
+	defer rows.Close()
 
 	var pendingRes, approvedRes []entities.BackgroundRecord
 	for rows.Next() {
@@ -382,6 +418,50 @@ func (r *registratioRequestRepo) SetRefusedStatuses(reqs []entities.BackgroundRe
 
 	if _, err := r.db.ExecContext(ctx, query, time.Now()); err != nil {
 		r.errLogger.Println(fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRAION_REQUEST_REPOSITORY) + "SetRefusedStatuses - " + err.Error())
+		return errors.New(noti.INTERNALL_ERR_MSG)
+	}
+
+	return nil
+}
+
+// SetApprovedStatusesV2 implements repository.IRegistrationRequestRepository.
+func (r *registratioRequestRepo) SetApprovedStatusesV2(reqs []entities.RegistrationRequest, ctx context.Context) error {
+	if reqs == nil || len(reqs) == 0 {
+		return nil
+	}
+
+	var query string = "UPDATE " + registraion_request_table + " SET status = 'Approved', is_confirm_register = TRUE, updated_at = $1 WHERE "
+	for i, req := range reqs {
+		query += fmt.Sprintf("id = '%s'", req.ID)
+		if i < len(reqs)-1 {
+			query += " OR "
+		}
+	}
+
+	if _, err := r.db.ExecContext(ctx, query, time.Now()); err != nil {
+		r.errLogger.Println(fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRAION_REQUEST_REPOSITORY) + "SetApprovedStatusesV2 - " + err.Error())
+		return errors.New(noti.INTERNALL_ERR_MSG)
+	}
+
+	return nil
+}
+
+// SetRefusedStatusesV2 implements repository.IRegistrationRequestRepository.
+func (r *registratioRequestRepo) SetRefusedStatusesV2(reqs []entities.RegistrationRequest, ctx context.Context) error {
+	if reqs == nil || len(reqs) == 0 {
+		return nil
+	}
+
+	var query string = "UPDATE " + registraion_request_table + " SET status = 'Refused', updated_at = $1 WHERE "
+	for i, req := range reqs {
+		query += fmt.Sprintf("id = '%s'", req.ID)
+		if i < len(reqs)-1 {
+			query += " OR "
+		}
+	}
+
+	if _, err := r.db.ExecContext(ctx, query, time.Now()); err != nil {
+		r.errLogger.Println(fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRAION_REQUEST_REPOSITORY) + "SetRefusedStatusesV2 - " + err.Error())
 		return errors.New(noti.INTERNALL_ERR_MSG)
 	}
 

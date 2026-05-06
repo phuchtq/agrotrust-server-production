@@ -41,5 +41,4 @@ func InitializeRegistrationRequestRoute(server *gin.Engine) {
 	var authGroup = server.Group(contextPath, middleware.Authorize)
 	authGroup.POST("", transport.CreateRegistrationRequest)
 	authGroup.POST("/:id/vote", transport.VoteRegistrationRequest)
-	authGroup.POST("/:id/confirm", transport.ConfirmRegistrationRequest)
 }

@@ -348,6 +348,7 @@ func (r *registrationRequestService) ConfirmRegistrationRequest(id string, ctx c
 			DateOfBirth:        req.DateOfBirth,
 			PhoneNumber:        req.PhoneNumber,
 			Email:              req.Email,
+			Owner:              req.CreatedBy,
 		})
 	case local_leader_role:
 		pool, err := on_chain.GetOnChainObject[entities.MainPool](on_chain.GetOnChainObjectRequest{
@@ -402,6 +403,7 @@ func (r *registrationRequestService) ConfirmRegistrationRequest(id string, ctx c
 				DateOfBirth:        req.DateOfBirth,
 				PhoneNumber:        req.PhoneNumber,
 				Email:              req.Email,
+				Owner:              req.CreatedBy,
 			},
 		})
 	case volunteer_role:
@@ -418,6 +420,7 @@ func (r *registrationRequestService) ConfirmRegistrationRequest(id string, ctx c
 				DateOfBirth:        req.DateOfBirth,
 				PhoneNumber:        req.PhoneNumber,
 				Email:              req.Email,
+				Owner:              req.CreatedBy,
 			},
 		})
 	}

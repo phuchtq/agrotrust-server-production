@@ -169,28 +169,28 @@ func VoteRegistrationRequest(ctx *gin.Context) {
 	})
 }
 
-// ConfirmRegistrationRequest godoc
-// @Summary      Confirm and register a staff role uploaded to Sui Blockhain
-// @Description  Prepares and builds a transaction for registering new staff information on-chain
-// @Tags         registration
-// @Accept       json
-// @Produce      json
-// @Security     BearerAuth
-// @Param        id       path      string  true  "Registration Request ID (UUID)"
-// @Success      200      {object}  response.MessageAPIResponse "Success"
-// @Failure      400      {object}  response.MessageAPIResponse "Invalid data. Please try again."
-// @Failure      401      {object}  response.MessageAPIResponse "You have no rights to access this action."
-// @Failure      500      {object}  response.MessageAPIResponse "There is something wrong in the system during the process. Please try again later."
-// @Router       /registrations/{id}/confirm [post]
-func ConfirmRegistrationRequest(ctx *gin.Context) {
-	service, err := business.GenerateRegistrationRequestService()
-	if err != nil {
-		util.ProcessResponse(util.GenerateInvalidRequestAndSystemProblemModel(ctx, err))
-		return
-	}
+// // ConfirmRegistrationRequest godoc
+// // @Summary      Confirm and register a staff role uploaded to Sui Blockhain
+// // @Description  Prepares and builds a transaction for registering new staff information on-chain
+// // @Tags         registration
+// // @Accept       json
+// // @Produce      json
+// // @Security     BearerAuth
+// // @Param        id       path      string  true  "Registration Request ID (UUID)"
+// // @Success      200      {object}  response.MessageAPIResponse "Success"
+// // @Failure      400      {object}  response.MessageAPIResponse "Invalid data. Please try again."
+// // @Failure      401      {object}  response.MessageAPIResponse "You have no rights to access this action."
+// // @Failure      500      {object}  response.MessageAPIResponse "There is something wrong in the system during the process. Please try again later."
+// // @Router       /registrations/{id}/confirm [post]
+// func ConfirmRegistrationRequest(ctx *gin.Context) {
+// 	service, err := business.GenerateRegistrationRequestService()
+// 	if err != nil {
+// 		util.ProcessResponse(util.GenerateInvalidRequestAndSystemProblemModel(ctx, err))
+// 		return
+// 	}
 
-	util.ProcessResponse(response.APIResponse{
-		ErrMsg:  service.ConfirmRegistrationRequest(ctx.Param("id"), ctx),
-		Context: ctx,
-	})
-}
+// 	util.ProcessResponse(response.APIResponse{
+// 		ErrMsg:  service.ConfirmRegistrationRequest(ctx.Param("id"), ctx),
+// 		Context: ctx,
+// 	})
+// }

@@ -107,15 +107,16 @@ func setupPayments(errLogger *log.Logger) {
 }
 
 func setupBackgroundService(ctx context.Context, wg *sync.WaitGroup) {
-	// var services = []func(context.Context, *sync.WaitGroup){
-	// 	processRefundVotePowerBackgroundService,
-	// 	processCreateChildrenWithdrawsBackgroundService,
-	// }
+	var services = []func(context.Context, *sync.WaitGroup){
+		processRefundVotePowerBackgroundService,
+		processCreateChildrenWithdrawsBackgroundService,
+		processRegistrationBackgroundService,
+	}
 
-	// wg.Add(len(services))
-	// for _, service := range services {
-	// 	go service(ctx, wg)
-	// }
+	wg.Add(len(services))
+	for _, service := range services {
+		go service(ctx, wg)
+	}
 }
 
 func processCenterBackgroundService(ctx context.Context, wg *sync.WaitGroup, duration time.Duration) {
@@ -134,8 +135,9 @@ func processCenterBackgroundService(ctx context.Context, wg *sync.WaitGroup, dur
 	}
 }
 
-func processRegistrationBackgroundService(ctx context.Context, wg *sync.WaitGroup, duration time.Duration) {
+func processRegistrationBackgroundService(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
+	var duration time.Duration = time.Minute
 	var ticker = time.NewTicker(duration)
 	defer ticker.Stop()
 	for {

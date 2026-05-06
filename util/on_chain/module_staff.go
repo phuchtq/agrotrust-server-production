@@ -85,6 +85,7 @@ func (m *moduleStaff) ToRegisterAdminArguments(args RegisterAdminArguments) []in
 		args.DateOfBirth,
 		args.PhoneNumber,
 		args.Email,
+		args.Owner,
 		sui.CLOCK_OBJECT_ID,
 	}
 }
@@ -144,6 +145,7 @@ func (m *moduleStaff) ToRegisterNormalStaffArguments(args RegisterNormalStaffArg
 			args.DateOfBirth,
 			args.PhoneNumber,
 			args.Email,
+			args.Owner,
 			sui.CLOCK_OBJECT_ID,
 		}
 	}
@@ -162,6 +164,7 @@ func (m *moduleStaff) ToRegisterNormalStaffArguments(args RegisterNormalStaffArg
 		args.DateOfBirth,
 		args.PhoneNumber,
 		args.Email,
+		args.Sender,
 		sui.CLOCK_OBJECT_ID,
 	}
 }

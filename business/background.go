@@ -378,62 +378,119 @@ func (b *backgroundService) ProcessBackgroundCenterRequests(ctx context.Context)
 
 // ProcessBackgroundRegistrationRequests implements business.IBackgroundService.
 func (b *backgroundService) ProcessBackgroundRegistrationRequests(ctx context.Context) {
-	pendingRes, approvedRes, err := b.registrationRequestRepo.GetPendingRequests(ctx)
+	pendingRes, err := b.registrationRequestRepo.GetPendingRequestsV2(ctx)
 	if err != nil {
 		return
 	}
 
 	if pendingRes != nil && len(pendingRes) > 0 {
-
-		var refusedReqs []entities.BackgroundRecord
+		var refusedReqs, approvedReqs []entities.RegistrationRequest
 		for _, req := range pendingRes {
 			var rate float32 = float32(len(req.Approvers)) / float32(len(req.Approvers)+len(req.Refusers))
 			if rate >= approve_rate_limit {
-				approvedRes = append(approvedRes, req)
+				approvedReqs = append(approvedReqs, req)
 			} else {
 				refusedReqs = append(refusedReqs, req)
 			}
 		}
 
-		b.registrationRequestRepo.SetRefusedStatuses(refusedReqs, ctx)
+		b.registrationRequestRepo.SetRefusedStatusesV2(refusedReqs, ctx)
 
 		var modules []string
 		var functions []string
 		var args [][]interface{}
-		var module = on_chain.InitializeModuleManage()
-		for _, req := range approvedRes {
-			// modules[i] = module.GetModule()
-			// switch req.Role {
-			// case admin_role:
-			// 	functions[i] = module.GetFunctionMintRegisterAdminCap()
-			// case local_leader_role:
-			// 	functions[i] = module.GetFunctionMintRegisterLeaderCap()
-			// case volunteer_role:
-			// 	functions[i] = module.GetFunctionMintRegisterVolunteerCap()
-			// }
-			// args = append(args, module.ToMintCapArguments(on_chain.MintCapArguments{
-			// 	Recipient: req.Sender,
-			// }))
+		var staffModule = on_chain.InitializeModuleStaff()
+		var client = b.clients[constant.SuiTestnet]
+		for _, req := range approvedReqs {
+			modules = append(modules, staffModule.GetModule())
 
-			// Thêm phần tử vào cuối slice
-			modules = append(modules, module.GetModule())
-
-			switch req.Role {
+			switch req.RegisterRole {
 			case admin_role:
-				functions = append(functions, module.GetFunctionMintRegisterAdminCap())
+				functions = append(functions, staffModule.GetFunctionRegisterAdmin())
+				args = append(args, staffModule.ToRegisterAdminArguments(on_chain.RegisterAdminArguments{
+					IdentityCode:       req.IdentityCode,
+					IdentityCardBlobID: req.IdentityCardBlobID,
+					AvatarBlobID:       req.AvatarBlobID,
+					FirstName:          req.FirstName,
+					LastName:           req.LastName,
+					Gender:             req.Gender,
+					DateOfBirth:        req.DateOfBirth,
+					PhoneNumber:        req.PhoneNumber,
+					Email:              req.Email,
+					Owner:              req.CreatedBy,
+				}))
 			case local_leader_role:
-				functions = append(functions, module.GetFunctionMintRegisterLeaderCap())
-			case volunteer_role:
-				functions = append(functions, module.GetFunctionMintRegisterVolunteerCap())
-			}
+				pool, _ := on_chain.GetOnChainObject[entities.MainPool](on_chain.GetOnChainObjectRequest{
+					Client:    client,
+					ObjectId:  os.Getenv(env.POOL_ID),
+					ErrLogger: b.errLogger,
+				}, ctx)
 
-			args = append(args, module.ToMintCapArguments(on_chain.MintCapArguments{
-				Recipient: req.Sender,
-			}))
+				if pool == nil {
+					return
+				}
+
+				localPools, _ := on_chain.GetOnChainObjects[entities.LocalPool](on_chain.GetOnChainObjectsRequest{
+					Client:    client,
+					ObjectIds: pool.LocalPools,
+					ErrLogger: b.errLogger,
+				}, ctx)
+
+				if localPools == nil || len(localPools) == 0 {
+					return
+				}
+
+				var localPoolId string
+				for _, localPool := range localPools {
+					if localPool.Region == req.Region {
+						localPoolId = localPool.ID.ID
+						break
+					}
+				}
+
+				if localPoolId == "" {
+					localPoolId = os.Getenv(env.SHARED_LOCAL_POOL_ID)
+				}
+
+				functions = append(functions, staffModule.GetFunctionRegisterLeader())
+				args = append(args, staffModule.ToRegisterNormalStaffArguments(on_chain.RegisterNormalStaffArguments{
+					LocalPoolID: localPoolId,
+					Region:      req.Region,
+					RegisterAdminArguments: on_chain.RegisterAdminArguments{
+						IdentityCode:       req.IdentityCode,
+						IdentityCardBlobID: req.IdentityCardBlobID,
+						AvatarBlobID:       req.AvatarBlobID,
+						FirstName:          req.FirstName,
+						LastName:           req.LastName,
+						Gender:             req.Gender,
+						DateOfBirth:        req.DateOfBirth,
+						PhoneNumber:        req.PhoneNumber,
+						Email:              req.Email,
+						Owner:              req.CreatedBy,
+					},
+				}))
+			case volunteer_role:
+				functions = append(functions, staffModule.GetFunctionRegisterVolunteer())
+				args = append(args, staffModule.ToRegisterNormalStaffArguments(on_chain.RegisterNormalStaffArguments{
+					Region: req.Region,
+					RegisterAdminArguments: on_chain.RegisterAdminArguments{
+						IdentityCode:       req.IdentityCode,
+						IdentityCardBlobID: req.IdentityCardBlobID,
+						AvatarBlobID:       req.AvatarBlobID,
+						FirstName:          req.FirstName,
+						LastName:           req.LastName,
+						Gender:             req.Gender,
+						DateOfBirth:        req.DateOfBirth,
+						PhoneNumber:        req.PhoneNumber,
+						Email:              req.Email,
+						Owner:              req.CreatedBy,
+					},
+				}))
+			}
 		}
 
 		if err := on_chain.BuildMultiBackgroundTransactions(on_chain.BuildMultiBackgroundTransactionsRequest{
-			Client:    b.clients[constant.SuiTestnet],
+			Client:    client,
 			Modules:   modules,
 			Functions: functions,
 			Arguments: args,
@@ -442,7 +499,7 @@ func (b *backgroundService) ProcessBackgroundRegistrationRequests(ctx context.Co
 			return
 		}
 
-		b.registrationRequestRepo.SetApprovedStatuses(approvedRes, ctx)
+		b.registrationRequestRepo.SetApprovedStatusesV2(approvedReqs, ctx)
 	}
 }
 

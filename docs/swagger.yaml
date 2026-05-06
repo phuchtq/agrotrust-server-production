@@ -5198,43 +5198,6 @@ paths:
       summary: Get registration request details
       tags:
       - registration
-  /registrations/{id}/confirm:
-    post:
-      consumes:
-      - application/json
-      description: Prepares and builds a transaction for registering new staff information
-        on-chain
-      parameters:
-      - description: Registration Request ID (UUID)
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Success
-          schema:
-            $ref: '#/definitions/response.MessageAPIResponse'
-        "400":
-          description: Invalid data. Please try again.
-          schema:
-            $ref: '#/definitions/response.MessageAPIResponse'
-        "401":
-          description: You have no rights to access this action.
-          schema:
-            $ref: '#/definitions/response.MessageAPIResponse'
-        "500":
-          description: There is something wrong in the system during the process.
-            Please try again later.
-          schema:
-            $ref: '#/definitions/response.MessageAPIResponse'
-      security:
-      - BearerAuth: []
-      summary: Confirm and register a staff role uploaded to Sui Blockhain
-      tags:
-      - registration
   /registrations/{id}/vote:
     post:
       consumes:
