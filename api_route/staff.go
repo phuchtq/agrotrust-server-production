@@ -33,4 +33,5 @@ func InitializeStaffRoute(server *gin.Engine) {
 	var norGroup = server.Group(contextPath)
 	norGroup.GET("", transport.GetStaffs)
 	norGroup.GET("/:id", transport.GetStaff)
+	norGroup.GET("/owner/:id", transport.GetStaffByOwnerWallet)
 }

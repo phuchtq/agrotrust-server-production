@@ -5329,6 +5329,36 @@ paths:
       summary: Get staff details
       tags:
       - staffs
+  /staffs/owner/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Get staff details by owner
+      parameters:
+      - description: Staff Owner Wallet Address
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.StaffResponse'
+        "400":
+          description: Invalid data. Please try again.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "500":
+          description: There is something wrong in the system during the process.
+            Please try again later.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+      summary: Get staff details by owner
+      tags:
+      - staffs
   /task-proofs:
     get:
       consumes:
@@ -5347,6 +5377,9 @@ paths:
       - in: query
         name: page_size
         type: integer
+      - in: query
+        name: region
+        type: string
       - in: query
         name: reviewed_by
         type: string

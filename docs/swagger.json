@@ -5891,6 +5891,50 @@
                 }
             }
         },
+        "/staffs/owner/{id}": {
+            "get": {
+                "description": "Get staff details by owner",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "staffs"
+                ],
+                "summary": "Get staff details by owner",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Staff Owner Wallet Address",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.StaffResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid data. Please try again.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "There is something wrong in the system during the process. Please try again later.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/staffs/{id}": {
             "get": {
                 "description": "Retrieves staff information by its unique ID",
@@ -5967,6 +6011,11 @@
                     {
                         "type": "integer",
                         "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "region",
                         "in": "query"
                     },
                     {

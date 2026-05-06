@@ -47,6 +47,67 @@ const (
 	staff_records_limit int = 10
 )
 
+// GetStaffByOwnerWallet implements business.IStaffService.
+func (s *staffService) GetStaffByOwnerWallet(id string, ctx context.Context) (response.StaffResponse, error) {
+	if !util.IsValidSuiAddressStrict(id) {
+		return response.StaffResponse{}, errors.New(noti.GENERIC_ERROR_WARN_MSG)
+	}
+
+	var client = s.clients[constant.SuiTestnet]
+	manage, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: s.errLogger,
+	}, ctx)
+	if err != nil {
+		return response.StaffResponse{}, err
+	}
+
+	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
+	if manage == nil {
+		return response.StaffResponse{}, internalErr
+	}
+
+	var searchLen int
+	if len(manage.VolunteerIds) > len(manage.LocalLeaderIds) {
+		searchLen = len(manage.VolunteerIds)
+	} else {
+		searchLen = len(manage.LocalLeaderIds)
+	}
+
+	var staffId string
+	for i := 0; i < searchLen; i++ {
+		if i < len(manage.VolunteerIds) {
+			if id == manage.VolunteerIds[i] {
+				staffId = manage.VolunteerNfts[i]
+				break
+			}
+		}
+
+		if i < len(manage.LocalLeaderIds) {
+			if id == manage.LocalLeaderIds[i] {
+				staffId = manage.LocalLeaderNfts[i]
+				break
+			}
+		}
+	}
+
+	if staffId == "" {
+		return response.StaffResponse{}, nil
+	}
+
+	staff, err := getOnChainObject[entities.Staff](client, staffId, s.errLogger, ctx)
+	if err != nil {
+		return response.StaffResponse{}, err
+	}
+
+	if staff == nil {
+		return response.StaffResponse{}, internalErr
+	}
+
+	return staff.ToStaffResponse(), nil
+}
+
 // GetStaff implements business.IStaffService.
 func (s *staffService) GetStaff(id string, ctx context.Context) (response.StaffResponse, error) {
 	if !util.IsValidSuiAddressStrict(id) {
@@ -61,20 +122,20 @@ func (s *staffService) GetStaff(id string, ctx context.Context) (response.StaffR
 
 	var res response.StaffResponse = staff.ToStaffResponse()
 
-	var module = on_chain.InitializeModuleStaff()
-	if nfts, _ := on_chain.GetOnChainOwnedObjects[entities.StaffNft](on_chain.GetOnChainOwnedObjectsRequest{
-		Client:       client,
-		OwnerAddress: staff.User,
-		StructType:   fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), module.GetModule(), module.GetStaffNftObjectStruct()),
-		ErrLogger:    s.errLogger,
-	}, ctx); nfts != nil {
-		var nftsRes []response.StaffNftResponse
-		for _, nft := range nfts {
-			nftsRes = append(nftsRes, nft.ToStaffNftResponse())
-		}
+	// var module = on_chain.InitializeModuleStaff()
+	// if nfts, _ := on_chain.GetOnChainOwnedObjects[entities.StaffNft](on_chain.GetOnChainOwnedObjectsRequest{
+	// 	Client:       client,
+	// 	OwnerAddress: staff.User,
+	// 	StructType:   fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), module.GetModule(), module.GetStaffNftObjectStruct()),
+	// 	ErrLogger:    s.errLogger,
+	// }, ctx); nfts != nil {
+	// 	var nftsRes []response.StaffNftResponse
+	// 	for _, nft := range nfts {
+	// 		nftsRes = append(nftsRes, nft.ToStaffNftResponse())
+	// 	}
 
-		res.Nfts = nftsRes
-	}
+	// 	res.Nfts = nftsRes
+	// }
 
 	return res, nil
 
