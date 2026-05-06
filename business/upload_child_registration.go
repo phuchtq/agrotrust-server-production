@@ -169,6 +169,7 @@ func (u *uploadChildRequestService) ReviewUploadChildRequest(id string, req requ
 			SecondGuardianPhone:              secondGuardianPhone,
 			SecondGuardianRelation:           secondGuardianRelation,
 			SecondGuardianIdentityCardBlobID: secondGuardianIdentityCardBlobID,
+			Sender:                           request.CreatedBy,
 		}),
 		ErrLogger: u.errLogger,
 	}, ctx); err != nil {

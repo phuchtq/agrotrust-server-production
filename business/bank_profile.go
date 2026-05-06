@@ -3,7 +3,6 @@ package business
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log"
 	"os"
 	"raise-child/constants/env"
@@ -59,38 +58,17 @@ func GenerateBankProfileService() (business.IBankProfileService, error) {
 
 // CreateBankProfile implements business.IBankProfileService.
 func (b *bankProfileService) CreateBankProfile(req request.CreateBankProfileRequest, ctx context.Context) (*entities.BankProfile, error) {
-	var genereicErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
-
-	var sender string = ctx.Value("address").(string)
-	if !util.IsValidSuiAddressStrict(sender) {
-		return nil, genereicErr
-	}
-
-	var module = on_chain.InitializeModuleStaff()
-	staffNfts, err := on_chain.GetOnChainOwnedObjects[entities.StaffNft](on_chain.GetOnChainOwnedObjectsRequest{
-		Client:       b.clients[constant.SuiTestnet],
-		OwnerAddress: sender,
-		StructType:   fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), module.GetModule(), module.GetStaffNftObjectStruct()),
-		ErrLogger:    b.errLogger,
+	manage, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:   b.clients[constant.SuiTestnet],
+		ObjectId: os.Getenv(env.MANAGE_OBJECT_ID),
 	}, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	var rightAccessErr error = errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
-	if staffNfts == nil || len(staffNfts) == 0 {
-		return nil, rightAccessErr
-	}
-
-	var isLeader bool = false
-	for _, nft := range staffNfts {
-		if nft.Role == local_leader_role {
-			isLeader = true
-			break
-		}
-	}
-
-	if !isLeader {
+	var sender string = ctx.Value("address").(string)
+	if !slices.Contains(manage.LocalLeaderIds, sender) {
 		return nil, rightAccessErr
 	}
 
