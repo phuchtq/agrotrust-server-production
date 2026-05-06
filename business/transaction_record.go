@@ -146,22 +146,6 @@ func (t *transactionRecordService) GetTransactionRecordsV2(req request.GetTransa
 	}
 
 	var poolName string
-	// if req.PoolID != "" {
-	// 	if req.PoolID == os.Getenv(env.POOL_ID) {
-	// 		poolName = "Main Pool"
-	// 	} else {
-	// 		pool, _ := on_chain.GetOnChainObject[entities.LocalPool](on_chain.GetOnChainObjectRequest{
-	// 			Client:    client,
-	// 			ObjectId:  req.PoolID,
-	// 			ErrLogger: t.errLogger,
-	// 		}, ctx)
-
-	// 		if pool != nil {
-	// 			poolName = pool.Region
-	// 		}
-	// 	}
-	// }
-
 	if req.PoolID != "" && req.PoolID != os.Getenv(env.POOL_ID) {
 		pool, _ := on_chain.GetOnChainObject[entities.LocalPool](on_chain.GetOnChainObjectRequest{
 			Client:    client,
@@ -185,12 +169,14 @@ func (t *transactionRecordService) GetTransactionRecordsV2(req request.GetTransa
 		}, ctx)
 
 		if pool != nil {
-			poolName = "Main Pool"
-
 			totalDonation, _ := strconv.ParseInt(pool.TotalAmount, 10, 64)
 			res.PoolID = req.PoolID
-			res.PoolName = poolName
+			res.PoolName = "Main Pool"
 			res.PoolTotalDonation = totalDonation
+		}
+
+		if req.PoolID != "" {
+			poolName = "Main Pool"
 		}
 	}
 
@@ -444,61 +430,6 @@ func (t *transactionRecordService) GetTransactionRecords(req request.GetTransact
 	}
 
 	return res, nil
-
-	// // MOCK DATA
-	// var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
-	// if req.Actor != "" {
-	// 	if !util.IsValidSuiAddressStrict(req.Actor) {
-	// 		return response.PaginationDataResponse{}, genericErr
-	// 	}
-	// }
-
-	// if req.PoolID != "" {
-	// 	if !util.IsValidSuiAddressStrict(req.PoolID) {
-	// 		return response.PaginationDataResponse{}, genericErr
-	// 	}
-	// }
-
-	// if req.MaxAmount != nil {
-	// 	if *req.MaxAmount < min_withdraw_proposal_amount_value {
-	// 		return response.PaginationDataResponse{}, nil
-	// 	}
-
-	// 	if req.MinAmount != nil {
-	// 		if *req.MaxAmount <= *req.MinAmount {
-	// 			return response.PaginationDataResponse{}, nil
-	// 		}
-	// 	}
-	// }
-
-	// req.SortOrder = util.StandardizeSortOrder(req.SortOrder)
-	// req.SortCriteria = util.StandardizeSortCriteria(req.SortCriteria)
-	// req.Keyword = util.StandardizeString(req.Keyword)
-	// if req.Page < 1 {
-	// 	req.Page = 1
-	// }
-
-	// if req.PageSize < 1 {
-	// 	req.PageSize = default_page_size
-	// }
-
-	// var res response.PaginationDataResponse
-	// var redisKey string = t.getGetTransactionRecordsRedisKey(req)
-	// if t.redisCache.Get(redisKey, &res, ctx) {
-	// 	return res, nil
-	// }
-
-	// var data []response.TransactionResponse = mockTxRecords[(req.Page-1)*req.PageSize : req.Page*req.PageSize]
-	// res = response.PaginationDataResponse{
-	// 	Data:       data,
-	// 	Amount:     len(data),
-	// 	Page:       req.Page,
-	// 	TotalPages: int(math.Ceil(float64(len(mockTxRecords)) / float64(req.PageSize))),
-	// }
-
-	// t.redisCache.Set(redisKey, res, time.Minute*5, ctx)
-
-	// return res, nil
 }
 
 func (t *transactionRecordService) getGetTransactionRecordsRedisKey(req request.GetTransactionRecordsRequest) string {
