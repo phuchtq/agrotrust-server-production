@@ -572,7 +572,7 @@ func (b *backgroundService) prepareDataCreateBooksNeedWithdrawProposal(needId, s
 	}
 
 	var expectedWithdrawDate time.Time = util.ToStartOfDate(util.RawDateToTime(rawExpectedWithdrawDate))
-	if !expectedWithdrawDate.After(curTime) && expectedWithdrawDate.AddDate(0, 0, 7).Month() == curTime.Month() {
+	if !expectedWithdrawDate.After(curTime) && int(expectedWithdrawDate.AddDate(0, 0, 7).Month()-curTime.Month()) <= 1 {
 		var description string = fmt.Sprintf("Withdraw Books Need Semester %s - %d for child %s", need.Semster, curTime.Year(), util.FormatAddress(need.ChildID))
 		return module.ToCreateChildNormalNeedWithdrawProposalArguments(on_chain.CreateChildNormalNeedWithdrawProposalArguments{
 			NeedID:      needId,
@@ -603,7 +603,7 @@ func (b *backgroundService) prepareDataCreateHealthInsuranceNeedWithdrawProposal
 
 	var rawExpectedWithdrawDate string = fmt.Sprintf("%s/%d", withdrawDate.ExpectedDate, curTime.Year())
 	var expectedWithdrawDate time.Time = util.ToStartOfDate(util.RawDateToTime(rawExpectedWithdrawDate))
-	if !expectedWithdrawDate.After(curTime) && expectedWithdrawDate.AddDate(0, 0, 7).Month() == curTime.Month() {
+	if !expectedWithdrawDate.After(curTime) && int(expectedWithdrawDate.AddDate(0, 0, 7).Month()-curTime.Month()) <= 1 {
 		var description string = fmt.Sprintf("Withdraw Health Insurance Need %d for child %s", curTime.Year(), util.FormatAddress(need.ChildID))
 		return module.ToCreateChildNormalNeedWithdrawProposalArguments(on_chain.CreateChildNormalNeedWithdrawProposalArguments{
 			NeedID:      needId,
@@ -660,7 +660,7 @@ func (b *backgroundService) prepareDataCreateMealNeedWithdrawProposal(needId, se
 		previousDuration = totalDuration
 	}
 
-	if !expectedDate.After(curTime) && expectedDate.AddDate(0, 0, 7).Month() == curTime.Month() {
+	if !expectedDate.After(curTime) && int(expectedDate.AddDate(0, 0, 7).Month()-curTime.Month()) <= 1 {
 		var description string = fmt.Sprintf("Withdraw Meal Need for child %s from %s to %s", util.FormatAddress(need.ChildID), need.Durations[foundIdx].Fields.StartPeriod, need.Durations[foundIdx].Fields.EndPeriod)
 		return module.ToCreateChildNormalNeedWithdrawProposalArguments(on_chain.CreateChildNormalNeedWithdrawProposalArguments{
 			NeedID:      needId,
