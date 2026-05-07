@@ -212,7 +212,7 @@ func (c *campaignService) CreateCampaignWithdrawProposal(req request.CreateCampa
 	}
 
 	var campaignModule = on_chain.InitializeModuleCampaign()
-	res, err := on_chain.ExecuteTransactionV2(on_chain.ExecuteTransactionRequestV2{
+	_, errRes := on_chain.ExecuteTransactionV2(on_chain.ExecuteTransactionRequestV2{
 		Client:   client,
 		Module:   campaignModule.GetModule(),
 		Function: campaignModule.GetFunctionCreateCampaignWithdrawProposal(),
@@ -226,27 +226,27 @@ func (c *campaignService) CreateCampaignWithdrawProposal(req request.CreateCampa
 			Creator:        sender,
 		}),
 	}, ctx)
-	if err != nil {
-		return err
-	}
+	// if err != nil {
+	// 	return err
+	// }
 
-	var events = res.Events
-	var poolModule = on_chain.InitializeModulePool()
-	var eventType string = fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), poolModule.GetModule(), poolModule.GetWithdrawProposalEventEmittedStruct())
-	for _, event := range events {
-		if event.Type == eventType {
-			if onChainProposal, ok := event.ParsedJson["id"].(string); ok {
-				for i := 1; i <= 3; i++ {
-					if c.withdrawRepo.SetOnChainProposalIdAfterExecuteTx(offchainProposalId, onChainProposal, ctx) == nil {
-						return nil
-					}
-				}
-				break
-			}
-		}
-	}
+	// var events = res.Events
+	// var poolModule = on_chain.InitializeModulePool()
+	// var eventType string = fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), poolModule.GetModule(), poolModule.GetWithdrawProposalEventEmittedStruct())
+	// for _, event := range events {
+	// 	if event.Type == eventType {
+	// 		if onChainProposal, ok := event.ParsedJson["id"].(string); ok {
+	// 			for i := 1; i <= 3; i++ {
+	// 				if c.withdrawRepo.SetOnChainProposalIdAfterExecuteTx(offchainProposalId, onChainProposal, ctx) == nil {
+	// 					return nil
+	// 				}
+	// 			}
+	// 			break
+	// 		}
+	// 	}
+	// }
 
-	return errors.New(noti.INTERNALL_ERR_MSG)
+	return errRes
 }
 
 // GetCampaign implements business.ICampaignService.

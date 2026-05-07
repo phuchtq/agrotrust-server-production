@@ -458,30 +458,82 @@ func (r *registrationRequestService) CreateRegistrationRequest(req request.Creat
 	}
 
 	var client = r.clients[constant.SuiTestnet]
+	manage, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: r.errLogger,
+	}, ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
+	if manage == nil {
+		return nil, internalErr
+	}
+
 	var sender string = ctx.Value("address").(string)
 	var role string = strings.TrimSpace(req.RegisterRole)
 	if req.RegisterRole != admin_role {
-		var staffModule = on_chain.InitializeModuleStaff()
-		nfts, err := on_chain.GetOnChainOwnedObjects[entities.StaffNft](on_chain.GetOnChainOwnedObjectsRequest{
-			Client:       client,
-			OwnerAddress: sender,
-			StructType:   fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), staffModule.GetModule(), staffModule.GetStaffNftObjectStruct()),
-			ErrLogger:    r.errLogger,
-		}, ctx)
-		if err != nil {
-			return nil, err
+		var searchLen int
+		if len(manage.VolunteerIds) > len(manage.LocalLeaderIds) {
+			searchLen = len(manage.VolunteerIds)
+		} else {
+			searchLen = len(manage.LocalLeaderIds)
 		}
 
-		if nfts != nil && len(nfts) > 0 {
-			for _, nft := range nfts {
-				if nft.Region != req.Region {
-					return nil, errors.New(noti.ALREADY_ANOTHER_REGION_STAFF_MESSAGE)
-				}
+		var staffIds []string
+		for i := 0; i < searchLen; i++ {
+			if i < len(manage.VolunteerIds) {
+				if sender == manage.VolunteerIds[i] {
+					staffIds = append(staffIds, manage.VolunteerNfts[i])
 
-				if nft.Role == role {
-					return nil, errors.New(noti.ALREADY_STAFF_ROLE_MESSAGE)
+					if len(staffIds) == 2 {
+						break
+					}
 				}
 			}
+
+			if i < len(manage.LocalLeaderIds) {
+				if sender == manage.LocalLeaderIds[i] {
+					staffIds = append(staffIds, manage.LocalLeaderNfts[i])
+
+					if len(staffIds) == 2 {
+						break
+					}
+				}
+			}
+		}
+
+		if staffIds != nil && len(staffIds) > 0 {
+			if len(staffIds) == 2 {
+				return nil, errors.New(noti.ALREADY_STAFF_ROLE_MESSAGE)
+			}
+
+			nft, err := on_chain.GetOnChainObject[entities.StaffNft](on_chain.GetOnChainObjectRequest{
+				Client:    client,
+				ObjectId:  staffIds[0],
+				ErrLogger: r.errLogger,
+			}, ctx)
+			if err != nil {
+				return nil, err
+			}
+
+			if nft == nil {
+				return nil, internalErr
+			}
+
+			if nft.Region != req.Region {
+				return nil, errors.New(noti.ALREADY_ANOTHER_REGION_STAFF_MESSAGE)
+			}
+
+			if nft.Role == role {
+				return nil, errors.New(noti.ALREADY_STAFF_ROLE_MESSAGE)
+			}
+		}
+	} else {
+		if slices.Contains(manage.AdminIds, sender) {
+			return nil, errors.New(noti.ALREADY_STAFF_ROLE_MESSAGE)
 		}
 	}
 
@@ -513,17 +565,8 @@ func (r *registrationRequestService) CreateRegistrationRequest(req request.Creat
 		}
 	}
 
-	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-		Client:    r.clients[constant.SuiTestnet],
-		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-		ErrLogger: r.errLogger,
-	}, ctx)
-	if err != nil {
-		return nil, err
-	}
-
 	if role == volunteer_role {
-		if !slices.Contains(manageObj.LocalRegions, req.Region) {
+		if !slices.Contains(manage.LocalRegions, req.Region) {
 			return nil, errors.New(noti.REGION_NOT_ADDED_WARN_MSG)
 		}
 	}

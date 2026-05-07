@@ -605,32 +605,64 @@ func (c *centerRequestService) VoteRequest(id string, req request.VoteRequest, c
 		return errors.New(noti.ALREADY_VOTE_MESSAGE)
 	}
 
-	var module = on_chain.InitializeModuleStaff()
-	nfts, err := on_chain.GetOnChainOwnedObjects[entities.StaffNft](on_chain.GetOnChainOwnedObjectsRequest{
-		Client:       c.clients[constant.SuiTestnet],
-		OwnerAddress: voter,
-		StructType:   fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), module.GetModule(), module.GetStaffNftObjectStruct()),
-		ErrLogger:    c.errLogger,
+	var client = c.clients[constant.SuiTestnet]
+	manage, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: c.errLogger,
 	}, ctx)
 	if err != nil {
 		return err
 	}
 
-	var genericRightErr error = errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
-	if nfts == nil || len(nfts) == 0 {
-		return genericRightErr
+	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
+	if manage == nil {
+		return internalErr
 	}
 
-	var isRegionStaff bool = false
-	for _, nft := range nfts {
-		if nft.Region == request.Region {
-			isRegionStaff = true
-			break
+	var staffId string
+	var searchLen int
+	if len(manage.VolunteerIds) > len(manage.LocalLeaderIds) {
+		searchLen = len(manage.VolunteerIds)
+	} else {
+		searchLen = len(manage.LocalLeaderIds)
+	}
+
+	for i := 0; i < searchLen; i++ {
+		if i < len(manage.VolunteerIds) {
+			if voter == manage.VolunteerIds[i] {
+				staffId = manage.VolunteerNfts[i]
+				break
+			}
+		}
+
+		if i < len(manage.LocalLeaderIds) {
+			if voter == manage.LocalLeaderIds[i] {
+				staffId = manage.LocalLeaderNfts[i]
+				break
+			}
 		}
 	}
 
-	if !isRegionStaff {
-		return genericRightErr
+	if staffId == "" {
+		return errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+	}
+
+	nft, err := on_chain.GetOnChainObject[entities.StaffNft](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  staffId,
+		ErrLogger: c.errLogger,
+	}, ctx)
+	if err != nil {
+		return err
+	}
+
+	if nft == nil {
+		return internalErr
+	}
+
+	if nft.Region != request.Region {
+		return errors.New(noti.NOT_STAFF_OF_REGION_MESSAGE)
 	}
 
 	if req.IsVoteYes {
