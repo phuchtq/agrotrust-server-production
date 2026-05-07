@@ -1079,7 +1079,7 @@ func (w *withdrawProposalService) ConfirmMainPoolWithdrawProposal(id string, cap
 // GetWithdrawProposal implements business.IWithdrawProposalService.
 func (w *withdrawProposalService) GetWithdrawProposal(id string, ctx context.Context) (response.WithdrawProposalResponse, error) {
 	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
-	if !!util.IsValidSuiAddressStrict(id) {
+	if !util.IsValidSuiAddressStrict(id) {
 		return response.WithdrawProposalResponse{}, genericErr
 	}
 

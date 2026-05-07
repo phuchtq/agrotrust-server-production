@@ -167,30 +167,6 @@ func (b *bankProfileService) GetBankProfileByOwner(id string, ctx context.Contex
 		return response.BankProfileResponse{}, errors.New(noti.GENERIC_ERROR_WARN_MSG)
 	}
 
-	var address string = ctx.Value("address").(string)
-	if res.ProfileID != ctx.Value("sub").(string) || res.Owner != address || id != address {
-		var manageObj entities.Manage
-		if !b.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
-			res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-				Client:    b.clients[constant.SuiTestnet],
-				ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-				ErrLogger: b.errLogger,
-			}, ctx)
-			if err != nil {
-				return response.BankProfileResponse{}, err
-			}
-
-			if res != nil {
-				b.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
-				manageObj = *res
-			}
-		}
-
-		if !slices.Contains(manageObj.AdminIds, address) {
-			return response.BankProfileResponse{}, errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
-		}
-	}
-
 	return res.ToBankProfileResponse(), err
 }
 
