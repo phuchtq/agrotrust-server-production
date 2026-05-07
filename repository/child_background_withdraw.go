@@ -33,7 +33,7 @@ func InitializeBackgroundChildrenWithdrawRequestRepository(db *sql.DB, errLogger
 // CreateRequest implements repository.IBackgroundChildrenWithdrawProposalRequestRepository.
 func (b *backgroundChildrenWithdrawRequestRepo) CreateRequest(req entities.BackgroundChildrenWithdrawProposalsRequest, ctx context.Context) error {
 	var query string = "INSERT INTO " + background_children_withdraw_request_table +
-		" (id, profile_id, actor_address, region, is_executed, raw_proposed_date , created_up, updated_at) " +
+		" (id, profile_id, actor_address, region, is_executed, raw_proposed_date , created_at, updated_at) " +
 		"values ($1, $2, $3, $4, $5, $6, $7, $8)"
 
 	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.BACKGROUND_CHILDREN_WITHDRAW_REQUEST_REPOSITORY) + "CreateRequest - "

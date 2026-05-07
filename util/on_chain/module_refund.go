@@ -67,7 +67,7 @@ func (m *moduleRefund) GetFunctionAdminRefundChildSpecialNeedCampaignVotePower()
 
 // GetFunctionRefundPoolVotePower implements IModuleRefund.
 func (m *moduleRefund) GetFunctionRefundPoolVotePower() string {
-	return sui.ADMIN_REFUND_POOL_VOTE_POWER_FUNCTION
+	return sui.REFUND_POOL_VOTE_POWER_FUNCTION
 }
 
 // GetFunctionAdminRefundPoolCampaignVotePower implements IModuleRefund.
@@ -77,7 +77,7 @@ func (m *moduleRefund) GetFunctionAdminRefundPoolCampaignVotePower() string {
 
 // GetFunctionAdminRefundPoolVotePower implements IModuleRefund.
 func (m *moduleRefund) GetFunctionAdminRefundPoolVotePower() string {
-	return sui.REFUND_POOL_VOTE_POWER_FUNCTION
+	return sui.ADMIN_REFUND_POOL_VOTE_POWER_FUNCTION
 }
 
 // GetFunctionRefundChildBooksNeedVotePower implements IModuleRefund.
