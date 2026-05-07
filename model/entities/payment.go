@@ -46,6 +46,7 @@ const (
 	HEALTH_INSRUANCE_PAYMENT_DESCRIPTION      PaymentDescription = "Health Insurance"
 	SPECIAL_NEED_CAMPAIGN_PAYMENT_DESCRIPTION PaymentDescription = "Special Campaign"
 	POOL_CAMPAIGN_PAYMENT_DESCRIPTION         PaymentDescription = "Pool Campaign"
+	POOL_PAYMENT_DESCRIPTION                  PaymentDescription = "Pool"
 )
 
 func (p PaymentDescription) GenerateSupportPaymentDescription() string {

@@ -220,6 +220,7 @@ func (b *backgroundService) ProcessCreateChildrenWithdrawProposals(ctx context.C
 	}
 
 	var errExecuteTxs error
+	b.errLogger.Println("Create children withdraws call")
 	for i := 1; i <= 3; i++ {
 		if err := on_chain.BuildMultiBackgroundTransactions(on_chain.BuildMultiBackgroundTransactionsRequest{
 			Client:    client,
@@ -314,6 +315,7 @@ func (b *backgroundService) ProcessRefundVotePower(ctx context.Context) {
 		}))
 	}
 
+	b.errLogger.Println("Refund vote power call")
 	on_chain.BuildMultiBackgroundTransactions(on_chain.BuildMultiBackgroundTransactionsRequest{
 		Client:    client,
 		Modules:   modules,
@@ -489,6 +491,7 @@ func (b *backgroundService) ProcessBackgroundRegistrationRequests(ctx context.Co
 			}
 		}
 
+		b.errLogger.Println("Registration Background call")
 		if err := on_chain.BuildMultiBackgroundTransactions(on_chain.BuildMultiBackgroundTransactionsRequest{
 			Client:    client,
 			Modules:   modules,

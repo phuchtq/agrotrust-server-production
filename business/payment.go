@@ -597,6 +597,128 @@ func GeneratePaymentService() (business.IPaymentService, error) {
 // 	}, p.paymentRepo.UpdatePayment(*payment, ctx)
 // }
 
+// // ApprovePayment implements business.IPaymentService.
+// func (p *paymentService) ApprovePayment(id string, ctx context.Context) error {
+// 	payment, err := p.paymentRepo.GetPaymentById(id, ctx)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
+// 	if payment == nil || payment.Method == shared.MANUAL_BANK_METHOD || payment.IsDonateTx {
+// 		return genericErr
+// 	}
+
+// 	var curTime time.Time = time.Now()
+// 	if curTime.Before(payment.ExpiredAt) {
+// 		return errors.New(noti.STILL_PENDING_PAYMENT_MESSAGE)
+// 	}
+
+// 	if !payment.IsTransferred {
+// 		return errors.New(noti.PAYMENT_NOT_TRANSFERRED_MESSAGE)
+// 	}
+
+// 	var sender string = ctx.Value("address").(string)
+// 	var profileId string = ctx.Value("sub").(string)
+// 	var genericRightErr error = errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+// 	if payment.Actor == sender || payment.ProfileID == profileId {
+// 		return genericRightErr
+// 	}
+
+// 	var client = p.clients[constant.SuiTestnet]
+// 	manage, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+// 		Client:    client,
+// 		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+// 		ErrLogger: p.errLogger,
+// 	}, ctx)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
+// 	if manage == nil {
+// 		return internalErr
+// 	}
+
+// 	if slices.Contains(manage.AdminIds, sender) {
+// 		return genericRightErr
+// 	}
+
+// 	var module string
+// 	var function string
+// 	var args []interface{}
+// 	detail, err := p.withdrawRepo.GetOffChainWithdrawProposal(*payment.ProposalID, ctx)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	if detail.Purpose == string(entities.WITHDRAW_PURPOSE) {
+// 		var poolModule = on_chain.InitializeModulePool()
+// 		module = poolModule.GetModule()
+// 		function = poolModule.GetFunctionWithdrawFromPool()
+// 		args = poolModule.ToWithdrawFromPoolArguments(on_chain.WithdrawFromPoolArguments{
+// 			LocalPoolId:        detail.LocalPoolID,
+// 			WithdrawProposalId: *detail.ProposalID,
+// 		})
+// 	} else if detail.Purpose == string(entities.CAMPAIGN_PURPOSE) {
+// 		var campaignModule = on_chain.InitializeModuleCampaign()
+// 		module = campaignModule.GetModule()
+// 		function = campaignModule.GetFunctionWithdrawFromCampaignV2()
+// 		args = campaignModule.ToWithdrawFromCampaignArgumentsV2(on_chain.WithdrawFromCampaignArgumentsV2{
+// 			CampaignID:    detail.Target,
+// 			ProposalID:    *detail.ProposalID,
+// 			TransferredAt: util.ToMilliseconds(*payment.TransferredAt),
+// 			Creator:       payment.Actor,
+// 			Sender:        sender,
+// 		})
+// 	} else {
+// 		var childModule = on_chain.InitializeModuleChild()
+// 		module = childModule.GetModule()
+// 		switch detail.Purpose {
+// 		case string(entities.BOOKS_NEED_PURPOSE):
+// 			function = childModule.GetFunctionWithdrawFromBooksNeedProposalV2()
+// 		case string(entities.HEALTH_INSURANCE_NEED_PURPOSE):
+// 			function = childModule.GetFunctionWithdrawFromHealthInsuranceNeedProposalV2()
+// 		case string(entities.MEAL_NEED_PURPOSE):
+// 			function = childModule.GetFunctionWithdrawFromMealNeedProposalV2()
+// 		case string(entities.SPECIAL_NEED_PURPOSE):
+// 			function = childModule.GetFunctionWithdrawFromSpecialNeedCampaignV2()
+// 		}
+
+// 		args = childModule.ToWithdrawFromNeedArgumentsV2(on_chain.WithdrawFromNeedArgumentsV2{
+// 			LocalPool:     detail.LocalPoolID,
+// 			TargetID:      detail.Target,
+// 			ProposalID:    *detail.ProposalID,
+// 			TransferredAt: util.ToMilliseconds(*payment.TransferredAt),
+// 			Creator:       payment.Actor,
+// 			Sender:        sender,
+// 		})
+// 	}
+
+// 	payment.ReviewedBy = &sender
+// 	payment.ReviewStatus = request_approved_status
+// 	payment.UpdatedAt = curTime
+// 	if err := p.paymentRepo.UpdatePayment(*payment, ctx); err != nil {
+// 		return err
+// 	}
+
+// 	var req = on_chain.ExecuteTransactionRequestV2{
+// 		Client:    client,
+// 		Module:    module,
+// 		Function:  function,
+// 		Arguments: args,
+// 		ErrLogger: p.errLogger,
+// 	}
+
+// 	for i := 1; i <= 3; i++ {
+// 		if _, err := on_chain.ExecuteTransactionV2(req, ctx); err == nil {
+// 			return nil
+// 		}
+// 	}
+
+// 	return internalErr
+// }
+
 // ApprovePayment implements business.IPaymentService.
 func (p *paymentService) ApprovePayment(id string, ctx context.Context) error {
 	payment, err := p.paymentRepo.GetPaymentById(id, ctx)
@@ -647,48 +769,59 @@ func (p *paymentService) ApprovePayment(id string, ctx context.Context) error {
 	var module string
 	var function string
 	var args []interface{}
-	detail, err := p.withdrawRepo.GetOffChainWithdrawProposal(*payment.ProposalID, ctx)
+	proposal, err := on_chain.GetOnChainObject[entities.WithdrawProposal](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  *payment.ProposalID,
+		ErrLogger: p.errLogger,
+	}, ctx)
 	if err != nil {
 		return err
 	}
 
-	if detail.Purpose == string(entities.WITHDRAW_PURPOSE) {
+	if proposal.Purpose == string(entities.POOL_WITHDRAW_PROPOSAL_PURPOSE) {
 		var poolModule = on_chain.InitializeModulePool()
 		module = poolModule.GetModule()
 		function = poolModule.GetFunctionWithdrawFromPool()
+
+		var localPoolId string
+		if proposal.TargetID == os.Getenv(env.POOL_ID) {
+			localPoolId = os.Getenv(env.SHARED_LOCAL_POOL_ID)
+		} else {
+			localPoolId = proposal.TargetID
+		}
+
 		args = poolModule.ToWithdrawFromPoolArguments(on_chain.WithdrawFromPoolArguments{
-			LocalPoolId:        detail.LocalPoolID,
-			WithdrawProposalId: *detail.ProposalID,
+			LocalPoolId:        localPoolId,
+			WithdrawProposalId: *payment.ProposalID,
+			Sender:             payment.Actor,
 		})
-	} else if detail.Purpose == string(entities.CAMPAIGN_PURPOSE) {
+	} else if proposal.Purpose == string(entities.CAMPAIGN_PURPOSE) {
 		var campaignModule = on_chain.InitializeModuleCampaign()
 		module = campaignModule.GetModule()
-		function = campaignModule.GetFunctionWithdrawFromCampaignV2()
-		args = campaignModule.ToWithdrawFromCampaignArgumentsV2(on_chain.WithdrawFromCampaignArgumentsV2{
-			CampaignID:    detail.Target,
-			ProposalID:    *detail.ProposalID,
-			TransferredAt: util.ToMilliseconds(*payment.TransferredAt),
-			Creator:       payment.Actor,
-			Sender:        sender,
+		function = campaignModule.GetFunctionWithdrawFromCampaign()
+		args = campaignModule.ToWithdrawFromCampaignArguments(on_chain.WithdrawFromCampaignArguments{
+			CampaignID: proposal.TargetID,
+			ProposalID: *payment.ProposalID,
+			Sender:     payment.Actor,
 		})
 	} else {
 		var childModule = on_chain.InitializeModuleChild()
 		module = childModule.GetModule()
-		switch detail.Purpose {
-		case string(entities.BOOKS_NEED_PURPOSE):
-			function = childModule.GetFunctionWithdrawFromBooksNeedProposalV2()
-		case string(entities.HEALTH_INSURANCE_NEED_PURPOSE):
-			function = childModule.GetFunctionWithdrawFromHealthInsuranceNeedProposalV2()
-		case string(entities.MEAL_NEED_PURPOSE):
-			function = childModule.GetFunctionWithdrawFromMealNeedProposalV2()
-		case string(entities.SPECIAL_NEED_PURPOSE):
-			function = childModule.GetFunctionWithdrawFromSpecialNeedCampaignV2()
+		switch proposal.Purpose {
+		case string(entities.BOOKS_NEED_WITHDRAW_PROPOSAL_PURPOSE):
+			function = childModule.GetFunctionWithdrawFromBooksNeedProposal()
+		case string(entities.HEALTH_INSURANCE_NEED_WITHDRAW_PROPOSAL_PURPOSE):
+			function = childModule.GetFunctionWithdrawFromHealthInsuranceNeedProposal()
+		case string(entities.MEAL_NEED_WITHDRAW_PROPOSAL_PURPOSE):
+			function = childModule.GetFunctionWithdrawFromMealNeedProposal()
+		case string(entities.SPECIAL_NEED_CAMPAIGN_WITHDRAW_PROPOSAL_PURPOSE):
+			function = childModule.GetFunctionWithdrawFromSpecialNeedCampaign()
 		}
 
 		args = childModule.ToWithdrawFromNeedArgumentsV2(on_chain.WithdrawFromNeedArgumentsV2{
-			LocalPool:     detail.LocalPoolID,
-			TargetID:      detail.Target,
-			ProposalID:    *detail.ProposalID,
+			LocalPool:     proposal.PoolID,
+			TargetID:      proposal.TargetID,
+			ProposalID:    *payment.ProposalID,
 			TransferredAt: util.ToMilliseconds(*payment.TransferredAt),
 			Creator:       payment.Actor,
 			Sender:        sender,
@@ -884,6 +1017,508 @@ func (p *paymentService) RefusePayment(id string, ctx context.Context) error {
 // 	payment.TransferredAt = &curTime
 
 // 	return p.paymentRepo.UpdatePayment(*payment, ctx)
+// }
+
+// // CallbackV2 implements business.IPaymentService.
+// func (p *paymentService) CallbackV2(id string, ctx context.Context) error {
+// 	log.Println("Payment ID:", id)
+
+// 	payment, err := p.paymentRepo.GetPaymentById(id, ctx)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
+// 	if payment == nil || payment.Method == shared.MANUAL_BANK_METHOD || payment.Status != payment_pending_status || payment.IsTransferred || payment.TransferredAt != nil {
+// 		p.errLogger.Println("Fail check 1")
+// 		return genericErr
+// 	}
+
+// 	// Expired
+// 	var curTime time.Time = time.Now()
+// 	if payment.ExpiredAt.Before(curTime) {
+// 		return nil
+// 	}
+
+// 	data, err := payos.GetPaymentLinkInformation(payment.TransactionId)
+// 	if err != nil {
+// 		p.errLogger.Println("Error while get payos payment link information: " + err.Error())
+// 		return errors.New(noti.INTERNALL_ERR_MSG)
+// 	}
+
+// 	switch data.Status {
+// 	case shared.PAYOS_PAID_STATUS:
+// 		payment.ReviewStatus = request_approved_status
+// 		payment.Status = shared.PAYMENT_SUCCESS_STATUS
+// 		payment.IsTransferred = true
+// 		payment.TransferredAt = &curTime
+// 	case shared.PAYOS_CANCELLED_STATUS:
+// 		payment.Status = shared.PAYMENT_CANCELED_STATUS
+// 		payment.ReviewStatus = request_refused_status
+// 		if data.CancellationReason != nil {
+// 			payment.CancelReason = data.CancellationReason
+// 		}
+// 	default:
+// 		p.errLogger.Println("Fail check 2")
+// 		return genericErr
+// 	}
+
+// 	var system string = "System"
+// 	payment.ReviewedBy = &system
+// 	payment.UpdatedAt = curTime
+
+// 	if err := p.paymentRepo.UpdatePayment(*payment, ctx); err != nil {
+// 		return err
+// 	}
+
+// 	if payment.ReviewStatus == request_refused_status {
+// 		return nil
+// 	}
+
+// 	profile, err := p.profileRepo.GetProfile(payment.ProfileID, ctx)
+// 	if err != nil {
+// 		return err
+// 	}
+
+// 	var client = p.clients[constant.SuiTestnet]
+// 	var module string
+// 	var function string
+// 	var args []interface{}
+// 	if payment.IsDonateTx {
+// 		detail, err := p.donationRepo.GetDonation(*payment.DonationID, ctx)
+// 		if err != nil {
+// 			return err
+// 		}
+
+// 		manage, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+// 			Client:    client,
+// 			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+// 			ErrLogger: p.errLogger,
+// 		}, ctx)
+// 		if err != nil {
+// 			return err
+// 		}
+
+// 		if manage == nil {
+// 			return errors.New(noti.INTERNALL_ERR_MSG)
+// 		}
+
+// 		var nftId string
+// 		for i, donor := range manage.DonorIds {
+// 			if donor == payment.Actor {
+// 				nftId = manage.DonorNfts[i]
+// 				break
+// 			}
+// 		}
+
+// 		if nftId == "" {
+// 			nftId = os.Getenv(env.PUB_DONOR_NFT_ID)
+// 		}
+
+// 		if detail.Purpose == string(entities.DONATE_PURPOSE) {
+// 			var poolModule = on_chain.InitializeModulePool()
+// 			module = poolModule.GetModule()
+// 			if detail.Target != os.Getenv(env.POOL_ID) { // Donate to local pool
+// 				function = poolModule.GetFunctionDonateToLocalPool()
+// 				args = poolModule.ToDonateToLocalPoolArguments(on_chain.DonateToLocalPoolArguments{
+// 					LocalPoolId: detail.Target,
+// 					DonateToPoolArguments: on_chain.DonateToPoolArguments{
+// 						DonorID:     nftId,
+// 						Amount:      payment.Amount,
+// 						FirstName:   *profile.FirstName,
+// 						LastName:    *profile.LastName,
+// 						Gender:      *profile.Gender,
+// 						PhoneNumber: *profile.PhoneNumber,
+// 						Email:       *profile.Email,
+// 						Message:     payment.Message,
+// 						Sender:      payment.Actor,
+// 					},
+// 				})
+// 			} else {
+// 				function = poolModule.GetFunctionDonateToPool()
+// 				args = poolModule.ToDonateToPoolArguments(on_chain.DonateToPoolArguments{
+// 					DonorID:     nftId,
+// 					Amount:      payment.Amount,
+// 					FirstName:   *profile.FirstName,
+// 					LastName:    *profile.LastName,
+// 					Gender:      *profile.Gender,
+// 					PhoneNumber: *profile.PhoneNumber,
+// 					Email:       *profile.Email,
+// 					Message:     payment.Message,
+// 					Sender:      payment.Actor,
+// 				})
+// 			}
+// 		} else if detail.Purpose == string(entities.CAMPAIGN_PURPOSE) {
+// 			var localPoolId string
+// 			for i := 1; i <= 3; i++ {
+// 				if campaign, err := on_chain.GetOnChainObject[entities.OnChainCampaign](on_chain.GetOnChainObjectRequest{
+// 					Client:    client,
+// 					ObjectId:  detail.Target,
+// 					ErrLogger: p.errLogger,
+// 				}, ctx); err == nil {
+// 					if campaign.PoolID == os.Getenv(env.POOL_ID) {
+// 						localPoolId = os.Getenv(env.SHARED_LOCAL_POOL_ID)
+// 					} else {
+// 						localPoolId = campaign.PoolID
+// 					}
+// 					break
+// 				}
+// 			}
+
+// 			var campaignModule = on_chain.InitializeModuleCampaign()
+// 			module = campaignModule.GetModule()
+// 			function = campaignModule.GetFunctionSupportCampaign()
+
+// 			args = campaignModule.ToSupportCampaignArguments(on_chain.SupportCampaignArguments{
+// 				LocalPoolID: localPoolId,
+// 				CampaignID:  detail.Target,
+// 				DonorNFT:    nftId,
+// 				Amount:      payment.Amount,
+// 				FirstName:   *profile.FirstName,
+// 				LastName:    *profile.LastName,
+// 				Gender:      *profile.Gender,
+// 				PhoneNumber: *profile.PhoneNumber,
+// 				Email:       *profile.Email,
+// 				Message:     payment.Message,
+// 				Sender:      payment.Actor,
+// 			})
+// 		} else {
+// 			var childModule = on_chain.InitializeModuleChild()
+// 			module = childModule.GetModule()
+
+// 			var childId, generalContentFormat, taskContentFormat, mealSupportStartPeriod, mealSupportEndPeriod string
+// 			var expectedWithdrawPeriods, contentFormats []string
+// 			var task entities.Task
+
+// 			switch detail.Purpose {
+// 			case string(entities.BOOKS_NEED_PURPOSE):
+// 				need, err := on_chain.GetOnChainObject[entities.BooksNeed](on_chain.GetOnChainObjectRequest{
+// 					Client:    client,
+// 					ObjectId:  detail.Target,
+// 					ErrLogger: p.errLogger,
+// 				}, ctx)
+// 				if err != nil {
+// 					return nil
+// 				}
+
+// 				withdrawDates, err := on_chain.GetOnChainObject[entities.BooksNeedWithdrawDates](on_chain.GetOnChainObjectRequest{
+// 					Client:    client,
+// 					ObjectId:  os.Getenv(env.BOOKS_NEED_WITHDRAW_DATES_ID),
+// 					ErrLogger: p.errLogger,
+// 				}, ctx)
+
+// 				var withdrawDate string
+// 				if need.Semster == "1" {
+// 					withdrawDate = withdrawDates.FirstSemesterDate
+// 				} else {
+// 					withdrawDate = withdrawDates.SecondSemesterDate
+// 				}
+
+// 				withdrawDate += fmt.Sprintf("/%d", curTime.Year())
+// 				expectedWithdrawPeriods = append(expectedWithdrawPeriods, withdrawDate)
+// 				contentFormats = append(contentFormats, "Withdraw books need semester "+need.Semster+" - "+need.Year+" for child %s %s - %s")
+// 				generalContentFormat = "Withdraw books need semester " + need.Semster + " for child %s %s - %s"
+// 				childId = need.ChildID
+// 				function = childModule.GetFunctionSupportChildBooksNeed()
+// 			case string(entities.HEALTH_INSURANCE_NEED_PURPOSE):
+// 				need, err := on_chain.GetOnChainObject[entities.HealthInsuranceNeed](on_chain.GetOnChainObjectRequest{
+// 					Client:    client,
+// 					ObjectId:  detail.Target,
+// 					ErrLogger: p.errLogger,
+// 				}, ctx)
+// 				if err != nil {
+// 					return nil
+// 				}
+
+// 				withdrawDate, err := on_chain.GetOnChainObject[entities.HealthInsuranceNeedWithdrawDate](on_chain.GetOnChainObjectRequest{
+// 					Client:    client,
+// 					ObjectId:  os.Getenv(env.HEALTH_INSURANCE_NEED_wITHDRAW_DATE_ID),
+// 					ErrLogger: p.errLogger,
+// 				}, ctx)
+
+// 				expectedWithdrawPeriods = append(expectedWithdrawPeriods, withdrawDate.ExpectedDate+"/"+need.Year)
+// 				contentFormats = append(contentFormats, "Withdraw health insurance need "+need.Year+" for child %s %s - %s")
+// 				generalContentFormat = "Withdraw health insurance need for child %s %s - %s"
+// 				childId = need.ChildID
+// 				function = childModule.GetFunctionSupportChildHealthInsuranceNeed()
+// 			case string(entities.MEAL_NEED_PURPOSE):
+// 				need, err := on_chain.GetOnChainObject[entities.MealNeed](on_chain.GetOnChainObjectRequest{
+// 					Client:    client,
+// 					ObjectId:  detail.Target,
+// 					ErrLogger: p.errLogger,
+// 				}, ctx)
+// 				if err != nil {
+// 					return nil
+// 				}
+
+// 				duration, err := p.mealSupportDurationRepo.GetMealSupportDuration(*detail.MealDurationID, ctx)
+// 				if err != nil {
+// 					return nil
+// 				}
+
+// 				var startPeriod time.Time = util.ToStartOfDate(util.RawDateToTime(duration.StartPeriod))
+// 				var endPeriod time.Time = util.ToEndOfDate(util.RawDateToTime(duration.EndPeriod))
+// 				var endMonth int = int(endPeriod.Month())
+// 				if endMonth == 1 {
+// 					endMonth = 13
+// 				}
+
+// 				var initExpectedDate time.Time = startPeriod.AddDate(0, 0, -3)
+// 				var contentFormat string = "Withdraw meal need %s - %s for child %s %s - %s"
+// 				for i := 0; i < endMonth-int(startPeriod.Month()); i++ {
+// 					var date time.Time = initExpectedDate.AddDate(0, i, 0)
+// 					expectedWithdrawPeriods = append(expectedWithdrawPeriods, util.TimeToRawDate(date))
+
+// 					var startProvidePeriod time.Time = startPeriod.AddDate(0, i, 0)
+// 					var endProvidePeriod time.Time = startProvidePeriod.AddDate(0, 1, 0)
+
+// 					// var appendChildInfoContentFormat string = fmt.Sprintf(contentFormat, util.TimeToRawDate(startProvidePeriod), util.TimeToRawDate(endProvidePeriod))
+// 					// appendChildInfoContentFormat += "%s %s - %s"
+// 					var format string = fmt.Sprintf(contentFormat, util.TimeToRawDate(startProvidePeriod), util.TimeToRawDate(endProvidePeriod), "%s", "%s", "%s")
+// 					contentFormats = append(contentFormats, format)
+// 				}
+
+// 				task = entities.Task{
+// 					ID:          util.GenerateId(),
+// 					CreatedBy:   "System",
+// 					StartPeriod: startPeriod,
+// 					EndPeriod:   endPeriod,
+// 				}
+
+// 				taskContentFormat = "Provide meal for child %s %s - %s from " + duration.StartPeriod + " to " + duration.EndPeriod
+// 				mealSupportStartPeriod = duration.StartPeriod
+// 				mealSupportEndPeriod = duration.EndPeriod
+// 				generalContentFormat = "Withdraw meal need for child %s %s - %s"
+// 				childId = need.ChildID
+// 				function = childModule.GetFunctionSupportChildMealNeed()
+// 			case string(entities.SPECIAL_NEED_PURPOSE):
+// 				campaign, err := on_chain.GetOnChainObject[entities.SpecialNeedCampaign](on_chain.GetOnChainObjectRequest{
+// 					Client:    client,
+// 					ObjectId:  detail.Target,
+// 					ErrLogger: p.errLogger,
+// 				}, ctx)
+// 				if err != nil {
+// 					return nil
+// 				}
+
+// 				childId = campaign.ChildID
+// 				function = childModule.GetFunctionSupportChildSpecialNeedCampaign()
+// 			}
+
+// 			child, err := on_chain.GetOnChainObject[entities.Child](on_chain.GetOnChainObjectRequest{
+// 				Client:    client,
+// 				ObjectId:  childId,
+// 				ErrLogger: p.errLogger,
+// 			}, ctx)
+// 			if err != nil {
+// 				return nil
+// 			}
+
+// 			pool, err := on_chain.GetOnChainObject[entities.MainPool](on_chain.GetOnChainObjectRequest{
+// 				Client:    client,
+// 				ObjectId:  os.Getenv(env.POOL_ID),
+// 				ErrLogger: p.errLogger,
+// 			}, ctx)
+// 			if err != nil {
+// 				return nil
+// 			}
+
+// 			localPools, err := on_chain.GetOnChainObjects[entities.LocalPool](on_chain.GetOnChainObjectsRequest{
+// 				Client:    client,
+// 				ObjectIds: pool.LocalPools,
+// 				ErrLogger: p.errLogger,
+// 			}, ctx)
+// 			if err != nil {
+// 				return nil
+// 			}
+
+// 			var leaders []string
+// 			var localPoolId string
+// 			for _, localPool := range localPools {
+// 				if localPool.Region == child.Region {
+// 					leaders = localPool.Mods
+// 					localPoolId = localPool.ID.ID
+// 					break
+// 				}
+// 			}
+
+// 			if detail.Purpose != string(entities.SPECIAL_NEED_PURPOSE) {
+// 				leaderNoti, err := p.leaderNotiRepo.GetNotiByNeed(detail.Target, ctx)
+// 				if err != nil {
+// 					return nil
+// 				}
+
+// 				var childFormattedAddr string = util.FormatAddress(childId)
+// 				var contents []string
+// 				for _, format := range contentFormats {
+// 					contents = append(contents, fmt.Sprintf(format, child.LastName, child.FirstName, childFormattedAddr))
+// 				}
+
+// 				var curTime time.Time = time.Now()
+// 				if leaderNoti == nil {
+// 					p.leaderNotiRepo.CreateNoti(entities.LeaderNoti{
+// 						ID:                      util.GenerateId(),
+// 						NeedID:                  detail.Target,
+// 						NeedType:                detail.Purpose,
+// 						ChildID:                 childId,
+// 						Region:                  child.Region,
+// 						AssignedLeaders:         leaders,
+// 						ExpectedWithdrawPeriods: expectedWithdrawPeriods,
+// 						Contents:                contents,
+// 						GeneralContent:          fmt.Sprintf(generalContentFormat, child.LastName, child.FirstName, childFormattedAddr),
+// 						CreatedAt:               curTime,
+// 						UpdatedAt:               curTime,
+// 					}, ctx)
+// 				} else {
+// 					leaderNoti.ExpectedWithdrawPeriods = append(leaderNoti.ExpectedWithdrawPeriods, expectedWithdrawPeriods...)
+// 					leaderNoti.Contents = append(leaderNoti.Contents, contents...)
+// 					p.leaderNotiRepo.UpdateNoti(*leaderNoti, ctx)
+// 				}
+
+// 				switch detail.Purpose {
+// 				case string(entities.BOOKS_NEED_PURPOSE):
+// 					args = childModule.ToSupportChildBooksNeedArguments(on_chain.SupportChildBooksNeedArguments{
+// 						NeedID:      detail.Target,
+// 						LocalPool:   localPoolId,
+// 						ChildID:     childId,
+// 						DonorNft:    nftId,
+// 						Amount:      payment.Amount,
+// 						FirstName:   *profile.FirstName,
+// 						LastName:    *profile.LastName,
+// 						Gender:      *profile.Gender,
+// 						PhoneNumber: *profile.PhoneNumber,
+// 						Email:       *profile.Email,
+// 						Message:     payment.Message,
+// 						Sender:      payment.Actor,
+// 					})
+// 				case string(entities.MEAL_NEED_PURPOSE):
+// 					var detailId string = util.GenerateId()
+// 					p.childTaskDetailRepo.CreateChildTaskDetail(entities.ChildTaskDetail{
+// 						ID:      detailId,
+// 						ChildID: childId,
+// 						Purpose: string(entities.MEAL_NEED_PURPOSE),
+// 						Target:  detail.Target,
+// 					}, ctx)
+
+// 					task.IsChildTask = true
+// 					task.ChildTaskDetailID = &detailId
+// 					task.Region = child.Region
+// 					task.Description = fmt.Sprintf(taskContentFormat, child.LastName, child.FirstName, childFormattedAddr)
+// 					task.CreatedAt = curTime
+// 					task.UpdatedAt = curTime
+// 					p.taskRepo.CreateTask(task, ctx)
+
+// 					args = childModule.ToSupportChildMealNeedArguments(on_chain.SupportChildMealNeedArguments{
+// 						StartPeriod: mealSupportStartPeriod,
+// 						EndPeriod:   mealSupportEndPeriod,
+// 						SupportChildBooksNeedArguments: on_chain.SupportChildBooksNeedArguments{
+// 							NeedID:      detail.Target,
+// 							LocalPool:   localPoolId,
+// 							ChildID:     childId,
+// 							DonorNft:    nftId,
+// 							Amount:      payment.Amount,
+// 							FirstName:   *profile.FirstName,
+// 							LastName:    *profile.LastName,
+// 							Gender:      *profile.Gender,
+// 							PhoneNumber: *profile.PhoneNumber,
+// 							Email:       *profile.Email,
+// 							Message:     payment.Message,
+// 							Sender:      payment.Actor,
+// 						},
+// 					})
+// 				case string(entities.HEALTH_INSURANCE_NEED_PURPOSE):
+// 					args = childModule.ToSupportChildHealthInsuranceNeedArguments(on_chain.SupportChildHealthInsuranceNeedArguments{
+// 						NeedID:      detail.Target,
+// 						LocalPool:   localPoolId,
+// 						ChildID:     childId,
+// 						DonorNft:    nftId,
+// 						Amount:      payment.Amount,
+// 						FirstName:   *profile.FirstName,
+// 						LastName:    *profile.LastName,
+// 						Gender:      *profile.Gender,
+// 						PhoneNumber: *profile.PhoneNumber,
+// 						Email:       *profile.Email,
+// 						Message:     payment.Message,
+// 						Sender:      payment.Actor,
+// 					})
+// 				}
+// 			} else {
+// 				args = childModule.ToSupportChildSpeicalNeedArguments(on_chain.SupportChildSpeicalNeedArguments{
+// 					CampaignID:  detail.Target,
+// 					LocalPool:   localPoolId,
+// 					ChildID:     childId,
+// 					DonorNft:    nftId,
+// 					Amount:      payment.Amount,
+// 					FirstName:   *profile.FirstName,
+// 					LastName:    *profile.LastName,
+// 					Gender:      *profile.Gender,
+// 					PhoneNumber: *profile.PhoneNumber,
+// 					Email:       *profile.Email,
+// 					Message:     payment.Message,
+// 					Sender:      payment.Actor,
+// 				})
+// 			}
+// 		}
+// 	} else {
+// 		detail, err := p.withdrawRepo.GetOffChainWithdrawProposal(*payment.ProposalID, ctx)
+// 		if err != nil {
+// 			return err
+// 		}
+
+// 		if detail.Purpose == string(entities.WITHDRAW_PURPOSE) {
+// 			var poolModule = on_chain.InitializeModulePool()
+// 			module = poolModule.GetModule()
+// 			function = poolModule.GetFunctionWithdrawFromPool()
+// 			args = poolModule.ToWithdrawFromPoolArguments(on_chain.WithdrawFromPoolArguments{
+// 				LocalPoolId:        detail.LocalPoolID,
+// 				WithdrawProposalId: *detail.ProposalID,
+// 				Sender:             payment.Actor,
+// 			})
+// 		} else if detail.Purpose == string(entities.CAMPAIGN_PURPOSE) {
+// 			var campaignModule = on_chain.InitializeModuleCampaign()
+// 			module = campaignModule.GetModule()
+// 			function = campaignModule.GetFunctionWithdrawFromCampaign()
+// 			args = campaignModule.ToWithdrawFromCampaignArguments(on_chain.WithdrawFromCampaignArguments{
+// 				CampaignID: detail.Target,
+// 				ProposalID: *detail.ProposalID,
+// 				Sender:     payment.Actor,
+// 			})
+// 		} else {
+// 			var childModule = on_chain.InitializeModuleChild()
+// 			module = childModule.GetModule()
+// 			switch detail.Purpose {
+// 			case string(entities.BOOKS_NEED_PURPOSE):
+// 				function = childModule.GetFunctionWithdrawFromBooksNeedProposal()
+// 			case string(entities.HEALTH_INSURANCE_NEED_PURPOSE):
+// 				function = childModule.GetFunctionWithdrawFromHealthInsuranceNeedProposal()
+// 			case string(entities.MEAL_NEED_PURPOSE):
+// 				function = childModule.GetFunctionWithdrawFromMealNeedProposal()
+// 			case string(entities.SPECIAL_NEED_PURPOSE):
+// 				function = childModule.GetFunctionWithdrawFromSpecialNeedCampaign()
+// 			}
+
+// 			args = childModule.ToWithdrawFromNeedArguments(on_chain.WithdrawFromNeedArguments{
+// 				LocalPool:  detail.LocalPoolID,
+// 				TargetID:   detail.Target,
+// 				ProposalID: *detail.ProposalID,
+// 				Sender:     payment.Actor,
+// 			})
+// 		}
+// 	}
+
+// 	for i := 1; i <= 3; i++ {
+// 		if _, err := on_chain.ExecuteTransactionV2(on_chain.ExecuteTransactionRequestV2{
+// 			Client:    client,
+// 			Module:    module,
+// 			Function:  function,
+// 			Arguments: args,
+// 			ErrLogger: p.errLogger,
+// 		}, ctx); err == nil {
+// 			return nil
+// 		}
+// 	}
+
+// 	return errors.New(noti.INTERNALL_ERR_MSG)
 // }
 
 // CallbackV2 implements business.IPaymentService.
@@ -1327,47 +1962,62 @@ func (p *paymentService) CallbackV2(id string, ctx context.Context) error {
 			}
 		}
 	} else {
-		detail, err := p.withdrawRepo.GetOffChainWithdrawProposal(*payment.ProposalID, ctx)
-		if err != nil {
-			return err
+		var proposal *entities.WithdrawProposal
+		for i := 1; i <= 3; i++ {
+			if res, _ := on_chain.GetOnChainObject[entities.WithdrawProposal](on_chain.GetOnChainObjectRequest{
+				Client:    client,
+				ObjectId:  *payment.ProposalID,
+				ErrLogger: p.errLogger,
+			}, ctx); res != nil {
+				proposal = res
+				break
+			}
 		}
 
-		if detail.Purpose == string(entities.WITHDRAW_PURPOSE) {
+		if proposal.Purpose == string(entities.POOL_WITHDRAW_PROPOSAL_PURPOSE) {
 			var poolModule = on_chain.InitializeModulePool()
 			module = poolModule.GetModule()
 			function = poolModule.GetFunctionWithdrawFromPool()
+
+			var localPoolId string
+			if proposal.TargetID == os.Getenv(env.POOL_ID) {
+				localPoolId = os.Getenv(env.SHARED_LOCAL_POOL_ID)
+			} else {
+				localPoolId = proposal.TargetID
+			}
+
 			args = poolModule.ToWithdrawFromPoolArguments(on_chain.WithdrawFromPoolArguments{
-				LocalPoolId:        detail.LocalPoolID,
-				WithdrawProposalId: *detail.ProposalID,
+				LocalPoolId:        localPoolId,
+				WithdrawProposalId: *payment.ProposalID,
 				Sender:             payment.Actor,
 			})
-		} else if detail.Purpose == string(entities.CAMPAIGN_PURPOSE) {
+		} else if proposal.Purpose == string(entities.POOL_CAMPAIGN_WITHDRAW_PROPOSAL_PURPOSE) {
 			var campaignModule = on_chain.InitializeModuleCampaign()
 			module = campaignModule.GetModule()
 			function = campaignModule.GetFunctionWithdrawFromCampaign()
 			args = campaignModule.ToWithdrawFromCampaignArguments(on_chain.WithdrawFromCampaignArguments{
-				CampaignID: detail.Target,
-				ProposalID: *detail.ProposalID,
+				CampaignID: proposal.TargetID,
+				ProposalID: *payment.ProposalID,
 				Sender:     payment.Actor,
 			})
 		} else {
 			var childModule = on_chain.InitializeModuleChild()
 			module = childModule.GetModule()
-			switch detail.Purpose {
-			case string(entities.BOOKS_NEED_PURPOSE):
+			switch proposal.Purpose {
+			case string(entities.BOOKS_NEED_WITHDRAW_PROPOSAL_PURPOSE):
 				function = childModule.GetFunctionWithdrawFromBooksNeedProposal()
-			case string(entities.HEALTH_INSURANCE_NEED_PURPOSE):
+			case string(entities.HEALTH_INSURANCE_NEED_WITHDRAW_PROPOSAL_PURPOSE):
 				function = childModule.GetFunctionWithdrawFromHealthInsuranceNeedProposal()
-			case string(entities.MEAL_NEED_PURPOSE):
+			case string(entities.MEAL_NEED_WITHDRAW_PROPOSAL_PURPOSE):
 				function = childModule.GetFunctionWithdrawFromMealNeedProposal()
-			case string(entities.SPECIAL_NEED_PURPOSE):
+			case string(entities.SPECIAL_NEED_CAMPAIGN_WITHDRAW_PROPOSAL_PURPOSE):
 				function = childModule.GetFunctionWithdrawFromSpecialNeedCampaign()
 			}
 
 			args = childModule.ToWithdrawFromNeedArguments(on_chain.WithdrawFromNeedArguments{
-				LocalPool:  detail.LocalPoolID,
-				TargetID:   detail.Target,
-				ProposalID: *detail.ProposalID,
+				LocalPool:  proposal.PoolID,
+				TargetID:   proposal.TargetID,
+				ProposalID: *payment.ProposalID,
 				Sender:     payment.Actor,
 			})
 		}
@@ -1396,7 +2046,7 @@ func (p *paymentService) CallbackWithAuthV2(id string, req request.PaymentAuthCa
 	}
 
 	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
-	if payment == nil || payment.Method != shared.MANUAL_BANK_METHOD {
+	if payment == nil || payment.Method != shared.MANUAL_BANK_METHOD || payment.IsDonateTx {
 		return genericErr
 	}
 

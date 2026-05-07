@@ -50,7 +50,9 @@ const (
 
 	HAVE_TO_DONATE_TO_VOTE string = "You have to donate to AgroTrust Platform to vote this request."
 
-	WITHDRAW_PROPOSAL_EXECUTED_MESSSAGE string = "This withdraw proposal has been executed."
+	WITHDRAW_PROPOSAL_EXECUTED_MESSSAGE string = "This withdraw proposal has been cancelled."
+
+	WITHDRAW_PROPOSAL_CANCELLED_MESSSAGE string = "This withdraw proposal has been executed."
 
 	WITHDRAW_PROPOSAL_FAIL_CONDITION_MESSAGE string = "This withdraw proposal approve rate has been failed."
 
