@@ -200,6 +200,7 @@ func (m *modulePool) ToEditWithdrawDaoRateArguements(args EditWithdrawDaoRateArg
 func (m *modulePool) ToWithdrawFromPoolArguments(args WithdrawFromPoolArguments) []interface{} {
 	return []interface{}{
 		os.Getenv(env.ADMIN_CAP_ID_1),
+		os.Getenv(env.ALLOWED_FUNDED_WITHDRAW_RATE_OBJECT_ID),
 		os.Getenv(env.MANAGE_OBJECT_ID),
 		os.Getenv(env.POOL_ID),
 		args.LocalPoolId,
