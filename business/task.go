@@ -28,25 +28,28 @@ import (
 )
 
 type taskService struct {
-	profileRepo i_repository.IProfileRepository
-	taskRepo    i_repository.ITaskRepository
-	redisCache  cache.IRedisCache
-	clients     map[string]sui.ISuiAPI
-	errLogger   *log.Logger
+	profileRepo         i_repository.IProfileRepository
+	childTaskDetailRepo i_repository.IChildTaskDetailRepository
+	taskRepo            i_repository.ITaskRepository
+	redisCache          cache.IRedisCache
+	clients             map[string]sui.ISuiAPI
+	errLogger           *log.Logger
 }
 
 func initializeTaskService(
 	profileRepo i_repository.IProfileRepository,
+	childTaskDetailRepo i_repository.IChildTaskDetailRepository,
 	taskRepo i_repository.ITaskRepository,
 	clients map[string]sui.ISuiAPI,
 	errLogger *log.Logger,
 ) business.ITaskService {
 	return &taskService{
-		profileRepo: profileRepo,
-		taskRepo:    taskRepo,
-		redisCache:  cache.InitializeRedisCache(),
-		clients:     clients,
-		errLogger:   errLogger,
+		profileRepo:         profileRepo,
+		childTaskDetailRepo: childTaskDetailRepo,
+		taskRepo:            taskRepo,
+		redisCache:          cache.InitializeRedisCache(),
+		clients:             clients,
+		errLogger:           errLogger,
 	}
 }
 
@@ -60,6 +63,7 @@ func GenerateTaskService() (business.ITaskService, error) {
 
 	return initializeTaskService(
 		repository.InitializeProfileRepository(cnn, errLogger),
+		repository.InitializeChildTaskDetailRepository(cnn, errLogger),
 		repository.InitializeTaskRepository(cnn, errLogger),
 		_networkAliases,
 		errLogger,
@@ -235,6 +239,61 @@ func (t *taskService) CreateTask(req request.CreateTaskRequest, ctx context.Cont
 	}
 
 	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
+	var childTaskId *string
+	var curTime time.Time = time.Now()
+	if req.IsChildTask != nil {
+		if *req.IsChildTask {
+			if req.ChildID == nil || req.NeedID == nil {
+				return nil, genericErr
+			}
+
+			if !util.IsValidSuiAddressStrict(*req.ChildID) || !util.IsValidSuiAddressStrict(*req.NeedID) {
+				return nil, genericErr
+			}
+
+			child, err := on_chain.GetOnChainObject[entities.Child](on_chain.GetOnChainObjectRequest{
+				Client:    client,
+				ObjectId:  *req.ChildID,
+				ErrLogger: t.errLogger,
+			}, ctx)
+			if err != nil {
+				return nil, err
+			}
+
+			if child == nil {
+				return nil, genericErr
+			}
+
+			if child.Region != req.Region {
+				return nil, errors.New(noti.NOT_STAFF_OF_REGION_MESSAGE)
+			}
+
+			var taskPurpose string
+			if slices.Contains(child.BooksNeeds, *req.NeedID) {
+				taskPurpose = string(entities.BOOKS_NEED_PURPOSE)
+			} else if child.HealthInsuranceNeed == *req.NeedID {
+				taskPurpose = string(entities.HEALTH_INSURANCE_NEED_PURPOSE)
+			}
+
+			if taskPurpose == "" {
+				return nil, genericErr
+			}
+
+			var childTaskDetailId string = util.GenerateId()
+			if err := t.childTaskDetailRepo.CreateChildTaskDetail(entities.ChildTaskDetail{
+				ID:        childTaskDetailId,
+				ChildID:   *req.ChildID,
+				Purpose:   taskPurpose,
+				Target:    *req.NeedID,
+				CreatedAt: curTime,
+			}, ctx); err != nil {
+				return nil, err
+			}
+
+			childTaskId = &childTaskDetailId
+		}
+	}
+
 	var startPeriod time.Time = util.ToStartOfDate(util.RawDateToTime(strings.TrimSpace(req.StartPeriod)))
 	if startPeriod.IsZero() {
 		return nil, genericErr
@@ -245,16 +304,17 @@ func (t *taskService) CreateTask(req request.CreateTaskRequest, ctx context.Cont
 		return nil, genericErr
 	}
 
-	var curTime time.Time = time.Now()
 	var task = entities.Task{
-		ID:          util.GenerateId(),
-		CreatedBy:   sender,
-		Region:      req.Region,
-		Description: strings.TrimSpace(req.Description),
-		StartPeriod: startPeriod,
-		EndPeriod:   endPeriod,
-		CreatedAt:   curTime,
-		UpdatedAt:   curTime,
+		ID:                util.GenerateId(),
+		IsChildTask:       *req.IsChildTask,
+		ChildTaskDetailID: childTaskId,
+		CreatedBy:         sender,
+		Region:            req.Region,
+		Description:       strings.TrimSpace(req.Description),
+		StartPeriod:       startPeriod,
+		EndPeriod:         endPeriod,
+		CreatedAt:         curTime,
+		UpdatedAt:         curTime,
 	}
 
 	return &task, t.taskRepo.CreateTask(task, ctx)

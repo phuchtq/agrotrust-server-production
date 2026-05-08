@@ -154,7 +154,7 @@ func GenerateTaskProofService() (business.ITaskProofService, error) {
 // 		switch detail.Purpose {
 // 		case string(entities.MEAL_NEED_PURPOSE):
 // 			function = childModule.GetFunctionConfirmProvideMealForChildV2()
-// 			args = childModule.ToConfirmProvideMealForChildArgumentsV2(on_chain.ConfirmProvideMealForChildArgumentsV2{
+// 			args = childModule.ToConfirmProvideNeedForChildArgumentsV2(on_chain.ConfirmProvideNeedForChildArgumentsV2{
 // 				ChildID:     detail.ChildID,
 // 				NeedID:      detail.Target,
 // 				StaffNft:    leaderNftId,
@@ -299,17 +299,21 @@ func (t *taskProofService) ApproveTaskProof(id string, ctx context.Context) erro
 		switch detail.Purpose {
 		case string(entities.MEAL_NEED_PURPOSE):
 			function = childModule.GetFunctionConfirmProvideMealForChildV2()
-			args = childModule.ToConfirmProvideMealForChildArgumentsV2(on_chain.ConfirmProvideMealForChildArgumentsV2{
-				ChildID:     detail.ChildID,
-				NeedID:      detail.Target,
-				StaffNft:    leaderNft.ID.ID,
-				ImageBlobID: proof.ImageBlobID,
-				ProvideDate: proof.RawSubmitDate,
-				Actor:       proof.ActorAddress,
-				Sender:      sender,
-			})
-			// Other cases in future if have
+		case string(entities.BOOKS_NEED_PURPOSE):
+			function = childModule.GetFunctionConfirmProvideBooksForChildV2()
+		case string(entities.HEALTH_INSURANCE_NEED_PURPOSE):
+			function = childModule.GetFunctionConfirmProvideHealthInsuranceForChildV2()
 		}
+
+		args = childModule.ToConfirmProvideNeedForChildArgumentsV2(on_chain.ConfirmProvideNeedForChildArgumentsV2{
+			ChildID:     detail.ChildID,
+			NeedID:      detail.Target,
+			StaffNft:    leaderNft.ID.ID,
+			ImageBlobID: proof.ImageBlobID,
+			ProvideDate: proof.RawSubmitDate,
+			Actor:       proof.ActorAddress,
+			Sender:      sender,
+		})
 	} else {
 		var centerId string
 		for i, region := range manage.LocalRegions {
@@ -355,14 +359,6 @@ func (t *taskProofService) ApproveTaskProof(id string, ctx context.Context) erro
 // GetTaskProof implements business.ITaskProofService.
 func (t *taskProofService) GetTaskProof(id string, ctx context.Context) (*entities.TaskProof, error) {
 	return t.taskProofRepo.GetTaskProof(id, ctx)
-
-	// for _, proof := range mockTaskProofs {
-	// 	if proof.ID == id {
-	// 		return &proof, nil
-	// 	}
-	// }
-
-	// return nil, nil
 }
 
 // GetTaskProofs implements business.ITaskProofService.
@@ -540,8 +536,13 @@ func (t *taskProofService) SubmitTaskProof(id string, req request.SubmitTaskProo
 		return genericErr
 	}
 
-	if time.Now().After(task.EndPeriod) {
+	var curTime time.Time = time.Now()
+	if curTime.After(task.EndPeriod) {
 		return errors.New(noti.TASK_ENDED_MESSAGE)
+	}
+
+	if curTime.Before(task.StartPeriod) || curTime.After(task.EndPeriod) {
+		return errors.New(noti.TASK_NOT_SUBMITTED_DATE_MESSAGE)
 	}
 
 	var sender string = ctx.Value("address").(string)
@@ -553,7 +554,6 @@ func (t *taskProofService) SubmitTaskProof(id string, req request.SubmitTaskProo
 		}
 	}
 
-	var curTime time.Time = time.Now()
 	var rawSubmitDate string = util.TimeToRawDate(curTime)
 	isSubmitted, err := t.taskProofRepo.IsTaskProofSumittedWithDetail(id, task.Description, sender, rawSubmitDate, ctx)
 	if err != nil {
@@ -581,16 +581,14 @@ func (t *taskProofService) SubmitTaskProof(id string, req request.SubmitTaskProo
 
 			if child != nil {
 				avatarBytes, _ := t.walrusProvider.FetchBytesImage(child.AvatarBlobId)
-				if avatarBytes != nil {
-					aiEvaluation = t.aiProvider.ValidateProvideMealForChildTaskProof(ai.ValidateProvideMealForChildTaskProof{
-						ChildAvatarBytesImage: avatarBytes,
-						ValidateTaskProof: ai.ValidateTaskProof{
-							TaskDescription: task.Description,
-							ProofBytesImage: nil,
-							CreatedAt:       curTime,
-						},
-					}, ctx)
-				}
+				aiEvaluation = t.aiProvider.ValidateProvideNeedForChildTaskProof(ai.ValidateProvideNeedForChildTaskProof{
+					ChildAvatarBytesImage: avatarBytes,
+					ValidateTaskProof: ai.ValidateTaskProof{
+						TaskDescription: task.Description,
+						ProofBytesImage: nil,
+						CreatedAt:       curTime,
+					},
+				}, ctx)
 			}
 		}
 	} else {

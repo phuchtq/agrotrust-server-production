@@ -90,6 +90,8 @@ const (
 
 	TASK_ENDED_MESSAGE string = "This task has been ended."
 
+	TASK_NOT_SUBMITTED_DATE_MESSAGE string = "This is not date to submit for this task."
+
 	TASK_CLAIMED_MESSAGE string = "This task has been claimed."
 
 	TASK_NOT_CLAIMED_MESSAGE string = "This task has not been claimed."
@@ -129,6 +131,8 @@ const (
 	CHILDREN_WITHDRAW_PROPOSED_MESSAGE string = "Children Withdraw Proposal for this region on this date has been proposed."
 
 	NOT_CHILDREN_WITHDRAW_PROPOSED_DATE string = "This is not date to propose children withdraw proposal."
+
+	EMPTY_REMAIN_VOTE_POWER_MESSAGE string = "You have casted all vote powers."
 )
 
 const (

@@ -26,7 +26,7 @@ type IAiClientProvider interface {
 	ValidateCreateCenterRequest(req ValidateCreateCenterRequest, ctx context.Context) string
 	ValidateRegistrationRequest(req ValidateRegistrationRequest, ctx context.Context) string
 	ValidateTaskProof(req ValidateTaskProof, ctx context.Context) string
-	ValidateProvideMealForChildTaskProof(req ValidateProvideMealForChildTaskProof, ctx context.Context) string
+	ValidateProvideNeedForChildTaskProof(req ValidateProvideNeedForChildTaskProof, ctx context.Context) string
 	ValidateWithdrawProposal(req ValidateWithdrawProposal, ctx context.Context) string
 	ValidateChildSpecialNeedProposal(req ValidateChildSpecialNeedProposal, ctx context.Context) string
 	ValidatePoolCampaign(req ValidatePoolCampaign, ctx context.Context) string
@@ -55,11 +55,20 @@ func (a *aiClient) ValidateUploadChildRequest(req ValidateUploadChildRequest, ct
 		genai.Text(string(jsonData)),
 	}
 
-	prompt = append(prompt, genai.Text("Label: Child Avatar"), genai.ImageData("jpeg", req.AvatarBytesImage))
-	prompt = append(prompt, genai.Text("Label: Child Birth Certificate"), genai.ImageData("jpeg", req.ChildBirthCertificateBytesImage))
-	prompt = append(prompt, genai.Text("Label: Child First Guardian Identity Card"), genai.ImageData("jpeg", []byte(req.FirstGuardian.IdentityCardBytesImage)))
-	if req.SecondGuardian != nil {
-		prompt = append(prompt, genai.Text("Label: Child Second Guardian Identity Card"), genai.ImageData("jpeg", []byte(req.SecondGuardian.IdentityCardBytesImage)))
+	if req.AvatarBytesImage != nil {
+		prompt = append(prompt, genai.Text("Label: Child Avatar"), genai.ImageData("jpeg", req.AvatarBytesImage))
+	}
+
+	if req.ChildBirthCertificateBytesImage != nil {
+		prompt = append(prompt, genai.Text("Label: Child Birth Certificate"), genai.ImageData("jpeg", req.ChildBirthCertificateBytesImage))
+	}
+
+	if req.FirstGuardian.IdentityCardBytesImage != nil {
+		prompt = append(prompt, genai.Text("Label: Child First Guardian Identity Card"), genai.ImageData("jpeg", req.FirstGuardian.IdentityCardBytesImage))
+	}
+
+	if req.SecondGuardian.IdentityCardBytesImage != nil {
+		prompt = append(prompt, genai.Text("Label: Child Second Guardian Identity Card"), genai.ImageData("jpeg", req.SecondGuardian.IdentityCardBytesImage))
 	}
 
 	return a.processPrompt(prompt, ctx)
@@ -77,25 +86,32 @@ func (a *aiClient) ValidateCreateCenterRequest(req ValidateCreateCenterRequest, 
 		genai.Text(string(jsonData)),
 	}
 
-	prompt = append(prompt, genai.Text("Label: Center Image"), genai.ImageData("jpeg", req.CenterBytesImage))
+	if req.CenterBytesImage != nil {
+		prompt = append(prompt, genai.Text("Label: Center Image"), genai.ImageData("jpeg", req.CenterBytesImage))
+	}
 
 	return a.processPrompt(prompt, ctx)
 }
 
 // ValidateProvideMealForChildTaskProof implements IAiClientProvider.
-func (a *aiClient) ValidateProvideMealForChildTaskProof(req ValidateProvideMealForChildTaskProof, ctx context.Context) string {
+func (a *aiClient) ValidateProvideNeedForChildTaskProof(req ValidateProvideNeedForChildTaskProof, ctx context.Context) string {
 	if !a.geminiProvider.limiter.Allow() {
 		return ""
 	}
 
 	jsonData, _ := json.MarshalIndent(req, "", "  ")
 	var prompt = []genai.Part{
-		genai.Text(fmt.Sprintf("Case: %s", registration_request_validate_case)),
+		genai.Text(fmt.Sprintf("Case: %s", provide_need_for_child_task_proof_validate_case)),
 		genai.Text(string(jsonData)),
 	}
 
-	prompt = append(prompt, genai.Text("Label: Proof of Task Image"), genai.ImageData("jpeg", req.ProofBytesImage))
-	prompt = append(prompt, genai.Text("Label: Child Avatar Who Provided Lunch"), genai.ImageData("jpeg", req.ChildAvatarBytesImage))
+	if req.ProofBytesImage != nil {
+		prompt = append(prompt, genai.Text("Label: Proof of Task Image"), genai.ImageData("jpeg", req.ProofBytesImage))
+	}
+
+	if req.ChildAvatarBytesImage != nil {
+		prompt = append(prompt, genai.Text("Label: Child Avatar Who Provided Need"), genai.ImageData("jpeg", req.ChildAvatarBytesImage))
+	}
 
 	return a.processPrompt(prompt, ctx)
 }
@@ -112,8 +128,13 @@ func (a *aiClient) ValidateRegistrationRequest(req ValidateRegistrationRequest, 
 		genai.Text(string(jsonData)),
 	}
 
-	prompt = append(prompt, genai.Text("Label: Identity Card Image"), genai.ImageData("jpeg", req.IdentityCardBytesImage))
-	prompt = append(prompt, genai.Text("Label: Avatar Image"), genai.ImageData("jpeg", req.AvatarBytesImage))
+	if req.IdentityCardBytesImage != nil {
+		prompt = append(prompt, genai.Text("Label: Identity Card Image"), genai.ImageData("jpeg", req.IdentityCardBytesImage))
+	}
+
+	if req.AvatarBytesImage != nil {
+		prompt = append(prompt, genai.Text("Label: Avatar Image"), genai.ImageData("jpeg", req.AvatarBytesImage))
+	}
 
 	return a.processPrompt(prompt, ctx)
 }
@@ -126,11 +147,13 @@ func (a *aiClient) ValidateTaskProof(req ValidateTaskProof, ctx context.Context)
 
 	jsonData, _ := json.MarshalIndent(req, "", "  ")
 	var prompt = []genai.Part{
-		genai.Text(fmt.Sprintf("Case: %s", registration_request_validate_case)),
+		genai.Text(fmt.Sprintf("Case: %s", task_proof_validate_case)),
 		genai.Text(string(jsonData)),
 	}
 
-	prompt = append(prompt, genai.Text("Label: Proof of Task Image"), genai.ImageData("jpeg", req.ProofBytesImage))
+	if req.ProofBytesImage != nil {
+		prompt = append(prompt, genai.Text("Label: Proof of Task Image"), genai.ImageData("jpeg", req.ProofBytesImage))
+	}
 
 	return a.processPrompt(prompt, ctx)
 }
@@ -147,7 +170,9 @@ func (a *aiClient) ValidateWithdrawProposal(req ValidateWithdrawProposal, ctx co
 		genai.Text(string(jsonData)),
 	}
 
-	prompt = append(prompt, genai.Text("Label: Withdraw Proof Image"), genai.ImageData("jpeg", req.ProofBytesImage))
+	if req.ProofBytesImage != nil {
+		prompt = append(prompt, genai.Text("Label: Withdraw Proof Image"), genai.ImageData("jpeg", req.ProofBytesImage))
+	}
 
 	return a.processPrompt(prompt, ctx)
 }
@@ -164,7 +189,9 @@ func (a *aiClient) ValidateChildSpecialNeedProposal(req ValidateChildSpecialNeed
 		genai.Text(string(jsonData)),
 	}
 
-	prompt = append(prompt, genai.Text("Label: Campaign Relevant Proof Image"), genai.ImageData("jpeg", req.ProofBytesImage))
+	if req.ProofBytesImage != nil {
+		prompt = append(prompt, genai.Text("Label: Campaign Relevant Proof Image"), genai.ImageData("jpeg", req.ProofBytesImage))
+	}
 
 	return a.processPrompt(prompt, ctx)
 }
@@ -181,7 +208,9 @@ func (a *aiClient) ValidatePoolCampaign(req ValidatePoolCampaign, ctx context.Co
 		genai.Text(string(jsonData)),
 	}
 
-	prompt = append(prompt, genai.Text("Label: Pool Campaign Relevant Proof Image"), genai.ImageData("jpeg", req.ProofBytesImage))
+	if req.ProofBytesImage != nil {
+		prompt = append(prompt, genai.Text("Label: Pool Campaign Relevant Proof Image"), genai.ImageData("jpeg", req.ProofBytesImage))
+	}
 
 	return a.processPrompt(prompt, ctx)
 }

@@ -873,24 +873,41 @@ func (w *withdrawProposalService) ConfirmWithdrawProposal(id string, ctx context
 		return nil, internalErr
 	}
 
-	closedAt, _ := strconv.ParseInt(proposal.ClosedAt, 10, 64)
-	if time.Now().Before(util.MilliSecToTime(closedAt)) {
-		return nil, errors.New(noti.STILL_PENDING_REQUEST_MESSAGE)
-	}
+	var withdrawAmount int64
+	proposalWithdrawAmount, _ := strconv.ParseInt(proposal.WithdrawAmount, 10, 64)
+	if proposal.Purpose != string(entities.BOOKS_NEED_WITHDRAW_PROPOSAL_PURPOSE) && proposal.Purpose != string(entities.MEAL_NEED_WITHDRAW_PROPOSAL_PURPOSE) && proposal.Purpose != string(entities.HEALTH_INSURANCE_NEED_WITHDRAW_PROPOSAL_PURPOSE) {
+		closedAt, _ := strconv.ParseInt(proposal.ClosedAt, 10, 64)
+		if time.Now().Before(util.MilliSecToTime(closedAt)) {
+			return nil, errors.New(noti.STILL_PENDING_REQUEST_MESSAGE)
+		}
 
-	if proposal.IsExecuted {
-		return nil, errors.New(noti.WITHDRAW_PROPOSAL_EXECUTED_MESSSAGE)
-	}
+		if proposal.IsExecuted {
+			return nil, errors.New(noti.WITHDRAW_PROPOSAL_EXECUTED_MESSSAGE)
+		}
 
-	if proposal.IsCancelled {
-		return nil, errors.New(noti.WITHDRAW_PROPOSAL_EXECUTED_MESSSAGE)
-	}
+		if proposal.IsCancelled {
+			return nil, errors.New(noti.WITHDRAW_PROPOSAL_EXECUTED_MESSSAGE)
+		}
 
-	approveWeight, _ := strconv.ParseInt(proposal.TotalApproveWeight, 10, 64)
-	withdrawAmount, _ := strconv.ParseInt(proposal.WithdrawAmount, 10, 64)
+		rateObj, err := on_chain.GetOnChainObject[entities.AllowedFundedWithdrawRateObject](on_chain.GetOnChainObjectRequest{
+			Client:    client,
+			ObjectId:  os.Getenv(env.ALLOWED_FUNDED_WITHDRAW_RATE_OBJECT_ID),
+			ErrLogger: w.errLogger,
+		}, ctx)
+		if rateObj == nil {
+			return nil, err
+		}
 
-	if approveWeight < withdrawAmount {
-		return nil, errors.New(noti.WITHDRAW_PROPOSAL_FAIL_CONDITION_MESSAGE)
+		allowedRate, _ := strconv.ParseInt(rateObj.Rate, 10, 64)
+		approveWeight, _ := strconv.ParseInt(proposal.TotalApproveWeight, 10, 64)
+
+		if approveWeight < proposalWithdrawAmount*allowedRate/100 {
+			return nil, errors.New(noti.WITHDRAW_PROPOSAL_FAIL_CONDITION_MESSAGE)
+		}
+
+		withdrawAmount = approveWeight
+	} else {
+		withdrawAmount = proposalWithdrawAmount
 	}
 
 	isProcessed, err := w.paymentRepo.IsWithdrawalPaymentInProcess(id, ctx)
@@ -1339,7 +1356,7 @@ func (w *withdrawProposalService) VoteWithdrawProposal(id string, ctx context.Co
 		return err
 	}
 
-	if proposal == nil {
+	if proposal == nil || proposal.Purpose == string(entities.MEAL_NEED_WITHDRAW_PROPOSAL_PURPOSE) || proposal.Purpose == string(entities.BOOKS_NEED_WITHDRAW_PROPOSAL_PURPOSE) || proposal.Purpose == string(entities.HEALTH_INSURANCE_NEED_WITHDRAW_PROPOSAL_PURPOSE) {
 		return genericErr
 	}
 
@@ -1461,7 +1478,7 @@ func (w *withdrawProposalService) VoteWithdrawProposal(id string, ctx context.Co
 
 		remainVotePower, _ := strconv.Atoi(campaign.RemainVotePowers[foundIdx])
 		if remainVotePower == 0 {
-			// todo: return msg
+			return errors.New(noti.EMPTY_REMAIN_VOTE_POWER_MESSAGE)
 		}
 
 		var campaignModule = on_chain.InitializeModuleCampaign()
@@ -1477,79 +1494,22 @@ func (w *withdrawProposalService) VoteWithdrawProposal(id string, ctx context.Co
 		var votePowerList []string
 		var needModule = on_chain.InitializeModuleNeed()
 
-		switch proposal.Purpose {
-		case string(entities.BOOKS_NEED_WITHDRAW_PROPOSAL_PURPOSE):
-			need, err := on_chain.GetOnChainObject[entities.BooksNeed](on_chain.GetOnChainObjectRequest{
-				Client:    client,
-				ObjectId:  proposal.TargetID,
-				ErrLogger: w.errLogger,
-			}, ctx)
-			if err != nil {
-				return err
-			}
-
-			if need == nil {
-				return genericErr
-			}
-
-			donorList = need.Donors
-			votePowerList = need.RemainVotePowers
-			function = needModule.GetFunctionVoteBooksNeedWithdrawProposal()
-
-		case string(entities.MEAL_NEED_WITHDRAW_PROPOSAL_PURPOSE):
-			need, err := on_chain.GetOnChainObject[entities.MealNeed](on_chain.GetOnChainObjectRequest{
-				Client:    client,
-				ObjectId:  proposal.TargetID,
-				ErrLogger: w.errLogger,
-			}, ctx)
-			if err != nil {
-				return err
-			}
-
-			if need == nil {
-				return genericErr
-			}
-
-			donorList = need.Donors
-			votePowerList = need.RemainVotePowers
-			function = needModule.GetFunctionVoteMealNeedWithdrawProposal()
-
-		case string(entities.HEALTH_INSURANCE_NEED_WITHDRAW_PROPOSAL_PURPOSE):
-			need, err := on_chain.GetOnChainObject[entities.HealthInsuranceNeed](on_chain.GetOnChainObjectRequest{
-				Client:    client,
-				ObjectId:  proposal.TargetID,
-				ErrLogger: w.errLogger,
-			}, ctx)
-			if err != nil {
-				return err
-			}
-
-			if need == nil {
-				return genericErr
-			}
-
-			donorList = need.Donors
-			votePowerList = need.RemainVotePowers
-			function = needModule.GetFunctionVoteHealthInsuranceNeedWithdrawProposal()
-
-		case string(entities.SPECIAL_NEED_CAMPAIGN_WITHDRAW_PROPOSAL_PURPOSE):
-			campaign, err := on_chain.GetOnChainObject[entities.SpecialNeedCampaign](on_chain.GetOnChainObjectRequest{
-				Client:    client,
-				ObjectId:  proposal.TargetID,
-				ErrLogger: w.errLogger,
-			}, ctx)
-			if err != nil {
-				return err
-			}
-
-			if campaign == nil {
-				return genericErr
-			}
-
-			donorList = campaign.Donors
-			votePowerList = campaign.RemainVotePowers
-			function = needModule.GetFunctionVoteSpecialNeedCampaignWithdrawProposal()
+		campaign, err := on_chain.GetOnChainObject[entities.SpecialNeedCampaign](on_chain.GetOnChainObjectRequest{
+			Client:    client,
+			ObjectId:  proposal.TargetID,
+			ErrLogger: w.errLogger,
+		}, ctx)
+		if err != nil {
+			return err
 		}
+
+		if campaign == nil {
+			return genericErr
+		}
+
+		donorList = campaign.Donors
+		votePowerList = campaign.RemainVotePowers
+		function = needModule.GetFunctionVoteSpecialNeedCampaignWithdrawProposal()
 
 		if donorList == nil || votePowerList == nil {
 			return genericErr
@@ -1569,7 +1529,7 @@ func (w *withdrawProposalService) VoteWithdrawProposal(id string, ctx context.Co
 
 		remainVotePower, _ := strconv.Atoi(votePowerList[foundIdx])
 		if remainVotePower == 0 {
-			// todo: return msg
+			return errors.New(noti.EMPTY_REMAIN_VOTE_POWER_MESSAGE)
 		}
 
 		module = needModule.GetModule()

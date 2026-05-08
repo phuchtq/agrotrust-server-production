@@ -54,7 +54,8 @@ type RegistrationRequest struct {
 	Approvers          []string  `json:"approvers"`
 	Refusers           []string  `json:"refusers"`
 	RefuseReasons      []string  `json:"refuse_reasons"`
-	Status             string    `json:"status"`              // e.g. "Pending", "Approved", "Refused"
+	Status             string    `json:"status"` // e.g. "Pending", "Approved", "Refused"
+	AIEvaluation       string    `json:"ai_evaluation"`
 	IsConfirmRegister  bool      `json:"is_confirm_register"` // Default as false, when status aprroved, user clicks to update to true, call smart contract to register role
 	CreatedBy          string    `json:"created_by"`
 	CreatedAt          time.Time `json:"created_at"`

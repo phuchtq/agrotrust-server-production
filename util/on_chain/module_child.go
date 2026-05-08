@@ -152,7 +152,7 @@ type ConfirmProvideMealForChildArguments struct {
 	ProvideDate string
 }
 
-type ConfirmProvideMealForChildArgumentsV2 struct {
+type ConfirmProvideNeedForChildArgumentsV2 struct {
 	ChildID     string
 	NeedID      string
 	StaffNft    string
@@ -277,7 +277,7 @@ type IModuleChild interface {
 	ToSupportChildSpeicalNeedArguments(args SupportChildSpeicalNeedArguments) []interface{}
 	ToSupportChildSpeicalNeedArgumentsV2(args SupportChildSpeicalNeedArgumentsV2) []interface{}
 	ToConfirmProvideMealForChildArguments(args ConfirmProvideMealForChildArguments) []interface{}
-	ToConfirmProvideMealForChildArgumentsV2(args ConfirmProvideMealForChildArgumentsV2) []interface{}
+	ToConfirmProvideNeedForChildArgumentsV2(args ConfirmProvideNeedForChildArgumentsV2) []interface{}
 	ToCreateChildNormalNeedWithdrawProposalArguments(args CreateChildNormalNeedWithdrawProposalArguments) []interface{}
 	ToCreateChildSpecialNeedWithdrawProposalArguments(args CreateChildSpecialNeedWithdrawProposalArguments) []interface{}
 	ToCreateChildSpecialNeedProposalArguments(args CreateChildSpecialNeedProposalArguments) []interface{}
@@ -326,6 +326,8 @@ type IModuleChild interface {
 	GetFunctionSupportChildSpecialNeedCampaignV2() string
 	GetFunctionConfirmProvideMealForChild() string
 	GetFunctionConfirmProvideMealForChildV2() string
+	GetFunctionConfirmProvideBooksForChildV2() string
+	GetFunctionConfirmProvideHealthInsuranceForChildV2() string
 	GetFunctionSubmitTask() string
 	GetFunctionUpdateChildMealNeed() string
 	GetFunctionUpdateChildBooksNeed() string
@@ -336,6 +338,16 @@ type moduleChild struct{}
 
 func InitializeModuleChild() IModuleChild {
 	return &moduleChild{}
+}
+
+// GetFunctionConfirmProvideBooksForChildV2 implements IModuleChild.
+func (m *moduleChild) GetFunctionConfirmProvideBooksForChildV2() string {
+	return sui.CONFIRM_PROVIDE_BOOKS_FOR_CHILD_FUNCTION_V2
+}
+
+// GetFunctionConfirmProvideHealthInsuranceForChildV2 implements IModuleChild.
+func (m *moduleChild) GetFunctionConfirmProvideHealthInsuranceForChildV2() string {
+	return sui.CONFIRM_PROVIDE_HEALTH_INSURANCE_FOR_CHILD_FUNCTION_V2
 }
 
 // GetFunctionWithdrawFromBooksNeedProposalV2 implements IModuleChild.
@@ -645,7 +657,7 @@ func (m *moduleChild) GetFunctionSubmitTask() string {
 }
 
 // ToConfirmProvideMealForChildArgumentsV2 implements IModuleChild.
-func (m *moduleChild) ToConfirmProvideMealForChildArgumentsV2(args ConfirmProvideMealForChildArgumentsV2) []interface{} {
+func (m *moduleChild) ToConfirmProvideNeedForChildArgumentsV2(args ConfirmProvideNeedForChildArgumentsV2) []interface{} {
 	return []interface{}{
 		os.Getenv(env.ADMIN_CAP_ID_1),
 		args.ChildID,

@@ -7634,6 +7634,9 @@ const docTemplate = `{
         "entities.RegistrationRequest": {
             "type": "object",
             "properties": {
+                "ai_evaluation": {
+                    "type": "string"
+                },
                 "approvers": {
                     "type": "array",
                     "items": {
@@ -8151,10 +8154,19 @@ const docTemplate = `{
                 "start_period"
             ],
             "properties": {
+                "child_id": {
+                    "type": "string"
+                },
                 "description": {
                     "type": "string"
                 },
                 "end_period": {
+                    "type": "string"
+                },
+                "is_child_task": {
+                    "type": "boolean"
+                },
+                "need_id": {
                     "type": "string"
                 },
                 "region": {
@@ -8564,6 +8576,30 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "provide_dates": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "provide_image_blob_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "provide_periods": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "provide_staffs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "semester": {
                     "type": "integer"
                 },
@@ -8874,6 +8910,30 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "provide_dates": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "provide_image_blob_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "provide_periods": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "provide_staffs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
                 "supported_years": {
                     "type": "array",
                     "items": {
@@ -8930,25 +8990,25 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
-                "provide_meal_dates": {
+                "provide_dates": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
-                "provide_meal_image_blob_ids": {
+                "provide_image_blob_ids": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
-                "provide_meal_periods": {
+                "provide_periods": {
                     "type": "array",
                     "items": {
                         "type": "string"
                     }
                 },
-                "provide_meal_staffs": {
+                "provide_staffs": {
                     "type": "array",
                     "items": {
                         "type": "string"

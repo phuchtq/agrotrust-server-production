@@ -22,10 +22,13 @@ type GetTaskProofsRequest struct {
 }
 
 type CreateTaskRequest struct {
-	Region      string `json:"region" validate:"required"`
-	Description string `json:"description" validate:"required"`
-	StartPeriod string `json:"start_period" validate:"required"`
-	EndPeriod   string `json:"end_period" validate:"required"`
+	Region      string  `json:"region" validate:"required"`
+	IsChildTask *bool   `json:"is_child_task"`
+	ChildID     *string `json:"child_id"`
+	NeedID      *string `json:"need_id"`
+	Description string  `json:"description" validate:"required"`
+	StartPeriod string  `json:"start_period" validate:"required"`
+	EndPeriod   string  `json:"end_period" validate:"required"`
 }
 
 type SubmitTaskProofRequest struct {

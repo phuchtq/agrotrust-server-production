@@ -54,6 +54,8 @@ const (
 	WITHDRAW_FROM_MEAL_NEED_PROPOSAL_FUNCTION                        string = "withdraw_from_meal_need_proposal"
 	WITHDRAW_FROM_MEAL_NEED_PROPOSAL_FUNCTION_V2                     string = "withdraw_from_meal_need_proposal_v2"
 	CONFIRM_PROVIDE_MEAL_FOR_CHILD_FUNCTION_V2                       string = "confirm_provide_meal_for_child_v2"
+	CONFIRM_PROVIDE_BOOKS_FOR_CHILD_FUNCTION_V2                      string = "confirm_provide_books_for_child_v2"
+	CONFIRM_PROVIDE_HEALTH_INSURANCE_FOR_CHILD_FUNCTION_V2           string = "confirm_provide_health_insurance_for_child_v2"
 	SUBMIT_TASK_FUNCTION                                             string = "submit_task"
 	VOTE_SPECIAL_NEED_PROPOSAL_FUNCTION                              string = "vote_special_need_proposal"
 	EDIT_SPECIAL_NEED_DAO_RATE_FUNCTION                              string = "edit_special_need_dao_rate"

@@ -558,11 +558,6 @@ func (r *registrationRequestService) CreateRegistrationRequest(req request.Creat
 			r.errLogger.Println("Error Admin Has Region!!!")
 			return nil, genericErr
 		}
-	} else {
-		if !isRegionExist(req.Region) {
-			r.errLogger.Println("Error not exist region!!!")
-			return nil, genericErr
-		}
 	}
 
 	if role == volunteer_role {
@@ -574,6 +569,20 @@ func (r *registrationRequestService) CreateRegistrationRequest(req request.Creat
 	var identityCode string = util.StandardizeString(*profile.IdentityCode)
 	var firstName string = strings.TrimSpace(*profile.FirstName)
 	var lastName string = strings.TrimSpace(*profile.LastName)
+
+	identityCardBytesImg, _ := r.walrusProvider.FetchBytesImage(req.IdentityCardBlobID)
+	avatarBytesImg, _ := r.walrusProvider.FetchBytesImage(req.AvatarBlobID)
+
+	var aiEvaluation string = r.aiProvider.ValidateRegistrationRequest(ai.ValidateRegistrationRequest{
+		IdentityCode:           identityCode,
+		IdentityCardBytesImage: identityCardBytesImg,
+		AvatarBytesImage:       avatarBytesImg,
+		FirstName:              firstName,
+		LastName:               lastName,
+		Gender:                 *profile.Gender,
+		DateOfBirth:            *profile.DateOfBirth,
+		PhoneNumber:            *profile.PhoneNumber,
+	}, ctx)
 
 	// todo: validate identity code
 	var request = entities.RegistrationRequest{
@@ -591,6 +600,7 @@ func (r *registrationRequestService) CreateRegistrationRequest(req request.Creat
 		PhoneNumber:        *profile.PhoneNumber,
 		Email:              *profile.Email,
 		Status:             request_pending_status,
+		AIEvaluation:       aiEvaluation,
 		CreatedBy:          sender,
 		CreatedAt:          curTime,
 		UpdatedAt:          curTime,

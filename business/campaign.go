@@ -339,10 +339,6 @@ func (c *campaignService) GetCampaigns(req request.GetCampaignsRequest, ctx cont
 				return response.PaginationDataResponse{}, errRes
 			}
 		} else {
-			if !isRegionExist(req.PoolName) {
-				return response.PaginationDataResponse{}, genericErr
-			}
-
 			localPools, err := on_chain.GetOnChainObjects[entities.LocalPool](on_chain.GetOnChainObjectsRequest{
 				Client:    client,
 				ObjectIds: pool.Campaigns,

@@ -8,7 +8,7 @@ const (
 	create_center_request_validate_case             string = "Create Center Request Validation"
 	registration_request_validate_case              string = "Registration Request Validation"
 	task_proof_validate_case                        string = "Task Proof Validation"
-	provide_meal_for_child_task_proof_validate_case string = "Provide Lunch Meal For Child Task Proof Validation"
+	provide_need_for_child_task_proof_validate_case string = "Provide Need For Child Task Proof Validation"
 	withdraw_proposal_validate_case                 string = "Withdraw Proposal Validation"
 	child_special_need_proposal_validate_case       string = "Child Special Need Campaign Validation"
 	pool_campaign_validate_case                     string = "Pool Campaign Validation"
@@ -60,7 +60,7 @@ type ValidateTaskProof struct {
 	CreatedAt       time.Time `json:"created_at"`
 }
 
-type ValidateProvideMealForChildTaskProof struct {
+type ValidateProvideNeedForChildTaskProof struct {
 	ChildAvatarBytesImage []byte `json:"child_avatar_bytes_image"`
 	ValidateTaskProof
 }

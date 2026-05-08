@@ -259,10 +259,6 @@ func (p *pendingCampaignService) CreatePendingCampaign(req request.CreatePending
 	var sender string = ctx.Value("address").(string)
 	var poolId string
 	if req.PoolName != "Main Pool" {
-		if !isRegionExist(req.PoolName) {
-			return nil, genericErr
-		}
-
 		pool, err := on_chain.GetOnChainObject[entities.MainPool](on_chain.GetOnChainObjectRequest{
 			Client:    client,
 			ObjectId:  os.Getenv(env.POOL_ID),

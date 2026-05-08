@@ -3150,7 +3150,7 @@ func (c *childService) ConfirmProvideMealForChild(id string, req request.Confirm
 
 	var curTime time.Time = time.Now()
 	var rawProvideDate string = util.TimeToRawDate(curTime)
-	if slices.Contains(need.ProvideMealDates, rawProvideDate) {
+	if slices.Contains(need.ProvideDates, rawProvideDate) {
 		return response.BuildTransactionResponse{}, errors.New(noti.CHILD_PROVIDED_MEAL_MESSAGE)
 	}
 

@@ -265,6 +265,17 @@ func (b *backgroundService) ProcessRefundVotePower(ctx context.Context) {
 		return
 	}
 
+	rateObj, _ := on_chain.GetOnChainObject[entities.AllowedFundedWithdrawRateObject](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  os.Getenv(env.ALLOWED_FUNDED_WITHDRAW_RATE_OBJECT_ID),
+		ErrLogger: b.errLogger,
+	}, ctx)
+	if rateObj == nil {
+		return
+	}
+
+	allowedRate, _ := strconv.ParseInt(rateObj.Rate, 10, 64)
+
 	var curTime time.Time = time.Now()
 	var modules []string
 	var functions []string
@@ -278,21 +289,12 @@ func (b *backgroundService) ProcessRefundVotePower(ctx context.Context) {
 
 		withdrawAmount, _ := strconv.ParseInt(proposal.WithdrawAmount, 10, 64)
 		totalApproveWeight, _ := strconv.ParseInt(proposal.TotalApproveWeight, 10, 64)
-		if totalApproveWeight >= withdrawAmount {
+		if totalApproveWeight >= withdrawAmount*allowedRate/100 {
 			continue
 		}
 
 		var targetId string
 		switch proposal.Purpose {
-		case string(entities.BOOKS_NEED_WITHDRAW_PROPOSAL_PURPOSE):
-			functions = append(functions, module.GetFunctionRefundChildBooksNeedVotePower())
-			targetId = proposal.TargetID
-		case string(entities.MEAL_NEED_WITHDRAW_PROPOSAL_PURPOSE):
-			functions = append(functions, module.GetFunctionRefundChildMealNeedVotePower())
-			targetId = proposal.TargetID
-		case string(entities.HEALTH_INSURANCE_NEED_WITHDRAW_PROPOSAL_PURPOSE):
-			functions = append(functions, module.GetFunctionRefundChildHealthInsuranceNeedVotePower())
-			targetId = proposal.TargetID
 		case string(entities.SPECIAL_NEED_CAMPAIGN_WITHDRAW_PROPOSAL_PURPOSE):
 			functions = append(functions, module.GetFunctionRefundChildSpecialNeedCampaignVotePower())
 			targetId = proposal.TargetID

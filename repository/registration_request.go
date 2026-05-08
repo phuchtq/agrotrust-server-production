@@ -82,17 +82,17 @@ func (r *registratioRequestRepo) CreateRegistrationRequest(req entities.Registra
 	var query string = "INSERT INTO " + registraion_request_table +
 		" (id, profile_id, register_role, identity_code, identity_card_blob_id, avatar_blob_id, " +
 		"region, first_name, last_name, gender, date_of_birth, phone_number, email, " +
-		"approvers, refusers, refuse_reasons, status, is_confirm_register, " +
+		"approvers, refusers, refuse_reasons, status, ai_evaluation, is_confirm_register, " +
 		"created_by, created_at, updated_at, closed_at) " +
-		"values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, " +
-		"$11, $12, $13, $14, $15, $16, $17, $18, $19, $20, $21, $22)"
+		"values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, " +
+		"$13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)"
 
 	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRAION_REQUEST_REPOSITORY) + "CreateRegistrationRequest - "
 
 	if _, err := r.db.ExecContext(ctx, query, req.ID, req.ProfileID, req.RegisterRole, req.IdentityCode, req.IdentityCardBlobID,
 		req.AvatarBlobID, req.Region, req.FirstName, req.LastName, req.Gender,
 		req.DateOfBirth, req.PhoneNumber, req.Email, pq.Array(req.Approvers), pq.Array(req.Refusers),
-		pq.Array(req.RefuseReasons), req.Status, req.IsConfirmRegister,
+		pq.Array(req.RefuseReasons), req.Status, req.AIEvaluation, req.IsConfirmRegister,
 		req.CreatedBy, req.CreatedAt, req.UpdatedAt, req.ClosedAt); err != nil {
 
 		r.errLogger.Println(errLogMsg + err.Error())
@@ -145,7 +145,7 @@ func (r *registratioRequestRepo) GetRegistrationRequest(id string, ctx context.C
 		&res.ID, &res.ProfileID, &res.RegisterRole, &res.IdentityCode, &res.IdentityCardBlobID,
 		&res.AvatarBlobID, &res.Region, &res.FirstName, &res.LastName, &res.Gender,
 		&res.DateOfBirth, &res.PhoneNumber, &res.Email, pq.Array(&res.Approvers), pq.Array(&res.Refusers),
-		pq.Array(&res.RefuseReasons), &res.Status, &res.IsConfirmRegister,
+		pq.Array(&res.RefuseReasons), &res.Status, &res.AIEvaluation, &res.IsConfirmRegister,
 		&res.CreatedBy, &res.CreatedAt, &res.UpdatedAt, &res.ClosedAt); err != nil {
 
 		if err == sql.ErrNoRows {
@@ -263,7 +263,7 @@ func (r *registratioRequestRepo) GetRegistrationRequests(req request.GetRegistra
 			&x.ID, &x.ProfileID, &x.RegisterRole, &x.IdentityCode, &x.IdentityCardBlobID,
 			&x.AvatarBlobID, &x.Region, &x.FirstName, &x.LastName, &x.Gender,
 			&x.DateOfBirth, &x.PhoneNumber, &x.Email, pq.Array(&x.Approvers), pq.Array(&x.Refusers),
-			pq.Array(&x.RefuseReasons), &x.Status, &x.IsConfirmRegister,
+			pq.Array(&x.RefuseReasons), &x.Status, &x.AIEvaluation, &x.IsConfirmRegister,
 			&x.CreatedBy, &x.CreatedAt, &x.UpdatedAt, &x.ClosedAt); err != nil {
 
 			r.errLogger.Println(errLogMsg + err.Error())
@@ -298,7 +298,7 @@ func (r *registratioRequestRepo) GetWalletRegistrationRequests(id string, ctx co
 			&x.ID, &x.ProfileID, &x.RegisterRole, &x.IdentityCode, &x.IdentityCardBlobID,
 			&x.AvatarBlobID, &x.Region, &x.FirstName, &x.LastName, &x.Gender,
 			&x.DateOfBirth, &x.PhoneNumber, &x.Email, pq.Array(&x.Approvers), pq.Array(&x.Refusers),
-			pq.Array(&x.RefuseReasons), &x.Status, &x.IsConfirmRegister,
+			pq.Array(&x.RefuseReasons), &x.Status, &x.AIEvaluation, &x.IsConfirmRegister,
 			&x.CreatedBy, &x.CreatedAt, &x.UpdatedAt, &x.ClosedAt); err != nil {
 
 			r.errLogger.Println(errLogMsg + err.Error())
@@ -332,7 +332,7 @@ func (r *registratioRequestRepo) GetPendingRequestsV2(ctx context.Context) ([]en
 			&x.ID, &x.ProfileID, &x.RegisterRole, &x.IdentityCode, &x.IdentityCardBlobID,
 			&x.AvatarBlobID, &x.Region, &x.FirstName, &x.LastName, &x.Gender,
 			&x.DateOfBirth, &x.PhoneNumber, &x.Email, pq.Array(&x.Approvers), pq.Array(&x.Refusers),
-			pq.Array(&x.RefuseReasons), &x.Status, &x.IsConfirmRegister,
+			pq.Array(&x.RefuseReasons), &x.Status, &x.AIEvaluation, &x.IsConfirmRegister,
 			&x.CreatedBy, &x.CreatedAt, &x.UpdatedAt, &x.ClosedAt); err != nil {
 
 			r.errLogger.Println(errLogMsg + err.Error())

@@ -357,41 +357,38 @@ func (u *uploadChildRequestService) CreateUploadChildRequest(req request.UploadC
 	homeBytes, _ := u.walrusProvider.FetchBytesImage(req.HomeBlobID)
 	firstGuardianIdentityCardBytes, _ := u.walrusProvider.FetchBytesImage(firstGuardianProfile.IdentityCardBlobID)
 
-	var aiEvaluation string
-	if birthCertBytes != nil && avatarBytes != nil && homeBytes != nil && firstGuardianIdentityCardBytes != nil {
-		var validateReq = ai.ValidateUploadChildRequest{
-			HomeBytesImage:                  homeBytes,
-			IdentityCode:                    identityCode,
-			ChildBirthCertificateBytesImage: birthCertBytes,
-			Region:                          req.Region,
-			FirstName:                       firstNasme,
-			LastName:                        lastName,
-			Gender:                          gender,
-			DateOfBirth:                     dateOfBirth,
-			HomeAddress:                     homeAddr,
-			AvatarBytesImage:                avatarBytes,
-			FirstGuardian: ai.ChildGuardianProfile{
-				FullName:               firstGuardianProfile.FullName,
-				PhoneNumber:            firstGuardianProfile.PhoneNumber,
-				Relation:               firstGuardianProfile.Relation,
-				IdentityCardBytesImage: firstGuardianIdentityCardBytes,
-			},
-		}
+	var validateReq = ai.ValidateUploadChildRequest{
+		HomeBytesImage:                  homeBytes,
+		IdentityCode:                    identityCode,
+		ChildBirthCertificateBytesImage: birthCertBytes,
+		Region:                          req.Region,
+		FirstName:                       firstNasme,
+		LastName:                        lastName,
+		Gender:                          gender,
+		DateOfBirth:                     dateOfBirth,
+		HomeAddress:                     homeAddr,
+		AvatarBytesImage:                avatarBytes,
+		FirstGuardian: ai.ChildGuardianProfile{
+			FullName:               firstGuardianProfile.FullName,
+			PhoneNumber:            firstGuardianProfile.PhoneNumber,
+			Relation:               firstGuardianProfile.Relation,
+			IdentityCardBytesImage: firstGuardianIdentityCardBytes,
+		},
+	}
 
-		if secondGuardianProfile != nil {
-			secondGuardianIdentityCardBytes, _ := u.walrusProvider.FetchBytesImage(secondGuardianProfile.IdentityCardBlobID)
-			if secondGuardianIdentityCardBytes != nil {
-				validateReq.SecondGuardian = &ai.ChildGuardianProfile{
-					FullName:               secondGuardianProfile.FullName,
-					PhoneNumber:            secondGuardianProfile.PhoneNumber,
-					Relation:               secondGuardianProfile.Relation,
-					IdentityCardBytesImage: secondGuardianIdentityCardBytes,
-				}
+	if secondGuardianProfile != nil {
+		secondGuardianIdentityCardBytes, _ := u.walrusProvider.FetchBytesImage(secondGuardianProfile.IdentityCardBlobID)
+		if secondGuardianIdentityCardBytes != nil {
+			validateReq.SecondGuardian = &ai.ChildGuardianProfile{
+				FullName:               secondGuardianProfile.FullName,
+				PhoneNumber:            secondGuardianProfile.PhoneNumber,
+				Relation:               secondGuardianProfile.Relation,
+				IdentityCardBytesImage: secondGuardianIdentityCardBytes,
 			}
 		}
-
-		aiEvaluation = u.aiProvider.ValidateUploadChildRequest(validateReq, ctx)
 	}
+
+	var aiEvaluation string = u.aiProvider.ValidateUploadChildRequest(validateReq, ctx)
 
 	// todo: AI validation
 	var curTime time.Time = time.Now()
