@@ -258,8 +258,8 @@ func (m *modulePool) ToCreateWithdrawProposalV2Arguments(args CreateWithdrawProp
 // ToVoteWithdrawProposal implements IModulePool.
 func (m *modulePool) ToVoteWithdrawProposalArguments(args VoteWithdrawProposalArguments) []interface{} {
 	return []interface{}{
-		env.ADMIN_CAP_ID_1,
-		env.POOL_ID,
+		os.Getenv(env.ADMIN_CAP_ID_1),
+		os.Getenv(env.POOL_ID),
 		args.LocalPoolID,
 		args.ProposalID,
 		args.Sender,

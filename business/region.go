@@ -457,6 +457,7 @@ func (r *regionService) ReviewRegionSuggestion(id string, req request.VoteReques
 		suggestion.Status = request_approved_status
 	} else {
 		suggestion.Status = request_refused_status
+		suggestion.RefuseReason = &req.RefuseReason
 	}
 
 	return r.regionRepo.UpdateSupportedRegionSuggestion(*suggestion, ctx)
