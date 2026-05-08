@@ -9,8 +9,9 @@ import (
 // CreateWithdrawProposal(req request.CreateWithdrawProposalRequest, ctx context.Context) (response.BuildTransactionResponse, error)
 
 type IWithdrawProposalService interface {
-	GetWithdrawProposal(id string, ctx context.Context) (response.WithdrawProposalResponse, error)
 	GetWithdrawProposals(req request.GetWithdrawProposalsRequest, ctx context.Context) (response.PaginationDataResponse, error)
+	GetPendingWithdrawProposals(req request.GetOnchainPendingWithdrawProposalsRequest, ctx context.Context) (response.PaginationDataResponse, error)
+	GetWithdrawProposal(id string, ctx context.Context) (response.WithdrawProposalResponse, error)
 	CreateWithdrawProposal(req request.CreateWithdrawProposalRequest, ctx context.Context) error
 	ProposeChildrenWithdrawRequests(ctx context.Context) error
 	VoteWithdrawProposal(id string, ctx context.Context) error

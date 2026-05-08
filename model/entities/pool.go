@@ -3,6 +3,7 @@ package entities
 type MainPool struct {
 	ID                                     ID       `json:"id"`
 	LocalPools                             []string `json:"local_pools"`
+	ChildNeedWithdrawProposals             []string `json:"child_need_withdraw_proposals"`
 	PendingWithdrawProposals               []string `json:"pending_withdraw_proposals"`
 	ExecutedWithdrawProposals              []string `json:"executed_withdraw_proposals"`
 	CancelledWithdrawProposals             []string `json:"cancelled_withdraw_proposals"`

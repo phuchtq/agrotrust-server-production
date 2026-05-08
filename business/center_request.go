@@ -232,7 +232,7 @@ func (c *centerRequestService) ConfirmRequest(id string, ctx context.Context) er
 	}
 
 	var curTime time.Time = time.Now()
-	if req.ClosedAt.After(time.Now()) {
+	if req.ClosedAt.After(curTime) {
 		return errors.New(noti.STILL_PENDING_REQUEST_MESSAGE)
 	}
 

@@ -72,7 +72,8 @@ func GenerateBackgroundService() (business.IBackgroundService, error) {
 // ProcessCreateChildrenWithdrawProposals implements business.IBackgroundService.
 func (b *backgroundService) ProcessCreateChildrenWithdrawProposals(ctx context.Context) {
 	var curTime time.Time = time.Now()
-	if !isChildrenWithdrawProposalDateValid(curTime) || curTime.Hour() != 23 {
+	var curTimeEndOfDate time.Time = util.ToEndOfDate(curTime)
+	if !isChildrenWithdrawProposalDateValid(curTime) {
 		return
 	}
 
@@ -174,7 +175,7 @@ func (b *backgroundService) ProcessCreateChildrenWithdrawProposals(ctx context.C
 					req.ActorAddress,
 					localPoolId,
 					module,
-					curTime,
+					curTimeEndOfDate,
 					client,
 					booksNeedWithdrawDates,
 					ctx,
@@ -191,7 +192,7 @@ func (b *backgroundService) ProcessCreateChildrenWithdrawProposals(ctx context.C
 				req.ActorAddress,
 				localPoolId,
 				module,
-				curTime,
+				curTimeEndOfDate,
 				client,
 				healthNeedWithdrawDate,
 				ctx,
@@ -207,7 +208,7 @@ func (b *backgroundService) ProcessCreateChildrenWithdrawProposals(ctx context.C
 				req.ActorAddress,
 				localPoolId,
 				module,
-				curTime,
+				curTimeEndOfDate,
 				client,
 				ctx,
 			); data != nil {
@@ -236,9 +237,11 @@ func (b *backgroundService) ProcessCreateChildrenWithdrawProposals(ctx context.C
 	}
 
 	if errExecuteTxs == nil {
-		for i := 1; i <= 3; i++ {
-			if b.backgroundChildrenWithdrawRepo.SetRequestsExecuted(reqs, ctx) == nil {
-				return
+		if curTime.Hour() == 23 && curTime.Minute() >= 55 {
+			for i := 1; i <= 3; i++ {
+				if b.backgroundChildrenWithdrawRepo.SetRequestsExecuted(reqs, ctx) == nil {
+					return
+				}
 			}
 		}
 	}

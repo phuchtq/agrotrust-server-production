@@ -6263,6 +6263,57 @@ paths:
       summary: Propose children withdraw proposals
       tags:
       - Withdrawal
+  /withdraw-proposals/pending:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve a list of on-chain pending withdraw proposals with optional
+        query filters
+      parameters:
+      - in: query
+        name: creator
+        type: string
+      - description: Filter for pool ID, pool name, desc
+        in: query
+        name: keyword
+        type: string
+      - in: query
+        name: max_amount
+        type: integer
+      - in: query
+        name: min_amount
+        type: integer
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: page_size
+        type: integer
+      - in: query
+        name: sort_criteria
+        type: string
+      - in: query
+        name: sort_order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.PaginationDataResponse'
+        "400":
+          description: Invalid data. Please try again.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "500":
+          description: There is something wrong in the system during the process.
+            Please try again later.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+      summary: List on-chain pending withdraw proposals
+      tags:
+      - Withdrawal
 schemes:
 - https
 securityDefinitions:

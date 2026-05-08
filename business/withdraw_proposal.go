@@ -1112,7 +1112,6 @@ func (w *withdrawProposalService) GetWithdrawProposal(id string, ctx context.Con
 // GetWithdrawProposals implements business.IWithdrawProposalService.
 func (w *withdrawProposalService) GetWithdrawProposals(req request.GetWithdrawProposalsRequest, ctx context.Context) (response.PaginationDataResponse, error) {
 	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
-
 	var creator string = strings.TrimSpace(req.Creator)
 	if creator != "" {
 		if !util.IsValidSuiAddressStrict(creator) {
@@ -1144,11 +1143,6 @@ func (w *withdrawProposalService) GetWithdrawProposals(req request.GetWithdrawPr
 	}
 
 	var res response.PaginationDataResponse
-	var redisKey string = w.getGetWithdrawProposalsRedisKey(req)
-	if w.redisCache.Get(redisKey, &res, ctx) {
-		return res, nil
-	}
-
 	var client = w.clients[constant.SuiTestnet]
 	pool, _ := on_chain.GetOnChainObject[entities.MainPool](on_chain.GetOnChainObjectRequest{
 		Client:    client,
@@ -1271,7 +1265,142 @@ func (w *withdrawProposalService) GetWithdrawProposals(req request.GetWithdrawPr
 		TotalPages: int(math.Ceil(float64(len(filteredProposals)) / float64(req.PageSize))),
 	}
 
-	w.redisCache.Set(redisKey, res, time.Minute*5, ctx)
+	return res, nil
+}
+
+// GetPoolWithdrawProposals implements business.IWithdrawProposalService.
+func (w *withdrawProposalService) GetPendingWithdrawProposals(req request.GetOnchainPendingWithdrawProposalsRequest, ctx context.Context) (response.PaginationDataResponse, error) {
+	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
+	var creator string = strings.TrimSpace(req.Creator)
+	if creator != "" {
+		if !util.IsValidSuiAddressStrict(creator) {
+			return response.PaginationDataResponse{}, genericErr
+		}
+	}
+
+	if req.MaxAmount != nil {
+		if *req.MaxAmount < min_withdraw_proposal_amount_value {
+			return response.PaginationDataResponse{}, nil
+		}
+
+		if req.MinAmount != nil {
+			if *req.MaxAmount <= *req.MinAmount {
+				return response.PaginationDataResponse{}, nil
+			}
+		}
+	}
+
+	req.SortOrder = util.StandardizeSortOrder(req.SortOrder)
+	req.SortCriteria = util.StandardizeSortCriteria(req.SortCriteria)
+	req.Keyword = util.StandardizeString(req.Keyword)
+	if req.Page < 1 {
+		req.Page = 1
+	}
+
+	if req.PageSize < 1 {
+		req.PageSize = default_page_size
+	}
+
+	var res response.PaginationDataResponse
+	var client = w.clients[constant.SuiTestnet]
+	pool, _ := on_chain.GetOnChainObject[entities.MainPool](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  os.Getenv(env.POOL_ID),
+		ErrLogger: w.errLogger,
+	}, ctx)
+	if pool == nil {
+		return response.PaginationDataResponse{}, nil
+	}
+
+	proposals, _ := on_chain.GetOnChainObjects[entities.WithdrawProposal](on_chain.GetOnChainObjectsRequest{
+		Client:    client,
+		ObjectIds: pool.PendingWithdrawProposals,
+		ErrLogger: w.errLogger,
+	}, ctx)
+	if proposals == nil || len(proposals) == 0 {
+		return response.PaginationDataResponse{}, nil
+	}
+
+	var filteredProposals []entities.WithdrawProposal
+	for i := len(pool.AllWithdrawProposals) - 1; i >= 0; i-- {
+		var proposal = proposals[i]
+		if creator != "" {
+			if proposal.Creator != creator { // Not matched
+				continue
+			}
+		}
+
+		if req.Keyword != "" {
+			var poolName string = util.StandardizeString(proposal.PoolName)
+			var description string = util.StandardizeString(proposal.Description)
+			if !strings.Contains(proposal.PoolID, req.Keyword) && !strings.Contains(poolName, req.Keyword) && !strings.Contains(description, req.Keyword) {
+				continue
+			}
+		}
+
+		withdrawAmount, _ := strconv.ParseInt(proposal.WithdrawAmount, 10, 64)
+		if req.MinAmount != nil {
+			if withdrawAmount < *req.MinAmount {
+				continue
+			}
+		}
+
+		if req.MaxAmount != nil {
+			if withdrawAmount > *req.MaxAmount {
+				continue
+			}
+		}
+
+		filteredProposals = append(filteredProposals, proposal)
+	}
+
+	sort.Slice(filteredProposals, func(i, j int) bool {
+		if req.SortCriteria == "withdraw_amount" {
+			withdrawAmount1, _ := strconv.ParseInt(filteredProposals[i].WithdrawAmount, 10, 64)
+			withdrawAmount2, _ := strconv.ParseInt(filteredProposals[j].WithdrawAmount, 10, 64)
+			if req.SortOrder == "DESC" {
+				return withdrawAmount2 > withdrawAmount1
+			}
+
+			return withdrawAmount2 < withdrawAmount1
+		} else if req.SortCriteria == "closed_at" {
+			closedAt1, _ := strconv.ParseInt(filteredProposals[i].ClosedAt, 10, 64)
+			closedAt2, _ := strconv.ParseInt(filteredProposals[j].ClosedAt, 10, 64)
+			var closedPeriod1 = util.MilliSecToTime(closedAt1)
+			var closedPeriod2 = util.MilliSecToTime(closedAt2)
+			if req.SortOrder == "DESC" {
+				return closedPeriod2.After(closedPeriod1)
+			}
+
+			return closedPeriod2.Before(closedPeriod1)
+		}
+
+		if req.SortOrder == "ASC" {
+			return false
+		}
+
+		return true
+	})
+
+	var skippedRecords int = (req.Page - 1) * req.PageSize
+	if len(filteredProposals) <= skippedRecords {
+		return response.PaginationDataResponse{}, nil
+	}
+
+	var data []response.WithdrawProposalResponse
+	for i := skippedRecords; i < len(filteredProposals); i++ {
+		data = append(data, filteredProposals[i].ToMinimumWithdrawProposalResponse())
+		if len(data) == req.PageSize {
+			break
+		}
+	}
+
+	res = response.PaginationDataResponse{
+		Data:       data,
+		Amount:     len(data),
+		Page:       req.Page,
+		TotalPages: int(math.Ceil(float64(len(filteredProposals)) / float64(req.PageSize))),
+	}
 
 	return res, nil
 }

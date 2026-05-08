@@ -49,6 +49,7 @@ func InitializeWithdrawProposalRoute(server *gin.Engine) {
 	// Normal group
 	var norGroup = server.Group(contextPath)
 	norGroup.GET("", transport.GetWithdrawProposals)
+	norGroup.GET("/pending", transport.GetOnChainPendingWithdrawProposals)
 	norGroup.GET("/:id", transport.GetWithdrawProposal)
 
 	// Auth group

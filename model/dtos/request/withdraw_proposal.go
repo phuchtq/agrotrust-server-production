@@ -13,6 +13,17 @@ type GetWithdrawProposalsRequest struct {
 	Page         int    `form:"page"`
 }
 
+type GetOnchainPendingWithdrawProposalsRequest struct {
+	Keyword      string `form:"keyword"` // Filter for pool ID, pool name, desc
+	Creator      string `form:"creator"`
+	MinAmount    *int64 `form:"min_amount"`
+	MaxAmount    *int64 `form:"max_amount"`
+	SortCriteria string `form:"sort_criteria"`
+	SortOrder    string `form:"sort_order"`
+	PageSize     int    `form:"page_size"`
+	Page         int    `form:"page"`
+}
+
 type CreateWithdrawProposalRequest struct {
 	PoolID         string  `json:"pool_id" validate:"required"`
 	WithdrawAmount int64   `json:"withdraw_amount" validate:"required,min=10000,max=20000000"`

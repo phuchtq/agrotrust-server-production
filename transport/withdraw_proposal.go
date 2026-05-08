@@ -72,6 +72,40 @@ func GetWithdrawProposals(ctx *gin.Context) {
 	})
 }
 
+// GetOnChainPendingWithdrawProposals godoc
+// @Summary      List on-chain pending withdraw proposals
+// @Description  Retrieve a list of on-chain pending withdraw proposals with optional query filters
+// @Tags         Withdrawal
+// @Accept       json
+// @Produce      json
+// @Param        request  query     request.GetOnchainPendingWithdrawProposalsRequest  true  "Filter Criteria"
+// @Success      200      {object}  response.PaginationDataResponse
+// @Failure      400      {object}  response.MessageAPIResponse "Invalid data. Please try again."
+// @Failure      500      {object}  response.MessageAPIResponse "There is something wrong in the system during the process. Please try again later."
+// @Router       /withdraw-proposals/pending [get]
+func GetOnChainPendingWithdrawProposals(ctx *gin.Context) {
+	var request request.GetOnchainPendingWithdrawProposalsRequest
+	if ctx.ShouldBindQuery(&request) != nil {
+		util.ProcessResponse(util.GenerateInvalidRequestAndSystemProblemModel(ctx, nil))
+		return
+	}
+
+	service, err := business.GenerateWithdrawProposalService()
+	if err != nil {
+		util.ProcessResponse(util.GenerateInvalidRequestAndSystemProblemModel(ctx, err))
+		return
+	}
+
+	res, err := service.GetPendingWithdrawProposals(request, ctx)
+	util.ProcessResponse(response.APIResponse{
+		Data1:    res,
+		Data2:    res,
+		ErrMsg:   err,
+		Context:  ctx,
+		PostType: action_type.NON_POST,
+	})
+}
+
 // VoteWithdrawProposal godoc
 // @Summary      Vote on a withdraw proposal
 // @Description  Submit a vote for a specific withdraw proposal. Note: This uses query parameters for the vote data.

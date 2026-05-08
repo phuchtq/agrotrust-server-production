@@ -177,7 +177,7 @@ func processRefundVotePowerBackgroundService(ctx context.Context, wg *sync.WaitG
 
 func processCreateChildrenWithdrawsBackgroundService(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
-	var duration time.Duration = time.Hour
+	var duration time.Duration = time.Minute
 	var ticker = time.NewTicker(duration)
 	defer ticker.Stop()
 	for {
