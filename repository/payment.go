@@ -237,7 +237,7 @@ func (p *paymentRepo) IsWithdrawalPaymentInProcess(id string, ctx context.Contex
 	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.PAYMENT_REPOSITORY) + "IsWithdrawalPaymentInProcess - "
 	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
 
-	rows, err := p.db.QueryContext(ctx, query)
+	rows, err := p.db.QueryContext(ctx, query, id)
 	if err != nil {
 		p.errLogger.Println(errLogMsg + err.Error())
 		return false, internalErr

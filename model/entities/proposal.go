@@ -90,6 +90,7 @@ func (w WithdrawProposal) ToMinimumWithdrawProposalResponse() response.WithdrawP
 	}
 
 	withdrawAmount, _ := strconv.ParseInt(w.WithdrawAmount, 10, 64)
+	totalApproveWeight, _ := strconv.ParseInt(w.TotalApproveWeight, 10, 64)
 	createdAt, _ := strconv.ParseInt(w.CreatedAt, 10, 64)
 	updatedAt, _ := strconv.ParseInt(w.UpdatedAt, 10, 64)
 	closedAt, _ := strconv.ParseInt(w.ClosedAt, 10, 64)
@@ -99,6 +100,7 @@ func (w WithdrawProposal) ToMinimumWithdrawProposalResponse() response.WithdrawP
 		PoolName:        w.PoolName,
 		Creator:         w.Creator,
 		WithdrawAmount:  withdrawAmount,
+		ApproveWeight:   totalApproveWeight,
 		Description:     w.Description,
 		Approvers:       w.Approvers,
 		IsExecuted:      w.IsExecuted,
