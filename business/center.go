@@ -2,11 +2,13 @@ package business
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log"
 	"math"
 	"os"
 	"raise-child/constants/env"
+	"raise-child/constants/noti"
 	"raise-child/constants/shared"
 	"raise-child/interfaces/business"
 	"raise-child/model/dtos/request"
@@ -43,6 +45,64 @@ func GenerateCenterService() (business.ICenterService, error) {
 		_networkAliases,
 		errLogger,
 	), nil
+}
+
+// GetCenterDetailByLeaderRegion implements business.ICenterService.
+func (c *centerService) GetCenterDetailByLeaderRegion(ctx context.Context) (response.CenterCardMinimumResponse, error) {
+	var client = c.clients[constant.SuiTestnet]
+	manage, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: c.errLogger,
+	}, ctx)
+	if err != nil {
+		return response.CenterCardMinimumResponse{}, err
+	}
+
+	var sender string = ctx.Value("address").(string)
+	var leaderNftId string
+	for i, leader := range manage.LocalLeaderIds {
+		if leader == sender {
+			leaderNftId = manage.LocalLeaderNfts[i]
+			break
+		}
+	}
+
+	if leaderNftId == "" {
+		return response.CenterCardMinimumResponse{}, errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+	}
+
+	nft, err := on_chain.GetOnChainObject[entities.StaffNft](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  leaderNftId,
+		ErrLogger: c.errLogger,
+	}, ctx)
+	if err != nil {
+		return response.CenterCardMinimumResponse{}, err
+	}
+
+	var centerId string
+	for i, region := range manage.LocalRegions {
+		if nft.Region == region && manage.CenterConfirmStatuses[i] {
+			centerId = manage.ChildrenCenters[i]
+			break
+		}
+	}
+
+	if centerId == "" {
+		return response.CenterCardMinimumResponse{}, errors.New(noti.REGION_NOT_ESTABLISHED_MESSAGE)
+	}
+
+	center, err := on_chain.GetOnChainObject[entities.Center](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  centerId,
+		ErrLogger: c.errLogger,
+	}, ctx)
+	if err != nil {
+		return response.CenterCardMinimumResponse{}, err
+	}
+
+	return center.ToCenterCardMinimumResponse(), nil
 }
 
 // GetCenters implements business.ICenterService.

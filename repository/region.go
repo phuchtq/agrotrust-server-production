@@ -51,7 +51,7 @@ func (s *supportedRegionProposalRepo) GetSupportedRegionSuggestion(id string, ct
 
 	var res entities.SupportedRegionSuggestion
 	if err := s.db.QueryRowContext(ctx, query, id).Scan(
-		&res.ID, &res.ProfileID, &res.Region, &res.Content, &res.Status,
+		&res.ID, &res.ProfileID, &res.Region, &res.Content, &res.Status, &res.RefuseReason,
 		&res.CreatedBy, &res.ReviewedBy, &res.CreatedAt, &res.UpdatedAt); err != nil {
 
 		if err == sql.ErrNoRows {
@@ -119,7 +119,7 @@ func (s *supportedRegionProposalRepo) GetSupportedRegionSuggestions(req request.
 	for rows.Next() {
 		var x entities.SupportedRegionSuggestion
 		if err := rows.Scan(
-			&x.ID, &x.ProfileID, &x.Region, &x.Content, &x.Status,
+			&x.ID, &x.ProfileID, &x.Region, &x.Content, &x.Status, &x.RefuseReason,
 			&x.CreatedBy, &x.ReviewedBy, &x.CreatedAt, &x.UpdatedAt); err != nil {
 			s.errLogger.Println(errLogMsg + err.Error())
 			return nil, 0, internalErr

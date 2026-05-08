@@ -316,6 +316,8 @@ definitions:
         type: string
       profile_id:
         type: string
+      refuse_reason:
+        type: string
       region:
         type: string
       reviewed_by:
@@ -945,6 +947,21 @@ definitions:
       tx_bytes:
         type: string
       upload_child_req:
+        type: string
+    type: object
+  response.CenterCardMinimumResponse:
+    properties:
+      center_address:
+        type: string
+      center_phone_number:
+        type: string
+      id:
+        type: string
+      region:
+        type: string
+      updated_at:
+        type: string
+      uploaded_at:
         type: string
     type: object
   response.ChildResponse:
@@ -2077,6 +2094,34 @@ paths:
             $ref: '#/definitions/response.PaginationDataResponse'
         "400":
           description: Invalid data. Please try again.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "500":
+          description: There is something wrong in the system during the process.
+            Please try again later.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+      summary: List centers
+      tags:
+      - centers
+  /centers/leader:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of centers based on filter criteria
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.CenterCardMinimumResponse'
+        "400":
+          description: Invalid data. Please try again.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "403":
+          description: You have no rights to access this action.
           schema:
             $ref: '#/definitions/response.MessageAPIResponse'
         "500":
