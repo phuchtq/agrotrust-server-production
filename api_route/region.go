@@ -45,7 +45,7 @@ func InitializeRegionRoutes(server *gin.Engine) {
 
 	// Auth group
 	var authGroup = server.Group(contextPath, middleware.Authorize)
-	norGroup.GET("/user/:id/supported-suggestions", transport.GetWalletSupportedRegionSuggestions)
+	authGroup.GET("/user/:id/supported-suggestions", transport.GetWalletSupportedRegionSuggestions)
 	authGroup.POST("/supported-suggestions", transport.CreateSupportedRegionSuggestion)
 
 	// Admin group
