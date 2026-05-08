@@ -42,7 +42,7 @@ const (
 )
 
 var (
-	min_region_staffs int = 3
+	min_region_staffs int = 2
 )
 
 func initializeCenterRequestService(
