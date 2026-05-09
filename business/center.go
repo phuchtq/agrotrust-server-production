@@ -166,7 +166,7 @@ func (c *centerService) GetCenters(req request.GetCentersRequest, ctx context.Co
 	var filteredCenters []entities.Center
 	for _, center := range centers {
 		if req.Keyword != "" {
-			if !strings.Contains(strings.ToLower(center.Region), req.Keyword) && !strings.Contains(strings.ToLower(center.CenterAddress), req.Keyword) && !strings.Contains(strings.ToLower(center.CenterPhoneNumber), req.Keyword) { // Not matched
+			if !strings.Contains(strings.ToLower(center.Region), req.Keyword) && !strings.Contains(strings.ToLower(center.CenterAddress), req.Keyword) && !strings.Contains(strings.ToLower(center.CenterPhoneNumber), req.Keyword) {
 				continue
 			}
 		}
