@@ -65,7 +65,7 @@ func (a *authService) LoginV2(req request.LoginRequestV2, ctx context.Context) (
 
 	var sub string = strings.TrimSpace(req.Sub)
 	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-		Client:    a.clients[constant.SuiTestnet],
+		Client:    client,
 		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
 		ErrLogger: a.errLogger,
 	}, ctx)
