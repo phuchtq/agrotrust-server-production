@@ -185,7 +185,7 @@ func (r *registratioRequestRepo) GetRegistrationRequests(req request.GetRegistra
 			queryCondition += " AND "
 		}
 
-		queryCondition += fmt.Sprintf("LOWER(region) = LOWER('%%%s%%')", req.Region)
+		queryCondition += fmt.Sprintf("region = '%s'", req.Region)
 		isHavePreviosCondition = true
 	}
 
