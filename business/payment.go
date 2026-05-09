@@ -779,10 +779,15 @@ func (p *paymentService) ApprovePayment(id string, ctx context.Context) error {
 	}
 
 	if proposal.Purpose == string(entities.POOL_WITHDRAW_PROPOSAL_PURPOSE) {
+		profile, err := p.profileRepo.GetProfileByWalletAddress(proposal.Creator, ctx)
+		if err != nil {
+			return err
+		}
+
 		if err := p.taskRepo.CreateTask(entities.Task{
 			ID:                util.GenerateId(),
 			CreatedBy:         "System",
-			AssignedProfileID: &payment.ProfileID,
+			AssignedProfileID: &profile.ID,
 			AssignedStaff:     &proposal.Creator,
 			Region:            proposal.PoolName,
 			StartPeriod:       util.ToStartOfDate(curTime),

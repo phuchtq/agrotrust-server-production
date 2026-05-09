@@ -245,6 +245,8 @@ definitions:
         type: string
       updated_at:
         type: string
+      wallet_address:
+        type: string
     type: object
   entities.RegistrationRequest:
     properties:
@@ -400,12 +402,15 @@ definitions:
         type: string
       guardian_relation:
         type: string
+      identity_card_base64:
+        type: string
       identity_card_blob_id:
         type: string
     required:
     - guardian_full_name
     - guardian_phone_number
     - guardian_relation
+    - identity_card_base64
     - identity_card_blob_id
     type: object
   request.ConfirmProvideMealForChildRequest:
@@ -546,7 +551,11 @@ definitions:
     type: object
   request.CreateRegistrationRequest:
     properties:
+      avatar_base_64:
+        type: string
       avatar_blob_id:
+        type: string
+      identity_card_base64:
         type: string
       identity_card_blob_id:
         type: string
@@ -555,7 +564,9 @@ definitions:
       register_role:
         type: string
     required:
+    - avatar_base_64
     - avatar_blob_id
+    - identity_card_base64
     - identity_card_blob_id
     - region
     - register_role
@@ -698,9 +709,12 @@ definitions:
     type: object
   request.SubmitTaskProofRequest:
     properties:
+      image_base64:
+        type: string
       image_blob_id:
         type: string
     required:
+    - image_base64
     - image_blob_id
     type: object
   request.SupportCampaignRequest:
@@ -801,7 +815,11 @@ definitions:
     type: object
   request.UploadChildRequest:
     properties:
+      avatar_base64:
+        type: string
       avatar_blob_id:
+        type: string
+      birth_certificate_base64:
         type: string
       birth_certificate_blob_id:
         type: string
@@ -815,6 +833,8 @@ definitions:
         type: string
       home_address:
         type: string
+      home_base64:
+        type: string
       home_blob_id:
         type: string
       identity_code:
@@ -826,13 +846,16 @@ definitions:
       second_guardian:
         $ref: '#/definitions/request.ChildGuardianProfile'
     required:
+    - avatar_base64
     - avatar_blob_id
+    - birth_certificate_base64
     - birth_certificate_blob_id
     - date_of_birth
     - first_guardian
     - first_name
     - gender
     - home_address
+    - home_base64
     - home_blob_id
     - identity_code
     - last_name

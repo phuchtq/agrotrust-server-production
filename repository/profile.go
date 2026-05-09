@@ -181,7 +181,29 @@ func (p *profileRepo) GetProfile(id string, ctx context.Context) (*entities.Prof
 	if err := p.db.QueryRowContext(ctx, query, id).Scan(
 		&res.ID, &res.Salt, &res.Status, &res.IdentityCode, &res.FirstName, &res.LastName,
 		&res.Gender, &res.DateOfBirth, &res.PhoneNumber, &res.Email,
-		&res.Token, &res.CreatedAt, &res.CreatedAt); err != nil {
+		&res.Token, &res.CreatedAt, &res.CreatedAt, &res.WalletAddress); err != nil {
+
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+
+		p.errLogger.Println(errLogMsg + err.Error())
+		return nil, errors.New(noti.INTERNALL_ERR_MSG)
+	}
+
+	return &res, nil
+}
+
+// GetProfileByWalletAddress implements repository.IProfileRepository.
+func (p *profileRepo) GetProfileByWalletAddress(wallet string, ctx context.Context) (*entities.Profile, error) {
+	var query string = "SELECT * FROM " + profile_table + " WHERE wallet_address = $1"
+	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.PROFILE_REPOSITORY) + "GetProfileByWalletAddress - "
+
+	var res entities.Profile
+	if err := p.db.QueryRowContext(ctx, query, wallet).Scan(
+		&res.ID, &res.Salt, &res.Status, &res.IdentityCode, &res.FirstName, &res.LastName,
+		&res.Gender, &res.DateOfBirth, &res.PhoneNumber, &res.Email,
+		&res.Token, &res.CreatedAt, &res.CreatedAt, &res.WalletAddress); err != nil {
 
 		if err == sql.ErrNoRows {
 			return nil, nil

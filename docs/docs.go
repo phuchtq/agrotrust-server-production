@@ -7747,6 +7747,9 @@ const docTemplate = `{
                 },
                 "updated_at": {
                     "type": "string"
+                },
+                "wallet_address": {
+                    "type": "string"
                 }
             }
         },
@@ -7969,6 +7972,7 @@ const docTemplate = `{
                 "guardian_full_name",
                 "guardian_phone_number",
                 "guardian_relation",
+                "identity_card_base64",
                 "identity_card_blob_id"
             ],
             "properties": {
@@ -7979,6 +7983,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "guardian_relation": {
+                    "type": "string"
+                },
+                "identity_card_base64": {
                     "type": "string"
                 },
                 "identity_card_blob_id": {
@@ -8186,13 +8193,21 @@ const docTemplate = `{
         "request.CreateRegistrationRequest": {
             "type": "object",
             "required": [
+                "avatar_base_64",
                 "avatar_blob_id",
+                "identity_card_base64",
                 "identity_card_blob_id",
                 "region",
                 "register_role"
             ],
             "properties": {
+                "avatar_base_64": {
+                    "type": "string"
+                },
                 "avatar_blob_id": {
+                    "type": "string"
+                },
+                "identity_card_base64": {
                     "type": "string"
                 },
                 "identity_card_blob_id": {
@@ -8409,9 +8424,13 @@ const docTemplate = `{
         "request.SubmitTaskProofRequest": {
             "type": "object",
             "required": [
+                "image_base64",
                 "image_blob_id"
             ],
             "properties": {
+                "image_base64": {
+                    "type": "string"
+                },
                 "image_blob_id": {
                     "type": "string"
                 }
@@ -8560,20 +8579,29 @@ const docTemplate = `{
         "request.UploadChildRequest": {
             "type": "object",
             "required": [
+                "avatar_base64",
                 "avatar_blob_id",
+                "birth_certificate_base64",
                 "birth_certificate_blob_id",
                 "date_of_birth",
                 "first_guardian",
                 "first_name",
                 "gender",
                 "home_address",
+                "home_base64",
                 "home_blob_id",
                 "identity_code",
                 "last_name",
                 "region"
             ],
             "properties": {
+                "avatar_base64": {
+                    "type": "string"
+                },
                 "avatar_blob_id": {
+                    "type": "string"
+                },
+                "birth_certificate_base64": {
                     "type": "string"
                 },
                 "birth_certificate_blob_id": {
@@ -8592,6 +8620,9 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "home_address": {
+                    "type": "string"
+                },
+                "home_base64": {
                     "type": "string"
                 },
                 "home_blob_id": {
