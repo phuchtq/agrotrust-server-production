@@ -591,21 +591,13 @@ func (r *regionService) GetSupportedRegionSuggestions(req request.GetSupportedRe
 
 // AdminGetSupportedRegionSuggestions implements business.IRegionService.
 func (r *regionService) AdminGetSupportedRegionSuggestions(req request.GetSupportedRegionSuggestionsRequest, ctx context.Context) (response.PaginationDataResponse, error) {
-	var manageObj entities.Manage
-	if !r.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
-		res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-			Client:    r.clients[constant.SuiTestnet],
-			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-			ErrLogger: r.errLogger,
-		}, ctx)
-		if err != nil {
-			return response.PaginationDataResponse{}, err
-		}
-
-		if res != nil {
-			r.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
-			manageObj = *res
-		}
+	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    r.clients[constant.SuiTestnet],
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: r.errLogger,
+	}, ctx)
+	if err != nil {
+		return response.PaginationDataResponse{}, err
 	}
 
 	if !slices.Contains(manageObj.AdminIds, ctx.Value("address").(string)) {

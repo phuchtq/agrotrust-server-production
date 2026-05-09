@@ -93,7 +93,7 @@ const (
 	CANCEL_GIFT_FUNCTION                                             string = "cancel_gift"
 	UPDATE_CHILD_BOOKS_NEED_FUNCTION                                 string = "update_child_books_need"
 	UPDATE_CHILD_MEAL_NEED_FUNCTION                                  string = "update_child_meal_need"
-	UPDATE_CHILD_HEALTH_INSURANCE_NEED_FUNCTION                      string = "update_child_books_need"
+	UPDATE_CHILD_HEALTH_INSURANCE_NEED_FUNCTION                      string = "update_child_health_insurance_need"
 	EDIT_UPDATE_BOOKS_NEED_DATES_FUNCTION                            string = "edit_update_books_need_dates"
 	EDIT_UPDATE_MEAL_NEED_DATES_FUNCTION                             string = "edit_update_meal_need_dates"
 	EDIT_UPDATE_HEALTH_INSURANCE_NEED_DATES_FUNCTION                 string = "edit_update_health_insurance_need_dates"

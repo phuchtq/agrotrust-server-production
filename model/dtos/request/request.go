@@ -57,12 +57,12 @@ type GetNormalStaffRegistrationRequests struct {
 }
 
 type CreateRegistrationRequest struct {
-	RegisterRole       string `json:"register_role" validate:"required"`
-	Region             string `json:"region" validate:"required"`
-	IdentityCardBlobID string `json:"identity_card_blob_id" validate:"required"`
-	//IdentityCardBase64 string `json:"identity_card_base64" validate:"required"`
-	AvatarBlobID string `json:"avatar_blob_id" validate:"required"`
-	//AvatarBase64       string `json:"avatar_base_64" validate:"required"`
+	RegisterRole       string `json:"register_role" form:"register_role" validate:"required"`
+	Region             string `json:"region" form:"region" validate:"required"`
+	IdentityCardBlobID string `json:"identity_card_blob_id" form:"identity_card_blob_id" validate:"required"`
+	IdentityCardBase64 string `json:"identity_card_base64" form:"identity_card_base64" validate:"required"`
+	AvatarBlobID       string `json:"avatar_blob_id" form:"avatar_blob_id" validate:"required"`
+	AvatarBase64       string `json:"avatar_base_64" form:"avatar_base_64" validate:"required"`
 }
 
 type GetRegistrationRequests struct {

@@ -226,8 +226,18 @@ func (c *centerRequestService) ConfirmRequest(id string, ctx context.Context) er
 		return genericErr
 	}
 
+	var client = c.clients[constant.SuiTestnet]
+	manage, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: c.errLogger,
+	}, ctx)
+	if err != nil {
+		return err
+	}
+
 	var sender string = ctx.Value("address").(string)
-	if req.CreatedBy != sender {
+	if !slices.Contains(manage.AdminIds, sender) {
 		return errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
 	}
 
@@ -260,16 +270,6 @@ func (c *centerRequestService) ConfirmRequest(id string, ctx context.Context) er
 
 	if req.Status == request_refused_status {
 		return nil
-	}
-
-	var client = c.clients[constant.SuiTestnet]
-	manage, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-		Client:    client,
-		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-		ErrLogger: c.errLogger,
-	}, ctx)
-	if err != nil {
-		return err
 	}
 
 	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)

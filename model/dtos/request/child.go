@@ -11,29 +11,29 @@ type GetChildrenRequest struct {
 }
 
 type UploadChildRequest struct {
-	HomeBlobID string `json:"home_blob_id" validate:"required"`
-	//HomeBase64             string                `json:"home_base64" validate:"required"`
-	IdentityCode           string `json:"identity_code" validate:"required"`
-	BirthCertificateBlobID string `json:"birth_certificate_blob_id" validate:"required"`
-	//BirthCertificateBase64 string                `json:"birth_certificate_base64" validate:"required"`
-	Region       string `json:"region" validate:"required"`
-	FirstName    string `json:"first_name" validate:"required"`
-	LastName     string `json:"last_name" validate:"required"`
-	Gender       string `json:"gender" validate:"required"`
-	DateOfBirth  string `json:"date_of_birth" validate:"required"`
-	HomeAddress  string `json:"home_address" validate:"required"`
-	AvatarBlobId string `json:"avatar_blob_id" validate:"required"`
-	//AvatarBase64           string                `json:"avatar_base64" validate:"required"`
-	FirstGuardian  ChildGuardianProfile  `json:"first_guardian" validate:"required"`
-	SecondGuardian *ChildGuardianProfile `json:"second_guardian"`
+	HomeBlobID             string                `json:"home_blob_id" form:"home_blob_id" validate:"required"`
+	HomeBase64             string                `json:"home_base64" form:"home_base64" validate:"required"`
+	IdentityCode           string                `json:"identity_code" form:"identity_code" validate:"required"`
+	BirthCertificateBlobID string                `json:"birth_certificate_blob_id" form:"birth_certificate_blob_id" validate:"required"`
+	BirthCertificateBase64 string                `json:"birth_certificate_base64" form:"birth_certificate_base64" validate:"required"`
+	Region                 string                `json:"region" form:"region" validate:"required"`
+	FirstName              string                `json:"first_name" form:"first_name" validate:"required"`
+	LastName               string                `json:"last_name" form:"last_name" validate:"required"`
+	Gender                 string                `json:"gender" form:"gender" validate:"required"`
+	DateOfBirth            string                `json:"date_of_birth" form:"date_of_birth" validate:"required"`
+	HomeAddress            string                `json:"home_address" form:"home_address" validate:"required"`
+	AvatarBlobId           string                `json:"avatar_blob_id" form:"avatar_blob_id" validate:"required"`
+	AvatarBase64           string                `json:"avatar_base64" form:"avatar_base64" validate:"required"`
+	FirstGuardian          ChildGuardianProfile  `json:"first_guardian" form:"first_guardian" validate:"required"`
+	SecondGuardian         *ChildGuardianProfile `json:"second_guardian" form:"second_guardian"`
 }
 
 type ChildGuardianProfile struct {
-	FullName           string `json:"guardian_full_name" validate:"required"`
-	PhoneNumber        string `json:"guardian_phone_number" validate:"required"`
-	Relation           string `json:"guardian_relation" validate:"required"`
-	IdentityCardBlobID string `json:"identity_card_blob_id" validate:"required"`
-	//IdentityCardBase64 string `json:"identity_card_base64" validate:"required"`
+	FullName           string `json:"guardian_full_name" form:"guardian_full_name" validate:"required"`
+	PhoneNumber        string `json:"guardian_phone_number" form:"guardian_phone_number" validate:"required"`
+	Relation           string `json:"guardian_relation" form:"guardian_relation" validate:"required"`
+	IdentityCardBlobID string `json:"identity_card_blob_id" form:"identity_card_blob_id" validate:"required"`
+	IdentityCardBase64 string `json:"identity_card_base64" form:"identity_card_base64" validate:"required"`
 }
 
 type AddChildStringMetadataRequest struct {

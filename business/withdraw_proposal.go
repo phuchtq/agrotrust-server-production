@@ -86,10 +86,10 @@ const (
 )
 
 const (
-	children_withdraw_propososed_first_date  int = 7
-	children_withdraw_propososed_second_date int = 14
-	children_withdraw_propososed_third_date  int = 21
-	children_withdraw_propososed_fourth_date int = 28
+	children_withdraw_propososed_first_date  int = 10
+	children_withdraw_propososed_second_date int = 11
+	children_withdraw_propososed_third_date  int = 12
+	children_withdraw_propososed_fourth_date int = 13
 )
 
 // // CreateWithdrawProposal implements business.IWithdrawProposalService.
