@@ -64,21 +64,13 @@ func (a *authService) LoginV2(req request.LoginRequestV2, ctx context.Context) (
 	on_chain.FaucetTestnetBalance(client, address, a.errLogger, ctx)
 
 	var sub string = strings.TrimSpace(req.Sub)
-	var manageObj entities.Manage
-	if !a.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
-		res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-			Client:    a.clients[constant.SuiTestnet],
-			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-			ErrLogger: a.errLogger,
-		}, ctx)
-		if err != nil {
-			return response.LoginResponse{}, err
-		}
-
-		if res != nil {
-			a.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
-			manageObj = *res
-		}
+	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    a.clients[constant.SuiTestnet],
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: a.errLogger,
+	}, ctx)
+	if err != nil {
+		return response.LoginResponse{}, err
 	}
 
 	var roles []string
