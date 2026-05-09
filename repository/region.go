@@ -154,7 +154,7 @@ func (s *supportedRegionProposalRepo) IsRegionRequested(region string, ctx conte
 // UpdateSupportedRegionSuggestion implements repository.ISupportedRegionSuggestionRepository.
 func (s *supportedRegionProposalRepo) UpdateSupportedRegionSuggestion(proposal entities.SupportedRegionSuggestion, ctx context.Context) error {
 	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.SUPPORTED_REGION_PROPOSAL) + "UpdateSupportedRegionSuggestion - "
-	var query string = "UPDATE " + supported_region_proposal_table + " SET content = $1, status = $2, reviewed_by = $3, refuse_reason = $4, WHERE id = $5"
+	var query string = "UPDATE " + supported_region_proposal_table + " SET content = $1, status = $2, reviewed_by = $3, refuse_reason = $4 WHERE id = $5"
 
 	res, err := s.db.ExecContext(ctx, query, proposal.Content, proposal.Status, proposal.ReviewedBy, proposal.RefuseReason, proposal.ID)
 	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)

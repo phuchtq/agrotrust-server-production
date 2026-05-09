@@ -34,6 +34,10 @@ type IAiClientProvider interface {
 
 func InitializeAiProvider(ctx context.Context, errLogger *log.Logger) IAiClientProvider {
 	if _aiClient == nil {
+		if ctx == nil {
+			ctx = context.Background()
+		}
+
 		_aiClient = &aiClient{
 			geminiProvider: initializeGeminiClient(ctx, errLogger),
 			errLogger:      errLogger,
