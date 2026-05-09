@@ -99,9 +99,22 @@ func (a *authService) LoginV2(req request.LoginRequestV2, ctx context.Context) (
 		return response.LoginResponse{}, err
 	}
 
-	if err := a.profileRepo.Login(sub, token, ctx); err != nil {
+	profile, err := a.profileRepo.GetProfile(sub, ctx)
+	if err != nil {
 		return response.LoginResponse{}, err
 	}
+
+	if profile == nil {
+		return response.LoginResponse{}, errors.New(noti.GENERIC_ERROR_WARN_MSG)
+	}
+
+	if profile.WalletAddress != nil {
+		if *profile.WalletAddress != address {
+			return response.LoginResponse{}, errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+		}
+	}
+
+	a.profileRepo.Login(sub, token, address, ctx)
 
 	setLogin(sub, address)
 

@@ -107,12 +107,12 @@ func (p *profileRepo) UploadProfile(pfl entities.Profile, ctx context.Context) e
 }
 
 // Login implements repository.IProfileRepository.
-func (p *profileRepo) Login(id string, token string, ctx context.Context) error {
+func (p *profileRepo) Login(id string, token string, walletAddress string, ctx context.Context) error {
 	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.PROFILE_REPOSITORY) + "Login - "
-	var query string = "UPDATE " + profile_table + " SET token = $1, updated_at = $2 WHERE id = $3"
+	var query string = "UPDATE " + profile_table + " SET token = $1, updated_at = $2, wallet_address = $3 WHERE id = $4"
 	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
 
-	res, err := p.db.ExecContext(ctx, query, token, time.Now(), id)
+	res, err := p.db.ExecContext(ctx, query, token, time.Now(), walletAddress, id)
 	if err != nil {
 		p.errLogger.Println(errLogMsg + err.Error())
 		return internalErr

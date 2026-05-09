@@ -779,6 +779,20 @@ func (p *paymentService) ApprovePayment(id string, ctx context.Context) error {
 	}
 
 	if proposal.Purpose == string(entities.POOL_WITHDRAW_PROPOSAL_PURPOSE) {
+		if err := p.taskRepo.CreateTask(entities.Task{
+			ID:                util.GenerateId(),
+			CreatedBy:         "System",
+			AssignedProfileID: &payment.ProfileID,
+			AssignedStaff:     &proposal.Creator,
+			Region:            proposal.PoolName,
+			StartPeriod:       util.ToStartOfDate(curTime),
+			EndPeriod:         util.ToEndOfDate(curTime),
+			CreatedAt:         curTime,
+			UpdatedAt:         curTime,
+		}, ctx); err != nil {
+			return err
+		}
+
 		var poolModule = on_chain.InitializeModulePool()
 		module = poolModule.GetModule()
 		function = poolModule.GetFunctionWithdrawFromPool()
@@ -795,6 +809,7 @@ func (p *paymentService) ApprovePayment(id string, ctx context.Context) error {
 			WithdrawProposalId: *payment.ProposalID,
 			Sender:             payment.Actor,
 		})
+
 	} else if proposal.Purpose == string(entities.CAMPAIGN_PURPOSE) {
 		var campaignModule = on_chain.InitializeModuleCampaign()
 		module = campaignModule.GetModule()
