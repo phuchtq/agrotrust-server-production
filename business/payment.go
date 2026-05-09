@@ -762,7 +762,7 @@ func (p *paymentService) ApprovePayment(id string, ctx context.Context) error {
 		return internalErr
 	}
 
-	if slices.Contains(manage.AdminIds, sender) {
+	if !slices.Contains(manage.AdminIds, sender) {
 		return genericRightErr
 	}
 
