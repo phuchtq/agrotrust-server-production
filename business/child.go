@@ -3405,9 +3405,11 @@ func (c *childService) SupportMealNeed(id string, req request.SupportMealNeadReq
 	var rawExpectedStart, rawExpectedEnd string
 	var nextStartPeriod time.Time
 	if curTime.Before(endPeriod) { // Donate time: 1/1/2026 | Last supported: 15/7/2026
-		nextStartPeriod = endPeriod.AddDate(0, 0, 2)
+		//nextStartPeriod = endPeriod.AddDate(0, 0, 2)
+		nextStartPeriod = endPeriod.AddDate(0, 0, 0) // For quick demo
 	} else {
-		nextStartPeriod = curTime.AddDate(0, 0, 2)
+		// nextStartPeriod = curTime.AddDate(0, 0, 2)
+		nextStartPeriod = curTime.AddDate(0, 0, 0) // For quick demo
 	}
 
 	var nextYear int = curTime.Year() + 1
@@ -4063,7 +4065,7 @@ func (c *childService) SupportSpecialNeed(id string, req request.SupportSpecialN
 // 		if curTime.Before(startDate) || curTime.After(endDate) {
 // 			return response.BuildTransactionResponse{}, errors.New(noti.NOTE_UPDATE_CHILD_NEED_DATE_MESSAGE)
 // 		}
-// 	}
+//
 
 // 	var childModule = on_chain.InitializeModuleChild()
 // 	txBytes, err := on_chain.BuildTransaction(on_chain.BuildTransactionRequest{
