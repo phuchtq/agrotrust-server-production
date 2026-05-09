@@ -81,21 +81,28 @@ func (c *centerService) GetCenterDetailByLeaderRegion(ctx context.Context) (resp
 		return response.CenterCardMinimumResponse{}, err
 	}
 
-	var centerId string
+	var foundIdx int = -1
 	for i, region := range manage.LocalRegions {
-		if nft.Region == region && manage.CenterConfirmStatuses[i] {
-			centerId = manage.ChildrenCenters[i]
+		if nft.Region == region {
+			foundIdx = i
 			break
 		}
 	}
 
-	if centerId == "" {
+	if foundIdx == -1 {
 		return response.CenterCardMinimumResponse{}, errors.New(noti.REGION_NOT_ESTABLISHED_MESSAGE)
+	}
+
+	if !manage.CenterConfirmStatuses[foundIdx] {
+		return response.CenterCardMinimumResponse{
+			ID:     manage.ChildrenCenters[foundIdx],
+			Region: manage.LocalRegions[foundIdx],
+		}, nil
 	}
 
 	center, err := on_chain.GetOnChainObject[entities.Center](on_chain.GetOnChainObjectRequest{
 		Client:    client,
-		ObjectId:  centerId,
+		ObjectId:  manage.ChildrenCenters[foundIdx],
 		ErrLogger: c.errLogger,
 	}, ctx)
 	if err != nil {
