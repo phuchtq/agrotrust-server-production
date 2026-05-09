@@ -48,9 +48,9 @@ const (
 )
 
 // GetStaffByOwnerWallet implements business.IStaffService.
-func (s *staffService) GetStaffByOwnerWallet(id string, ctx context.Context) (response.StaffResponse, error) {
+func (s *staffService) GetStaffByOwnerWallet(id string, ctx context.Context) (response.StaffNftResponse, error) {
 	if !util.IsValidSuiAddressStrict(id) {
-		return response.StaffResponse{}, errors.New(noti.GENERIC_ERROR_WARN_MSG)
+		return response.StaffNftResponse{}, errors.New(noti.GENERIC_ERROR_WARN_MSG)
 	}
 
 	var client = s.clients[constant.SuiTestnet]
@@ -60,12 +60,12 @@ func (s *staffService) GetStaffByOwnerWallet(id string, ctx context.Context) (re
 		ErrLogger: s.errLogger,
 	}, ctx)
 	if err != nil {
-		return response.StaffResponse{}, err
+		return response.StaffNftResponse{}, err
 	}
 
 	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
 	if manage == nil {
-		return response.StaffResponse{}, internalErr
+		return response.StaffNftResponse{}, internalErr
 	}
 
 	var searchLen int
@@ -93,34 +93,34 @@ func (s *staffService) GetStaffByOwnerWallet(id string, ctx context.Context) (re
 	}
 
 	if staffId == "" {
-		return response.StaffResponse{}, nil
+		return response.StaffNftResponse{}, nil
 	}
 
-	staff, err := getOnChainObject[entities.Staff](client, staffId, s.errLogger, ctx)
+	staff, err := getOnChainObject[entities.StaffNft](client, staffId, s.errLogger, ctx)
 	if err != nil {
-		return response.StaffResponse{}, err
+		return response.StaffNftResponse{}, err
 	}
 
 	if staff == nil {
-		return response.StaffResponse{}, internalErr
+		return response.StaffNftResponse{}, internalErr
 	}
 
-	return staff.ToStaffResponse(), nil
+	return staff.ToStaffNftResponse(), nil
 }
 
 // GetStaff implements business.IStaffService.
-func (s *staffService) GetStaff(id string, ctx context.Context) (response.StaffResponse, error) {
+func (s *staffService) GetStaff(id string, ctx context.Context) (response.StaffNftResponse, error) {
 	if !util.IsValidSuiAddressStrict(id) {
-		return response.StaffResponse{}, errors.New(noti.GENERIC_ERROR_WARN_MSG)
+		return response.StaffNftResponse{}, errors.New(noti.GENERIC_ERROR_WARN_MSG)
 	}
 
 	var client = s.clients[constant.SuiTestnet]
-	staff, err := getOnChainObject[entities.Staff](client, id, s.errLogger, ctx)
+	staff, err := getOnChainObject[entities.StaffNft](client, id, s.errLogger, ctx)
 	if err != nil {
-		return response.StaffResponse{}, err
+		return response.StaffNftResponse{}, err
 	}
 
-	var res response.StaffResponse = staff.ToStaffResponse()
+	return staff.ToStaffNftResponse(), err
 
 	// var module = on_chain.InitializeModuleStaff()
 	// if nfts, _ := on_chain.GetOnChainOwnedObjects[entities.StaffNft](on_chain.GetOnChainOwnedObjectsRequest{
@@ -136,8 +136,6 @@ func (s *staffService) GetStaff(id string, ctx context.Context) (response.StaffR
 
 	// 	res.Nfts = nftsRes
 	// }
-
-	return res, nil
 
 	/////////////////
 	// // MOCK DATA

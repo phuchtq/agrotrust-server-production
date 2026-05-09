@@ -5955,7 +5955,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.StaffResponse"
+                            "$ref": "#/definitions/response.StaffNftResponse"
                         }
                     },
                     "400": {
@@ -5999,7 +5999,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.StaffResponse"
+                            "$ref": "#/definitions/response.StaffNftResponse"
                         }
                     },
                     "400": {
@@ -9436,56 +9436,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "url": {
-                    "type": "string"
-                }
-            }
-        },
-        "response.StaffResponse": {
-            "type": "object",
-            "properties": {
-                "avatar_blob_id": {
-                    "type": "string"
-                },
-                "date_of_birth": {
-                    "type": "string"
-                },
-                "email": {
-                    "type": "string"
-                },
-                "first_name": {
-                    "type": "string"
-                },
-                "gender": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "identity_code": {
-                    "type": "string"
-                },
-                "last_name": {
-                    "type": "string"
-                },
-                "nfts": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/response.StaffNftResponse"
-                    }
-                },
-                "phone_number": {
-                    "type": "string"
-                },
-                "region": {
-                    "type": "string"
-                },
-                "string": {
-                    "type": "string"
-                },
-                "uploaded_at": {
-                    "type": "string"
-                },
-                "user": {
                     "type": "string"
                 }
             }

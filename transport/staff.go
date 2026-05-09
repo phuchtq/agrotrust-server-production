@@ -17,7 +17,7 @@ import (
 // @Accept       json
 // @Produce      json
 // @Param        id   path      string  true  "Staff ID"
-// @Success      200      {object}  response.StaffResponse
+// @Success      200      {object}  response.StaffNftResponse
 // @Failure      400      {object}  response.MessageAPIResponse "Invalid data. Please try again."
 // @Failure      500      {object}  response.MessageAPIResponse "There is something wrong in the system during the process. Please try again later."
 // @Router       /staffs/{id} [get]
@@ -45,7 +45,7 @@ func GetStaff(ctx *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        id   path      string  true  "Staff Owner Wallet Address"
-// @Success      200      {object}  response.StaffResponse
+// @Success      200      {object}  response.StaffNftResponse
 // @Failure      400      {object}  response.MessageAPIResponse "Invalid data. Please try again."
 // @Failure      500      {object}  response.MessageAPIResponse "There is something wrong in the system during the process. Please try again later."
 // @Router       /staffs/owner/{id} [get]

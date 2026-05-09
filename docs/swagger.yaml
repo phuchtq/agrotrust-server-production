@@ -1389,39 +1389,6 @@ definitions:
       url:
         type: string
     type: object
-  response.StaffResponse:
-    properties:
-      avatar_blob_id:
-        type: string
-      date_of_birth:
-        type: string
-      email:
-        type: string
-      first_name:
-        type: string
-      gender:
-        type: string
-      id:
-        type: string
-      identity_code:
-        type: string
-      last_name:
-        type: string
-      nfts:
-        items:
-          $ref: '#/definitions/response.StaffNftResponse'
-        type: array
-      phone_number:
-        type: string
-      region:
-        type: string
-      string:
-        type: string
-      uploaded_at:
-        type: string
-      user:
-        type: string
-    type: object
   response.TransactionResponse:
     properties:
       action_type:
@@ -5434,7 +5401,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.StaffResponse'
+            $ref: '#/definitions/response.StaffNftResponse'
         "400":
           description: Invalid data. Please try again.
           schema:
@@ -5464,7 +5431,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.StaffResponse'
+            $ref: '#/definitions/response.StaffNftResponse'
         "400":
           description: Invalid data. Please try again.
           schema:
