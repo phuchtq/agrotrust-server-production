@@ -65,7 +65,7 @@ func (v *localLeaderRequestRepo) GetRegistrationRequests(req request.GetNormalSt
 	var queryCondition string
 	var isHavePreviosCondition bool = false
 	if req.Keyword != "" {
-		queryCondition += fmt.Sprintf("(LOWER(identity_code) LIKE LOWER('%%%%%s%%%%') OR LOWER(first_name) LIKE LOWER('%%%%%s%%%%') OR LOWER(last_name) LIKE LOWER('%%%%%s%%%%') OR date_of_birth LIKE '%%%%%s%%%%' OR phone_number LIKE '%%%%%s%%%%' OR LOWER(email) LIKE LOWER('%%%%%s%%%%') OR LOWER(region) LIKE LOWER('%%%%%s%%%%') OR LOWER(center_address) LIKE LOWER('%%%%%s%%%%') OR center_phone_number LIKE '%%%%%s%%%%')", req.Keyword, req.Keyword, req.Keyword, req.Keyword, req.Keyword, req.Keyword, req.Keyword, req.Keyword, req.Keyword)
+		queryCondition += fmt.Sprintf("(LOWER(identity_code) LIKE LOWER('%s') OR LOWER(first_name) LIKE LOWER('%s') OR LOWER(last_name) LIKE LOWER('%s') OR date_of_birth LIKE '%s' OR phone_number LIKE '%s' OR LOWER(email) LIKE LOWER('%s') OR LOWER(region) LIKE LOWER('%s') OR LOWER(center_address) LIKE LOWER('%s') OR center_phone_number LIKE '%s')", req.Keyword, req.Keyword, req.Keyword, req.Keyword, req.Keyword, req.Keyword, req.Keyword, req.Keyword, req.Keyword)
 		isHavePreviosCondition = true
 	}
 
@@ -74,7 +74,7 @@ func (v *localLeaderRequestRepo) GetRegistrationRequests(req request.GetNormalSt
 			queryCondition += " AND "
 		}
 
-		queryCondition += fmt.Sprintf("LOWER(gender) = LOWER('%%%%%s%%%%')", req.Gender)
+		queryCondition += fmt.Sprintf("LOWER(gender) = LOWER('%s')", req.Gender)
 		isHavePreviosCondition = true
 	}
 
@@ -83,7 +83,7 @@ func (v *localLeaderRequestRepo) GetRegistrationRequests(req request.GetNormalSt
 			queryCondition += " AND "
 		}
 
-		queryCondition += fmt.Sprintf("LOWER(status) = LOWER('%%%%%s%%%%')", req.Status)
+		queryCondition += fmt.Sprintf("LOWER(status) = LOWER('%s')", req.Status)
 		isHavePreviosCondition = true
 	}
 

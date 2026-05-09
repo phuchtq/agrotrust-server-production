@@ -77,7 +77,7 @@ func (t *taskRepo) GetTasks(req request.GetTasksRequest, ctx context.Context) ([
 	var queryCondition string
 	var isHavePreviosCondition bool = false
 	if req.Keyword != "" {
-		queryCondition += fmt.Sprintf("LOWER(description) LIKE LOWER('%%%s%%')", req.Keyword)
+		queryCondition += fmt.Sprintf("LOWER(description) LIKE LOWER('%s')", req.Keyword)
 		isHavePreviosCondition = true
 	}
 
@@ -158,7 +158,7 @@ func (t *taskRepo) GetTasksOfUser(req request.GetTasksRequest, ctx context.Conte
 
 	var keywordCond string
 	if req.Keyword != "" {
-		keywordCond = fmt.Sprintf(" AND LOWER(t.description) LIKE LOWER('%%%s%%')", req.Keyword)
+		keywordCond = fmt.Sprintf(" AND LOWER(t.description) LIKE LOWER('%s')", req.Keyword)
 	}
 
 	query += keywordCond

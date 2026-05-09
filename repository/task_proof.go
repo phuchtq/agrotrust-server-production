@@ -77,7 +77,7 @@ func (t *taskProofRepo) GetTaskProofs(req request.GetTaskProofsRequest, ctx cont
 	var queryCondition string
 	var isHavePreviosCondition bool = false
 	if req.Keyword != "" {
-		queryCondition += fmt.Sprintf("LOWER(description) LIKE LOWER('%%%s%%'))", req.Keyword)
+		queryCondition += fmt.Sprintf("LOWER(description) LIKE LOWER('%s'))", req.Keyword)
 		isHavePreviosCondition = true
 	}
 
@@ -159,7 +159,7 @@ func (t *taskProofRepo) GetTaskProofsV2(req request.GetTaskProofsRequest, ctx co
 	var isHavePreviosCondition bool
 	var queryCondition string
 	if req.Keyword != "" {
-		queryCondition += fmt.Sprintf("LOWER(tp.description) LIKE LOWER('%%%s%%')", req.Keyword)
+		queryCondition += fmt.Sprintf("LOWER(tp.description) LIKE LOWER('%s')", req.Keyword)
 		isHavePreviosCondition = true
 	}
 
@@ -177,7 +177,7 @@ func (t *taskProofRepo) GetTaskProofsV2(req request.GetTaskProofsRequest, ctx co
 			queryCondition += " AND "
 		}
 
-		queryCondition += fmt.Sprintf("LOWER(t.region) LIKE LOWER('%%%s%%')", req.Region)
+		queryCondition += fmt.Sprintf("LOWER(t.region) LIKE LOWER('%s')", req.Region)
 		isHavePreviosCondition = true
 	}
 

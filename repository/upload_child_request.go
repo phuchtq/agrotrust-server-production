@@ -107,7 +107,7 @@ func (u *uploadChildRepo) GetUploadChildRequests(req request.GetUploadChildReque
 	var queryCondition string
 	var isHavePreviosCondition bool = false
 	if req.Keyword != "" {
-		queryCondition += fmt.Sprintf("(identity_code LIKE '%%%s%%' OR LOWER(first_name) LIKE LOWER('%%%s%%') OR LOWER(last_name) LIKE LOWER('%%%s%%') OR date_of_birth LIKE '%%%s%%' OR LOWER(home_address) LIKE LOWER('%%%s%%') OR LOWER(first_guardian_name) LIKE LOWER('%%%s%%')  OR LOWER(first_guardian_phone) LIKE LOWER('%%%s%%') LOWER(second_guardian_name) LIKE LOWER('%%%s%%') OR LOWER(second_guardian_phone) LIKE LOWER('%%%s%%'))",
+		queryCondition += fmt.Sprintf("(identity_code LIKE '%s' OR LOWER(first_name) LIKE LOWER('%s') OR LOWER(last_name) LIKE LOWER('%s') OR date_of_birth LIKE '%s' OR LOWER(home_address) LIKE LOWER('%s') OR LOWER(first_guardian_name) LIKE LOWER('%s')  OR LOWER(first_guardian_phone) LIKE LOWER('%s') LOWER(second_guardian_name) LIKE LOWER('%s') OR LOWER(second_guardian_phone) LIKE LOWER('%s'))",
 			req.Keyword, req.Keyword, req.Keyword, req.Keyword, req.Keyword, req.Keyword, req.Keyword, req.Keyword)
 		isHavePreviosCondition = true
 	}
@@ -117,7 +117,7 @@ func (u *uploadChildRepo) GetUploadChildRequests(req request.GetUploadChildReque
 			queryCondition += " AND "
 		}
 
-		queryCondition += fmt.Sprintf("LOWER(region) = LOWER('%%%s%%')", req.Region)
+		queryCondition += fmt.Sprintf("LOWER(region) = LOWER('%s')", req.Region)
 		isHavePreviosCondition = true
 	}
 
@@ -126,7 +126,7 @@ func (u *uploadChildRepo) GetUploadChildRequests(req request.GetUploadChildReque
 			queryCondition += " AND "
 		}
 
-		queryCondition += fmt.Sprintf("LOWER(gender) = LOWER('%%%s%%')", req.Gender)
+		queryCondition += fmt.Sprintf("LOWER(gender) = LOWER('%s')", req.Gender)
 		isHavePreviosCondition = true
 	}
 
