@@ -8,6 +8,7 @@ import (
 	"os"
 	"raise-child/constants/env"
 	"raise-child/constants/env/payment"
+	payment_env "raise-child/constants/env/payment"
 	"raise-child/constants/noti"
 	"raise-child/constants/shared"
 	"raise-child/interfaces/business"
@@ -42,6 +43,7 @@ type paymentService struct {
 	childTaskDetailRepo     i_repository.IChildTaskDetailRepository
 	taskRepo                i_repository.ITaskRepository
 	paymentRepo             i_repository.IPaymentRepository
+	bankProfileRepo         i_repository.IBankProfileRepository
 	profileRepo             i_repository.IProfileRepository
 	donationRepo            i_repository.IOffChainDonationRepository
 	withdrawRepo            i_repository.IOffChainWithdrawProposalRepository
@@ -56,6 +58,7 @@ func initializePaymentService(
 	childTaskDetailRepo i_repository.IChildTaskDetailRepository,
 	taskRepo i_repository.ITaskRepository,
 	paymentRepo i_repository.IPaymentRepository,
+	bankProfileRepo i_repository.IBankProfileRepository,
 	profileRepo i_repository.IProfileRepository,
 	donationRepo i_repository.IOffChainDonationRepository,
 	withdrawRepo i_repository.IOffChainWithdrawProposalRepository,
@@ -69,6 +72,7 @@ func initializePaymentService(
 		childTaskDetailRepo:     childTaskDetailRepo,
 		taskRepo:                taskRepo,
 		paymentRepo:             paymentRepo,
+		bankProfileRepo:         bankProfileRepo,
 		profileRepo:             profileRepo,
 		donationRepo:            donationRepo,
 		withdrawRepo:            withdrawRepo,
@@ -92,6 +96,7 @@ func GeneratePaymentService() (business.IPaymentService, error) {
 		repository.InitializeChildTaskDetailRepository(cnn, errLogger),
 		repository.InitializeTaskRepository(cnn, errLogger),
 		repository.InitializePaymentRepository(cnn, errLogger),
+		repository.InitializeBankProfileRepository(cnn, errLogger),
 		repository.InitializeProfileRepository(cnn, errLogger),
 		repository.InitializeOffChainDonationRepository(cnn, errLogger),
 		repository.InitializeOffChainWithdrawProposalRepository(cnn, errLogger),
@@ -1562,10 +1567,42 @@ func (p *paymentService) CallbackV2(id string, ctx context.Context) error {
 		return nil
 	}
 
-	data, err := payos.GetPaymentLinkInformation(payment.TransactionId)
-	if err != nil {
-		p.errLogger.Println("Error while get payos payment link information: " + err.Error())
-		return errors.New(noti.INTERNALL_ERR_MSG)
+	var data *payos.PaymentLinkDataType
+	if payment.IsDonateTx {
+		res, err := payos.GetPaymentLinkInformation(payment.TransactionId)
+		if err != nil {
+			p.errLogger.Println("Error while get payos payment link information: " + err.Error())
+			return errors.New(noti.INTERNALL_ERR_MSG)
+		}
+
+		data = res
+	} else {
+		proposal, err := on_chain.GetOnChainObject[entities.WithdrawProposal](on_chain.GetOnChainObjectRequest{
+			Client:    p.clients[constant.SuiTestnet],
+			ObjectId:  *payment.ProposalID,
+			ErrLogger: p.errLogger,
+		}, ctx)
+		if err != nil {
+			return err
+		}
+
+		bankProfile, err := p.bankProfileRepo.GetBankProfileByOwner(proposal.Creator, ctx)
+		if err != nil {
+			return err
+		}
+
+		if err := payos.Key(util.Decrypt(bankProfile.PayosClientID), util.Decrypt(bankProfile.PayosApiKey), util.Decrypt(bankProfile.PayosCheckSumKey)); err != nil {
+			return errors.New(noti.INTERNALL_ERR_MSG)
+		}
+
+		res, err := payos.GetPaymentLinkInformation(payment.TransactionId)
+		if err != nil {
+			p.errLogger.Println("Error while get payos payment link information: " + err.Error())
+			return errors.New(noti.INTERNALL_ERR_MSG)
+		}
+
+		data = res
+		payos.Key(os.Getenv(payment_env.PAYOS_CLIENT_ID), os.Getenv(payment_env.PAYOS_API_KEY), os.Getenv(payment_env.PAYOS_CHECKSUM_KEY))
 	}
 
 	switch data.Status {
