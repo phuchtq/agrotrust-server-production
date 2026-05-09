@@ -1100,13 +1100,13 @@ func (w *withdrawProposalService) GetWithdrawProposal(id string, ctx context.Con
 		return response.WithdrawProposalResponse{}, genericErr
 	}
 
-	res, _ := on_chain.GetOnChainObject[entities.WithdrawProposal](on_chain.GetOnChainObjectRequest{
+	res, err := on_chain.GetOnChainObject[entities.WithdrawProposal](on_chain.GetOnChainObjectRequest{
 		Client:    w.clients[constant.SuiTestnet],
 		ObjectId:  id,
 		ErrLogger: w.errLogger,
 	}, ctx)
 
-	return res.ToWithdrawProposalResponse(), genericErr
+	return res.ToWithdrawProposalResponse(), err
 }
 
 // GetWithdrawProposals implements business.IWithdrawProposalService.

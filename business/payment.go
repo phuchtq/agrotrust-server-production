@@ -727,7 +727,7 @@ func (p *paymentService) ApprovePayment(id string, ctx context.Context) error {
 	}
 
 	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
-	if payment == nil || payment.Method == shared.MANUAL_BANK_METHOD || payment.IsDonateTx {
+	if payment == nil || payment.Method != shared.MANUAL_BANK_METHOD || payment.IsDonateTx {
 		return genericErr
 	}
 
