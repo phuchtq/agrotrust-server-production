@@ -691,21 +691,13 @@ func (r *registrationRequestService) VoteRegistrationRequest(id string, req requ
 	}
 
 	var client = r.clients[constant.SuiTestnet]
-	var manageObj entities.Manage
-	if !r.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
-		res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-			Client:    client,
-			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-			ErrLogger: r.errLogger,
-		}, ctx)
-		if err != nil {
-			return err
-		}
-
-		if res != nil {
-			r.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
-			manageObj = *res
-		}
+	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: r.errLogger,
+	}, ctx)
+	if err != nil {
+		return err
 	}
 
 	// Not admin
@@ -718,30 +710,28 @@ func (r *registrationRequestService) VoteRegistrationRequest(id string, req requ
 				return genericRightErr
 			}
 		} else {
-			var staffModule = on_chain.InitializeModuleStaff()
-			staffNfts, err := on_chain.GetOnChainOwnedObjects[entities.StaffNft](on_chain.GetOnChainOwnedObjectsRequest{
-				Client:       client,
-				OwnerAddress: voter,
-				StructType:   fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), staffModule.GetModule(), staffModule.GetStaffNftObjectStruct()),
-				ErrLogger:    r.errLogger,
+			var foundIdx int = -1
+			for i, leader := range manageObj.LocalLeaderIds {
+				if leader == voter {
+					foundIdx = i
+					break
+				}
+			}
+
+			if foundIdx == -1 {
+				return genericRightErr
+			}
+
+			staff, err := on_chain.GetOnChainObject[entities.StaffNft](on_chain.GetOnChainObjectRequest{
+				Client:    client,
+				ObjectId:  manageObj.LocalLeaderNfts[foundIdx],
+				ErrLogger: r.errLogger,
 			}, ctx)
 			if err != nil {
 				return err
 			}
 
-			if staffNfts == nil || len(staffNfts) == 0 {
-				return genericRightErr
-			}
-
-			var isRegionLeader bool = false
-			for _, staffNft := range staffNfts {
-				if staffNft.Region == request.Region && staffNft.Role == local_leader_role {
-					isRegionLeader = true
-					break
-				}
-			}
-
-			if !isRegionLeader {
+			if staff.Region != request.Region {
 				return genericRightErr
 			}
 		}
