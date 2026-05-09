@@ -610,7 +610,7 @@ func (c *childService) UpdateHealthInsuranceNeed(req request.UpdateChildNeedRequ
 		return err
 	}
 
-	if child == nil || !slices.Contains(child.BooksNeeds, req.NeedID) {
+	if child == nil || child.HealthInsuranceNeed != req.NeedID {
 		return genericErr
 	}
 
@@ -734,7 +734,7 @@ func (c *childService) UpdateMealNeed(req request.UpdateChildNeedRequest, ctx co
 		return err
 	}
 
-	if child == nil || !slices.Contains(child.BooksNeeds, req.NeedID) {
+	if child == nil || child.MealNeed != req.NeedID {
 		return genericErr
 	}
 
