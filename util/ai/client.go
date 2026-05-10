@@ -87,6 +87,10 @@ func InitializeAiProvider(ctx context.Context, errLogger *log.Logger) IAiClientP
 
 // ValidateUploadChildRequest implements IAiClientProvider.
 func (a *aiClient) ValidateUploadChildRequest(req ValidateUploadChildRequest, ctx context.Context) string {
+	if true {
+		return "uncertain"
+	}
+
 	type TextContext struct {
 		IdentityCode   string                `json:"identity_code"`
 		Region         string                `json:"region"`
