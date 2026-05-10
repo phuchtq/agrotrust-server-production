@@ -408,7 +408,10 @@ func (a *aiClient) processPrompt(prompt []genai.Part, ctx context.Context) strin
 }
 
 func (a *aiClient) processPromptV2(body ChatRequest) string {
+	log.Println("Chat body:", body)
+
 	bodyBytes, _ := json.Marshal(body)
+	log.Println("Req body: ", bodyBytes)
 	if bodyBytes == nil {
 		return ""
 	}
@@ -422,12 +425,16 @@ func (a *aiClient) processPromptV2(body ChatRequest) string {
 	httpReq.Header.Set("Authorization", "Bearer "+os.Getenv(env.GROQ_API_KEY))
 
 	resp, err := http.DefaultClient.Do(httpReq)
+	log.Println("Response from call groq: ", resp)
+
 	if err != nil {
 		return ""
 	}
 	defer resp.Body.Close()
 
 	respBytes, err := io.ReadAll(resp.Body)
+	log.Println("Response bytes from call groq: ", resp)
+
 	if err != nil {
 		return ""
 	}
@@ -437,6 +444,8 @@ func (a *aiClient) processPromptV2(body ChatRequest) string {
 		return ""
 	}
 
+	log.Println("Chat response:", chatResp)
+
 	if chatResp.Error != nil {
 		return ""
 	}
@@ -445,5 +454,15 @@ func (a *aiClient) processPromptV2(body ChatRequest) string {
 		return ""
 	}
 
-	return strings.ToLower(strings.Trim(chatResp.Choices[0].Message.Content, " \n\r\t.\"'"))
+	var aiResp AiResponse
+	if json.Unmarshal([]byte(chatResp.Choices[0].Message.Content), &aiResp) != nil {
+		return ""
+	}
+
+	var res string = aiResp.Result
+	if aiResp.Reason != "" {
+		res += ": " + aiResp.Reason
+	}
+
+	return res
 }

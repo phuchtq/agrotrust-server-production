@@ -15,6 +15,11 @@ const (
 	model      string = "meta-llama/llama-4-scout-17b-16e-instruct"
 )
 
+type AiResponse struct {
+	Result string `json:"result"`
+	Reason string `json:"reason"`
+}
+
 type ImageURL struct {
 	URL string `json:"url"`
 }
