@@ -2048,6 +2048,25 @@ func (p *paymentService) CallbackV2(id string, ctx context.Context) error {
 				WithdrawProposalId: *payment.ProposalID,
 				Sender:             payment.Actor,
 			})
+
+			profile, err := p.profileRepo.GetProfileByWalletAddress(proposal.Creator, ctx)
+			if err != nil {
+				return err
+			}
+
+			if err := p.taskRepo.CreateTask(entities.Task{
+				ID:                util.GenerateId(),
+				CreatedBy:         "System",
+				AssignedProfileID: &profile.ID,
+				AssignedStaff:     &proposal.Creator,
+				Region:            proposal.PoolName,
+				StartPeriod:       util.ToStartOfDate(curTime),
+				EndPeriod:         util.ToEndOfDate(curTime),
+				CreatedAt:         curTime,
+				UpdatedAt:         curTime,
+			}, ctx); err != nil {
+				return err
+			}
 		} else if proposal.Purpose == string(entities.POOL_CAMPAIGN_WITHDRAW_PROPOSAL_PURPOSE) {
 			var campaignModule = on_chain.InitializeModuleCampaign()
 			module = campaignModule.GetModule()

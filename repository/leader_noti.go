@@ -95,6 +95,7 @@ func (l *leaderNotiRepo) GetCurrentLeaderNotis(req request.GetNotisRequest, lead
 		l.errLogger.Println(errLogMsg + err.Error())
 		return nil, internalErr
 	}
+	defer rows.Close()
 
 	var res []entities.LeaderNoti
 	for rows.Next() {

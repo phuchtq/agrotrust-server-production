@@ -180,6 +180,7 @@ func (p *paymentRepo) GetPayments(req request.GetPaymentsRequest, ctx context.Co
 		p.errLogger.Println(errLogMsg + err.Error())
 		return nil, 0, internalErr
 	}
+	defer rows.Close()
 
 	var res []entities.Payment
 	for rows.Next() {

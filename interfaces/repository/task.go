@@ -17,6 +17,7 @@ type ITaskRepository interface {
 type ITaskProofRepository interface {
 	GetTaskProofs(req request.GetTaskProofsRequest, ctx context.Context) ([]entities.TaskProof, int, error)
 	GetTaskProofsV2(req request.GetTaskProofsRequest, ctx context.Context) ([]entities.TaskProof, int, error)
+	GetTaskProofsWithIsChildTask(req request.GetTaskProofsRequest, ctx context.Context) ([]entities.TaskProofWithIsChildTask, int, error)
 	GetTaskProof(id string, ctx context.Context) (*entities.TaskProof, error)
 	CreateTaskProof(proof entities.TaskProof, ctx context.Context) error
 	UpdateTaskProof(proof entities.TaskProof, ctx context.Context) error

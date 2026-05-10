@@ -12,6 +12,7 @@ type GetTasksRequest struct {
 
 type GetTaskProofsRequest struct {
 	Keyword      string `form:"keyword"`
+	IsChildTask  *bool  `json:"is_child_task"`
 	Status       string `form:"status"`
 	Region       string `json:"region"`
 	ActorAddress string `form:"actor_address"`

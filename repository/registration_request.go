@@ -44,6 +44,7 @@ func (r *registratioRequestRepo) GetRoleRegistrationRequests(role string, ctx co
 		r.errLogger.Println(errLogMsg + err.Error())
 		return nil, internalErr
 	}
+	defer rows.Close()
 
 	var res []entities.RegistrationRequest
 	for rows.Next() {
@@ -243,6 +244,7 @@ func (r *registratioRequestRepo) GetRegistrationRequests(req request.GetRegistra
 		r.errLogger.Println(errLogMsg + err.Error())
 		return nil, 0, internalErr
 	}
+	defer rows.Close()
 
 	var res []entities.RegistrationRequest
 	for rows.Next() {
@@ -290,6 +292,7 @@ func (r *registratioRequestRepo) GetWalletRegistrationRequests(id string, ctx co
 		r.errLogger.Println(errLogMsg + err.Error())
 		return nil, internalErr
 	}
+	defer rows.Close()
 
 	var res []entities.RegistrationRequest
 	for rows.Next() {

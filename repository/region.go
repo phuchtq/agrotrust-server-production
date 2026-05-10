@@ -114,6 +114,7 @@ func (s *supportedRegionProposalRepo) GetSupportedRegionSuggestions(req request.
 		s.errLogger.Println(errLogMsg + err.Error())
 		return nil, 0, internalErr
 	}
+	defer rows.Close()
 
 	var res []entities.SupportedRegionSuggestion
 	for rows.Next() {

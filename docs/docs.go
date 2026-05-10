@@ -6037,6 +6037,11 @@ const docTemplate = `{
                         "in": "query"
                     },
                     {
+                        "type": "boolean",
+                        "name": "is_child_task",
+                        "in": "query"
+                    },
+                    {
                         "type": "string",
                         "name": "keyword",
                         "in": "query"

@@ -57,3 +57,19 @@ type TaskProof struct {
 	CreatedAt      time.Time `json:"created_at"`
 	UpdatedAt      time.Time `json:"updated_at"`
 }
+
+type TaskProofWithIsChildTask struct {
+	ID             string    `json:"id"`
+	TaskID         string    `json:"task_id"`
+	Description    string    `json:"description"`
+	ActorProfileID string    `json:"actor_profile_id"`
+	ActorAddress   string    `json:"actor_address"`
+	ImageBlobID    string    `json:"image_blob_id"`
+	ReviewedBy     *string   `json:"reviewed_by"`
+	AIEvaluation   string    `json:"ai_evaluation"`
+	ReviewStatus   string    `json:"review_status"`
+	RawSubmitDate  string    `json:"raw_submit_date"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
+	IsChildTask    bool      `json:"is_child_task"`
+}

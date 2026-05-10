@@ -392,7 +392,7 @@ func (t *taskProofService) GetTaskProofs(req request.GetTaskProofsRequest, ctx c
 	// 	return res, nil
 	// }
 
-	data, pages, err := t.taskProofRepo.GetTaskProofsV2(req, ctx)
+	data, pages, err := t.taskProofRepo.GetTaskProofsWithIsChildTask(req, ctx)
 	if err != nil {
 		return response.PaginationDataResponse{}, err
 	}

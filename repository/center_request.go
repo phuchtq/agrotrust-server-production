@@ -130,6 +130,7 @@ func (c *centerRequestRepo) GetRegistrationRequests(req request.GetCenterRequest
 		c.errLogger.Println(errLogMsg + err.Error())
 		return nil, 0, internalErr
 	}
+	defer rows.Close()
 
 	var res []entities.CenterRequest
 	for rows.Next() {
@@ -198,6 +199,7 @@ func (c *centerRequestRepo) GetWalletRegistrationRequests(id string, ctx context
 		c.errLogger.Println(errLogMsg + err.Error())
 		return nil, internalErr
 	}
+	defer rows.Close()
 
 	var res []entities.CenterRequest
 	for rows.Next() {
@@ -274,6 +276,7 @@ func (c *centerRequestRepo) GetPendingRequests(ctx context.Context) ([]entities.
 		c.errLogger.Println(errLogMsg + err.Error())
 		return nil, nil, internalErr
 	}
+	defer rows.Close()
 
 	var pendingRes, approvedRes []entities.BackgroundRecord
 	for rows.Next() {

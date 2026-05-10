@@ -119,6 +119,7 @@ func (t *taskRepo) GetTasks(req request.GetTasksRequest, ctx context.Context) ([
 		t.errLogger.Println(errLogMsg + err.Error())
 		return nil, 0, internalErr
 	}
+	defer rows.Close()
 
 	var res []entities.Task
 	for rows.Next() {
@@ -179,6 +180,7 @@ func (t *taskRepo) GetTasksOfUser(req request.GetTasksRequest, ctx context.Conte
 		t.errLogger.Println(errLogMsg + err.Error())
 		return nil, 0, internalErr
 	}
+	defer rows.Close()
 
 	var res []entities.TaskV2
 	for rows.Next() {

@@ -162,6 +162,7 @@ func (u *uploadChildRepo) GetUploadChildRequests(req request.GetUploadChildReque
 		u.errLogger.Println(errLogMsg + err.Error())
 		return nil, 0, internalErr
 	}
+	defer rows.Close()
 
 	var res []entities.UploadChildRequest
 	for rows.Next() {
@@ -217,6 +218,7 @@ func (u *uploadChildRepo) GetWalletUploadChildRequests(id string, page int, ctx 
 		u.errLogger.Println(errLogMsg + err.Error())
 		return nil, 0, internalErr
 	}
+	defer rows.Close()
 
 	var res []entities.UploadChildRequest
 	for rows.Next() {
