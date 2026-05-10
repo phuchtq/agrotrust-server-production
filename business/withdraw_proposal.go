@@ -974,7 +974,7 @@ func (w *withdrawProposalService) ConfirmWithdrawProposal(id string, ctx context
 			if data.ExpiredAt != nil {
 				expiredAt = time.Unix(int64(*data.ExpiredAt), 0)
 			} else {
-				expiredAt = time.Now().Add(15 * time.Minute) // Default 15p nếu PayOS ko trả về
+				expiredAt = time.Now().Add(2 * time.Minute) // Default 15p nếu PayOS ko trả về
 			}
 
 			paymentMethod = shared.PAYMENT_PAYOS_METHOD
@@ -984,7 +984,7 @@ func (w *withdrawProposalService) ConfirmWithdrawProposal(id string, ctx context
 	}
 
 	if !isPayosAvailable {
-		expiredAt = time.Now().Add(15 * time.Minute) // Default 15p nếu PayOS ko trả về
+		expiredAt = time.Now().Add(2 * time.Minute) // Default 15p nếu PayOS ko trả về
 		paymentMethod = shared.MANUAL_BANK_METHOD
 		res["owner"] = bankProfile.OwnerName
 		res["bank_org"] = bankProfile.BankOrg
