@@ -570,18 +570,15 @@ func (r *registrationRequestService) CreateRegistrationRequest(req request.Creat
 	var firstName string = strings.TrimSpace(*profile.FirstName)
 	var lastName string = strings.TrimSpace(*profile.LastName)
 
-	identityCardBytesImg, _ := r.walrusProvider.FetchBytesImage(req.IdentityCardBlobID)
-	avatarBytesImg, _ := r.walrusProvider.FetchBytesImage(req.AvatarBlobID)
-
 	var aiEvaluation string = r.aiProvider.ValidateRegistrationRequest(ai.ValidateRegistrationRequest{
-		IdentityCode:           identityCode,
-		IdentityCardBytesImage: identityCardBytesImg,
-		AvatarBytesImage:       avatarBytesImg,
-		FirstName:              firstName,
-		LastName:               lastName,
-		Gender:                 *profile.Gender,
-		DateOfBirth:            *profile.DateOfBirth,
-		PhoneNumber:            *profile.PhoneNumber,
+		IdentityCode:       identityCode,
+		IdentityCardBase64: req.IdentityCardBase64,
+		AvatarBase64:       req.AvatarBase64,
+		FirstName:          firstName,
+		LastName:           lastName,
+		Gender:             *profile.Gender,
+		DateOfBirth:        *profile.DateOfBirth,
+		PhoneNumber:        *profile.PhoneNumber,
 	}, ctx)
 
 	// todo: validate identity code

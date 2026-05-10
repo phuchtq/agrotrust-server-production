@@ -352,27 +352,22 @@ func (u *uploadChildRequestService) CreateUploadChildRequest(req request.UploadC
 	var lastName string = strings.TrimSpace(req.LastName)
 	var homeAddr string = strings.TrimSpace(req.HomeAddress)
 
-	birthCertBytes, _ := u.walrusProvider.FetchBytesImage(req.BirthCertificateBlobID)
-	avatarBytes, _ := u.walrusProvider.FetchBytesImage(req.AvatarBlobId)
-	homeBytes, _ := u.walrusProvider.FetchBytesImage(req.HomeBlobID)
-	firstGuardianIdentityCardBytes, _ := u.walrusProvider.FetchBytesImage(firstGuardianProfile.IdentityCardBlobID)
-
 	var validateReq = ai.ValidateUploadChildRequest{
-		HomeBytesImage:                  homeBytes,
-		IdentityCode:                    identityCode,
-		ChildBirthCertificateBytesImage: birthCertBytes,
-		Region:                          req.Region,
-		FirstName:                       firstNasme,
-		LastName:                        lastName,
-		Gender:                          gender,
-		DateOfBirth:                     dateOfBirth,
-		HomeAddress:                     homeAddr,
-		AvatarBytesImage:                avatarBytes,
+		HomeBase64:                  req.HomeBase64,
+		IdentityCode:                identityCode,
+		ChildBirthCertificateBase64: req.BirthCertificateBase64,
+		Region:                      req.Region,
+		FirstName:                   firstNasme,
+		LastName:                    lastName,
+		Gender:                      gender,
+		DateOfBirth:                 dateOfBirth,
+		HomeAddress:                 homeAddr,
+		AvatarBase64:                req.AvatarBase64,
 		FirstGuardian: ai.ChildGuardianProfile{
-			FullName:               firstGuardianProfile.FullName,
-			PhoneNumber:            firstGuardianProfile.PhoneNumber,
-			Relation:               firstGuardianProfile.Relation,
-			IdentityCardBytesImage: firstGuardianIdentityCardBytes,
+			FullName:           firstGuardianProfile.FullName,
+			PhoneNumber:        firstGuardianProfile.PhoneNumber,
+			Relation:           firstGuardianProfile.Relation,
+			IdentityCardBase64: req.FirstGuardian.IdentityCardBase64,
 		},
 	}
 
@@ -380,10 +375,10 @@ func (u *uploadChildRequestService) CreateUploadChildRequest(req request.UploadC
 		secondGuardianIdentityCardBytes, _ := u.walrusProvider.FetchBytesImage(secondGuardianProfile.IdentityCardBlobID)
 		if secondGuardianIdentityCardBytes != nil {
 			validateReq.SecondGuardian = &ai.ChildGuardianProfile{
-				FullName:               secondGuardianProfile.FullName,
-				PhoneNumber:            secondGuardianProfile.PhoneNumber,
-				Relation:               secondGuardianProfile.Relation,
-				IdentityCardBytesImage: secondGuardianIdentityCardBytes,
+				FullName:           secondGuardianProfile.FullName,
+				PhoneNumber:        secondGuardianProfile.PhoneNumber,
+				Relation:           secondGuardianProfile.Relation,
+				IdentityCardBase64: req.SecondGuardian.IdentityCardBase64,
 			}
 		}
 	}

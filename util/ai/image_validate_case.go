@@ -15,25 +15,25 @@ const (
 )
 
 type ValidateUploadChildRequest struct {
-	HomeBytesImage                  []byte                `json:"home_bytes_image"`
-	IdentityCode                    string                `json:"identity_code"`
-	ChildBirthCertificateBytesImage []byte                `json:"child_birth_certificate_bytes_image"`
-	Region                          string                `json:"region"`
-	FirstName                       string                `json:"first_name"`
-	LastName                        string                `json:"last_name"`
-	Gender                          string                `json:"gender"`
-	DateOfBirth                     string                `json:"date_of_birth"`
-	HomeAddress                     string                `json:"home_address"`
-	AvatarBytesImage                []byte                `json:"avatar_bytes_image"`
-	FirstGuardian                   ChildGuardianProfile  `json:"first_guardian"`
-	SecondGuardian                  *ChildGuardianProfile `json:"second_guardian"`
+	HomeBase64                  string                `json:"home_base64"`
+	IdentityCode                string                `json:"identity_code"`
+	ChildBirthCertificateBase64 string                `json:"child_birth_certificate_base64"`
+	Region                      string                `json:"region"`
+	FirstName                   string                `json:"first_name"`
+	LastName                    string                `json:"last_name"`
+	Gender                      string                `json:"gender"`
+	DateOfBirth                 string                `json:"date_of_birth"`
+	HomeAddress                 string                `json:"home_address"`
+	AvatarBase64                string                `json:"avatar_base64"`
+	FirstGuardian               ChildGuardianProfile  `json:"first_guardian"`
+	SecondGuardian              *ChildGuardianProfile `json:"second_guardian"`
 }
 
 type ChildGuardianProfile struct {
-	FullName               string `json:"guardian_full_name"`
-	PhoneNumber            string `json:"guardian_phone_number"`
-	Relation               string `json:"guardian_relation_with_child"`
-	IdentityCardBytesImage []byte `json:"identity_card_bytes_image"`
+	FullName           string `json:"guardian_full_name"`
+	PhoneNumber        string `json:"guardian_phone_number"`
+	Relation           string `json:"guardian_relation_with_child"`
+	IdentityCardBase64 string `json:"identity_card_base64"`
 }
 
 type ValidateCreateCenterRequest struct {
@@ -44,19 +44,19 @@ type ValidateCreateCenterRequest struct {
 }
 
 type ValidateRegistrationRequest struct {
-	IdentityCode           string `json:"identity_code"`
-	IdentityCardBytesImage []byte `json:"identity_card_bytes_image"`
-	AvatarBytesImage       []byte `json:"avatar_bytes_image"`
-	FirstName              string `json:"first_name"`
-	LastName               string `json:"last_name"`
-	Gender                 string `json:"gender"`
-	DateOfBirth            string `json:"date_of_birth"`
-	PhoneNumber            string `json:"phone_number"`
+	IdentityCode       string `json:"identity_code"`
+	IdentityCardBase64 string `json:"identity_card_base64"`
+	AvatarBase64       string `json:"avatar_base64"`
+	FirstName          string `json:"first_name"`
+	LastName           string `json:"last_name"`
+	Gender             string `json:"gender"`
+	DateOfBirth        string `json:"date_of_birth"`
+	PhoneNumber        string `json:"phone_number"`
 }
 
 type ValidateTaskProof struct {
 	TaskDescription string    `json:"task_description"`
-	ProofBytesImage []byte    `json:"proof_bytes_image"`
+	ProofBase64     string    `json:"proof_base64"`
 	CreatedAt       time.Time `json:"created_at"`
 }
 

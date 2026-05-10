@@ -7,4 +7,5 @@ const (
 	SERVER_HOST        string = "SERVER_HOST"
 	REDIS_URL          string = "REDIS_URL"
 	GEMINI_API_KEY     string = "GEMINI_API_KEY"
+	GROQ_API_KEY       string = "GROQ_API_KEY"
 )

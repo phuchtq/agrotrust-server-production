@@ -585,7 +585,7 @@ func (t *taskProofService) SubmitTaskProof(id string, req request.SubmitTaskProo
 					ChildAvatarBytesImage: avatarBytes,
 					ValidateTaskProof: ai.ValidateTaskProof{
 						TaskDescription: task.Description,
-						ProofBytesImage: nil,
+						ProofBase64:     req.ImageBase64,
 						CreatedAt:       curTime,
 					},
 				}, ctx)
@@ -594,7 +594,7 @@ func (t *taskProofService) SubmitTaskProof(id string, req request.SubmitTaskProo
 	} else {
 		aiEvaluation = t.aiProvider.ValidateTaskProof(ai.ValidateTaskProof{
 			TaskDescription: task.Description,
-			ProofBytesImage: nil,
+			ProofBase64:     req.ImageBase64,
 			CreatedAt:       curTime,
 		}, ctx)
 	}
