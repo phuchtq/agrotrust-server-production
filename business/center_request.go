@@ -347,24 +347,11 @@ func (c *centerRequestService) CreateRequest(req request.CreateCenterRequest, ct
 		return nil, internalErr
 	}
 
-	var staffStartSearchIdx int = -1
-	for i, region := range manage.LocalRegions {
-		if region == req.Region {
-			staffStartSearchIdx = i
-			break
-		}
-	}
-
-	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
-	if staffStartSearchIdx == -1 {
-		return nil, genericErr
-	}
-
 	var sender string = ctx.Value("address").(string)
 	var regionLeaderNft string
-	for i, leader := range manage.LocalLeaderIds[staffStartSearchIdx:] {
+	for i, leader := range manage.LocalLeaderIds {
 		if leader == sender {
-			regionLeaderNft = manage.LocalLeaderNfts[staffStartSearchIdx+i]
+			regionLeaderNft = manage.LocalLeaderNfts[i]
 			break
 		}
 	}
@@ -387,11 +374,9 @@ func (c *centerRequestService) CreateRequest(req request.CreateCenterRequest, ct
 		return nil, genericRightErr
 	}
 
-	var staffNfts []string = manage.LocalLeaderNfts[staffStartSearchIdx:]
-	staffNfts = append(staffNfts, manage.VolunteerNfts[staffStartSearchIdx:]...)
 	staffs, err := on_chain.GetOnChainObjects[entities.StaffNft](on_chain.GetOnChainObjectsRequest{
 		Client:    client,
-		ObjectIds: staffNfts,
+		ObjectIds: manage.VolunteerIds,
 		ErrLogger: c.errLogger,
 	}, ctx)
 	if err != nil {
@@ -412,8 +397,10 @@ func (c *centerRequestService) CreateRequest(req request.CreateCenterRequest, ct
 		}
 	}
 
+	regionStaffCounts += 1
+
 	if regionStaffCounts < min_region_staffs {
-		return nil, genericErr
+		return nil, errors.New("Not enough staffs")
 	}
 
 	// todo: AI validate address if matched with region
