@@ -178,7 +178,7 @@ func (t *taskProofRepo) GetTaskProofsWithIsChildTask(req request.GetTaskProofsRe
 			queryCondition += " AND "
 		}
 
-		queryCondition += fmt.Sprintf("LOWER(t.is_child_task) = %v", *req.IsChildTask)
+		queryCondition += fmt.Sprintf("t.is_child_task = %v", *req.IsChildTask)
 		isHavePreviosCondition = true
 	}
 
