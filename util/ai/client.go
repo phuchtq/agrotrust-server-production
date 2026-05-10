@@ -119,7 +119,6 @@ func (a *aiClient) ValidateUploadChildRequest(req ValidateUploadChildRequest, ct
 	var prompt string = fmt.Sprintf("Validate case: %s\n", upload_child_validate_case)
 	prompt += fmt.Sprintf("Data context: %s\n", string(dataBytes))
 	prompt += _prompt_instruction
-	prompt += "Answer: "
 
 	var contentParts = []ContentPart{
 		{Type: "text", Text: prompt},
@@ -442,6 +441,10 @@ func (a *aiClient) processPromptV2(body ChatRequest) string {
 	var chatResp ChatResponse
 	if err := json.Unmarshal(respBytes, &chatResp); err != nil {
 		return ""
+	}
+
+	if chatResp.Choices == nil || chatResp.Error != nil {
+		return "uncertain"
 	}
 
 	log.Println("Chat response:", chatResp)
