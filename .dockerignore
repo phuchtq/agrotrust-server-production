@@ -27,4 +27,7 @@ Thumbs.db
 # Build output (local)
 bin/
 dist/
+
+# Documentation
+*.md
  
