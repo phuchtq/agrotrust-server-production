@@ -314,20 +314,6 @@ func (p *pendingCampaignService) CreatePendingCampaign(req request.CreatePending
 		return nil, errors.New(noti.LEADER_NOT_UPLOAD_BANK_PROFILE_MESSAGE)
 	}
 
-	var description string = strings.TrimSpace(req.Description)
-	var aiEvaluation string
-	if req.ProofBlobID != nil {
-		proofBytes, _ := p.walrusProvider.FetchBytesImage(*req.ProofBlobID)
-		if proofBytes != nil {
-			aiEvaluation = p.aiProvider.ValidatePoolCampaign(ai.ValidatePoolCampaign{
-				CamapaignTarget: req.Target,
-				Description:     description,
-				ProofBytesImage: proofBytes,
-			}, ctx)
-		}
-	}
-
-	// todo: AI validation
 	var curTime time.Time = time.Now()
 	var campaign = entities.PendingCampaign{
 		ID:             util.GenerateId(),
@@ -338,7 +324,6 @@ func (p *pendingCampaignService) CreatePendingCampaign(req request.CreatePending
 		Target:         req.Target,
 		Description:    strings.TrimSpace(req.Description),
 		ProofBlobID:    req.ProofBlobID,
-		AIEvaluation:   aiEvaluation,
 		CreatedAt:      curTime,
 		UpdatedAt:      curTime,
 	}

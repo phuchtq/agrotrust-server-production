@@ -570,16 +570,8 @@ func (r *registrationRequestService) CreateRegistrationRequest(req request.Creat
 	var firstName string = strings.TrimSpace(*profile.FirstName)
 	var lastName string = strings.TrimSpace(*profile.LastName)
 
-	var aiEvaluation string = r.aiProvider.ValidateRegistrationRequest(ai.ValidateRegistrationRequest{
-		IdentityCode:       identityCode,
-		IdentityCardBase64: req.IdentityCardBase64,
-		AvatarBase64:       req.AvatarBase64,
-		FirstName:          firstName,
-		LastName:           lastName,
-		Gender:             *profile.Gender,
-		DateOfBirth:        *profile.DateOfBirth,
-		PhoneNumber:        *profile.PhoneNumber,
-	}, ctx)
+	// TODO: AI Evaluation
+	var aiEvaluation string = "To be filled"
 
 	// todo: validate identity code
 	var request = entities.RegistrationRequest{

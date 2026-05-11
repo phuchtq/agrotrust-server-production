@@ -564,12 +564,8 @@ func (t *taskProofService) SubmitTaskProof(id string, req request.SubmitTaskProo
 		return errors.New(noti.TASK_PROOF_SUBMITTED_MESSAGE)
 	}
 
+	// TODO: AI Evaluation
 	var aiEvaluation string
-	// proofBytes, _ := t.walrusProvider.FetchBytesImage(req.ImageBlobID)
-	// if proofBytes == nil {
-	// 	t.errLogger.Println("Proof bytes nil")
-	// 	return genericErr
-	// }
 
 	if task.IsChildTask {
 		if childTaskDetail, err := t.childTaskDetailRepo.GetChildTaskDetail(*task.ChildTaskDetailID, ctx); err == nil {
@@ -580,15 +576,9 @@ func (t *taskProofService) SubmitTaskProof(id string, req request.SubmitTaskProo
 			}, ctx)
 
 			if child != nil {
-				avatarBytes, _ := t.walrusProvider.FetchBytesImage(child.AvatarBlobId)
-				aiEvaluation = t.aiProvider.ValidateProvideNeedForChildTaskProof(ai.ValidateProvideNeedForChildTaskProof{
-					ChildAvatarBytesImage: avatarBytes,
-					ValidateTaskProof: ai.ValidateTaskProof{
-						TaskDescription: task.Description,
-						ProofBase64:     req.ImageBase64,
-						CreatedAt:       curTime,
-					},
-				}, ctx)
+				// avatarBytes, _ := t.walrusProvider.FetchBytesImage(child.AvatarBlobId)
+				// Gửi kèm ảnh trẻ để check xem bữa ăn/sách/vật tư phù hợp có đến được với trẻ đó hay không
+				aiEvaluation = "To be filled"
 			}
 		}
 	} else {
@@ -599,7 +589,6 @@ func (t *taskProofService) SubmitTaskProof(id string, req request.SubmitTaskProo
 		}, ctx)
 	}
 
-	// todo: AI validation
 	return t.taskProofRepo.CreateTaskProof(entities.TaskProof{
 		ID:             util.GenerateId(),
 		TaskID:         id,

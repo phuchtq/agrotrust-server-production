@@ -383,9 +383,9 @@ func (u *uploadChildRequestService) CreateUploadChildRequest(req request.UploadC
 		}
 	}
 
-	var aiEvaluation string = u.aiProvider.ValidateUploadChildRequest(validateReq, ctx)
+	// var aiEvaluation string = u.aiProvider.ExtractChildInfo()(validateReq, ctx)
 
-	// todo: AI validation
+	// // todo: AI validation
 	var curTime time.Time = time.Now()
 	var request = entities.UploadChildRequest{
 		ID:                     util.GenerateId(),
@@ -402,7 +402,7 @@ func (u *uploadChildRequestService) CreateUploadChildRequest(req request.UploadC
 		HomeAddress:            homeAddr,
 		FirstGuardianProfile:   firstGuardianProfile,
 		SecondGuardianProfile:  secondGuardianProfile,
-		AIEvaluation:           aiEvaluation,
+		// AIEvaluation:           aiEvaluation,
 		Status:                 request_pending_status,
 		CreatedBy:              ctx.Value("address").(string),
 		CreatedAt:              curTime,

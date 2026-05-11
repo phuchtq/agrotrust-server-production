@@ -41,3 +41,13 @@ type ChildCardMinimumResponse struct {
 	LastName     string `json:"last_name"`
 	Gender       string `json:"gender"`
 }
+
+type ExtractChildInfoResponse struct {
+	Region           string `json:"region"`
+	FirstName        string `json:"first_name"`
+	LastName         string `json:"last_name"`
+	Gender           string `json:"gender"`
+	DateOfBirth      string `json:"date_of_birth"`
+	HomeAddress      string `json:"home_address"`
+	GuardianFullName string `json:"guardian_full_name"`
+}

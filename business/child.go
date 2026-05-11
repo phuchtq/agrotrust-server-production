@@ -2958,20 +2958,21 @@ func (c *childService) CreateSpecialNeedProposalV2(req request.CreateSpecialNeed
 		return nil, errors.New(noti.LEADER_NOT_UPLOAD_BANK_PROFILE_MESSAGE)
 	}
 
-	var description string = strings.TrimSpace(req.Description)
+	// FIX: AI will be implemented later
+	// var description string = strings.TrimSpace(req.Description)
 	var aiEvaluation string
 	if req.ProofBlobID != nil {
-		proofBytes, _ := c.walrusProvider.FetchBytesImage(*req.ProofBlobID)
-		if proofBytes != nil {
-			aiEvaluation = c.aiProvider.ValidateChildSpecialNeedProposal(ai.ValidateChildSpecialNeedProposal{
-				CamapaignTarget: req.Target,
-				Description:     description,
-				ProofBytesImage: proofBytes,
-			}, ctx)
-		}
+		// proofBytes, _ := c.walrusProvider.FetchBytesImage(*req.ProofBlobID)
+		// if proofBytes != nil {
+		// 	aiEvaluation = c.aiProvider.ValidateChildSpecialNeedProposal(ai.ValidateChildSpecialNeedProposal{
+		// 		CampaignTarget: req.Target,
+		// 		Description:     description,
+		// 		ProofBytesImage: proofBytes,
+		// 	}, ctx)
+		// }
 	}
 
-	// todo: AI validation
+	// TODO: AI validation
 	var curTime time.Time = time.Now()
 	var proposal = entities.PendingChildSpecialNeedProposal{
 		ID:             util.GenerateId(),

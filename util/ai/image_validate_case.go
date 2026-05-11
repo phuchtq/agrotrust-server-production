@@ -29,6 +29,21 @@ type ValidateUploadChildRequest struct {
 	SecondGuardian              *ChildGuardianProfile `json:"second_guardian"`
 }
 
+type ValidateUploadChildRequestV2 struct {
+	HomeImage                  string                `json:"home_image"`
+	ChildBirthCertificateImage string                `json:"child_birth_certificate_image"`
+	AvatarImage                string                `json:"avatar_image"`
+	IdentityCode               string                `json:"identity_code"`
+	Region                     string                `json:"region"`
+	FirstName                  string                `json:"first_name"`
+	LastName                   string                `json:"last_name"`
+	Gender                     string                `json:"gender"`
+	DateOfBirth                string                `json:"date_of_birth"`
+	HomeAddress                string                `json:"home_address"`
+	FirstGuardian              ChildGuardianProfile  `json:"first_guardian"`
+	SecondGuardian             *ChildGuardianProfile `json:"second_guardian"`
+}
+
 type ChildGuardianProfile struct {
 	FullName           string `json:"guardian_full_name"`
 	PhoneNumber        string `json:"guardian_phone_number"`
@@ -73,7 +88,7 @@ type ValidateWithdrawProposal struct {
 }
 
 type ValidateChildSpecialNeedProposal struct {
-	CamapaignTarget int64  `json:"campaign_target"`
+	CampaignTarget  int64  `json:"campaign_target"`
 	Description     string `json:"campaign_description"`
 	ProofBytesImage []byte `json:"proof_bytes_image"`
 }

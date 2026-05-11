@@ -2,12 +2,10 @@ package ai
 
 import (
 	"bytes"
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
-	"os"
 )
 
 const (
@@ -51,28 +49,6 @@ type ChatResponse struct {
 	Error   *struct {
 		Message string `json:"message"`
 	} `json:"error,omitempty"`
-}
-
-func encodeImageToBase64(imagePath string) (string, error) {
-	data, err := os.ReadFile(imagePath)
-	if err != nil {
-		return "", fmt.Errorf("đọc file ảnh thất bại: %w", err)
-	}
-
-	mime := "image/jpeg"
-	if len(imagePath) > 4 {
-		switch imagePath[len(imagePath)-4:] {
-		case ".png":
-			mime = "image/png"
-		case ".gif":
-			mime = "image/gif"
-		case "webp":
-			mime = "image/webp"
-		}
-	}
-
-	encoded := base64.StdEncoding.EncodeToString(data)
-	return fmt.Sprintf("data:%s;base64,%s", mime, encoded), nil
 }
 
 func askGroqWithImage(apiKey, prompt, imageDataURL string) (string, error) {
