@@ -98,7 +98,7 @@ func GenerateRegistrationRequestService() (business.IRegistrationRequestService,
 	return initializeRegistrationRequestService(
 		repository.InitializeRegistrationRequestRepo(cnn, errLogger),
 		repository.InitializeProfileRepository(cnn, errLogger),
-		ai.InitializeAiProvider(nil, errLogger),
+		ai.InitializeAiProvider(errLogger),
 		walrus_pkg.InitializeWalrusProvider(errLogger),
 		_networkAliases,
 		errLogger,

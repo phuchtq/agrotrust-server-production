@@ -86,7 +86,7 @@ func GenerateCampaignService() (business.ICampaignService, error) {
 		repository.InitializePendingWithdrawProposalRepo(cnn, errLogger),
 		repository.InitializeOffChainDonationRepository(cnn, errLogger),
 		repository.InitializeOffChainWithdrawProposalRepository(cnn, errLogger),
-		ai.InitializeAiProvider(nil, errLogger),
+		ai.InitializeAiProvider(errLogger),
 		walrus_pkg.InitializeWalrusProvider(errLogger),
 		_networkAliases,
 		errLogger,

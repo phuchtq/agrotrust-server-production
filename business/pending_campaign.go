@@ -69,7 +69,7 @@ func GeneratePendingCampaignService() (business.IPendingCampaignService, error) 
 	return initializePendingCampaignService(
 		repository.InitializePendingCampaignRepo(cnn, errLogger),
 		repository.InitializeBankProfileRepository(cnn, errLogger),
-		ai.InitializeAiProvider(nil, errLogger),
+		ai.InitializeAiProvider(errLogger),
 		walrus_pkg.InitializeWalrusProvider(errLogger),
 		_networkAliases,
 		errLogger,

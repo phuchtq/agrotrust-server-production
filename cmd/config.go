@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"raise-child/constants/env"
 	"raise-child/constants/noti"
@@ -30,15 +31,48 @@ func loadEnv(logger *log.Logger) {
 // Enable CORS
 func corsConfig(server *gin.Engine) {
 	server.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Content-Type", "Authorization"},
+		// AllowOrigins:     []string{"*"},
+		AllowOrigins: []string{
+			"https://argo-web-deploy.vercel.app",
+			"http://localhost:3000",
+		},
+
+		AllowMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"},
+
+		AllowHeaders: []string{
+			"Origin",
+			"Content-Type",
+			"Accept",
+			"Authorization",
+			"Cache-Control",
+			"X-Requested-With",
+		},
+
 		AllowCredentials: true,
-		MaxAge:           12 * time.Hour,
+
+		MaxAge: 12 * time.Hour,
 	}))
+
+	server.Use(func(ctx *gin.Context) {
+		if ctx.Request.Method == http.MethodOptions {
+			log.Printf("[PREFLIGHT] Origin=%s Path=%s RequestedMethod=%s RequestedHeaders=%s",
+				ctx.GetHeader("Origin"),
+				ctx.Request.URL.Path,
+				ctx.GetHeader("Access-Control-Request-Method"),
+				ctx.GetHeader("Access-Control-Request-Headers"),
+			)
+		}
+		ctx.Next()
+		if ctx.Request.Method == http.MethodOptions {
+			log.Printf("[PREFLIGHT RESULT] Status=%d AllowOrigin=%s",
+				ctx.Writer.Status(),
+				ctx.Writer.Header().Get("Access-Control-Allow-Origin"),
+			)
+		}
+	})
 }
 
-func setupSwagger(server *gin.Engine, port string) {
+func setupSwagger(server *gin.Engine) {
 	// Configure swagger info
 	docs.SwaggerInfo.Title = "AgroTrust Server API"
 	docs.SwaggerInfo.Version = "1.0"

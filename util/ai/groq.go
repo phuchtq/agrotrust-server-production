@@ -8,6 +8,8 @@ import (
 	"net/http"
 )
 
+type GroqClient struct{}
+
 const (
 	groqAPIURL string = "https://api.groq.com/openai/v1/chat/completions"
 	model      string = "meta-llama/llama-4-scout-17b-16e-instruct"
@@ -51,23 +53,22 @@ type ChatResponse struct {
 	} `json:"error,omitempty"`
 }
 
-func askGroqWithImage(apiKey, prompt, imageDataURL string) (string, error) {
+
+// AskWithImages gửi prompt kèm nhiều ảnh (Cloudinary URL) tới Groq vision model.
+// Dùng cho các tác vụ cần phân tích nhiều tài liệu cùng lúc (vd: giấy khai sinh + CCCD).
+func (g *GroqClient) AskWithImages(apiKey, prompt string, imageURLs []string) (string, error) {
+	parts := []ContentPart{{Type: "text", Text: prompt}}
+	for _, url := range imageURLs {
+		parts = append(parts, ContentPart{
+			Type:     "image_url",
+			ImageURL: &ImageURL{URL: url},
+		})
+	}
+
 	reqBody := ChatRequest{
 		Model: model,
 		Messages: []Message{
-			{
-				Role: "user",
-				Content: []ContentPart{
-					{
-						Type: "text",
-						Text: prompt,
-					},
-					{
-						Type:     "image_url",
-						ImageURL: &ImageURL{URL: imageDataURL},
-					},
-				},
-			},
+			{Role: "user", Content: parts},
 		},
 	}
 

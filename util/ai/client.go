@@ -1,28 +1,24 @@
 package ai
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
-	"net/http"
 	"os"
 	"raise-child/model/dtos/response"
+	"raise-child/util/ai/prompts"
 )
 
 type aiClient struct {
-	geminiProvider *geminiProvider
-	errLogger      *log.Logger
+	groqProvider *GroqClient
+	errLogger    *log.Logger
 }
 
 var _aiClient *aiClient
 
-type ImageValidateCase string
-
 type IAiClientProvider interface {
-	ExtractChildInfo(birthCertB64 string, guardianIdB64 string) (*response.ExtractChildInfoResponse, error)
+	ExtractChildInfo(birthCertURL string, guardianIdURL string) (*response.ExtractChildInfoResponse, error)
 	ValidateTaskProof(req ValidateTaskProof, ctx context.Context) string
 	ValidateWithdrawProposal(req ValidateWithdrawProposal, ctx context.Context) string
 	ValidateSpecialNeedProposal(req ValidateChildSpecialNeedProposal, ctx context.Context) string
@@ -34,88 +30,35 @@ type IAiClientProvider interface {
 	// ValidatePoolCampaign(req ValidatePoolCampaign, ctx context.Context) string
 }
 
-func InitializeAiProvider(ctx context.Context, errLogger *log.Logger) IAiClientProvider {
+func InitializeAiProvider(errLogger *log.Logger) IAiClientProvider {
 	if _aiClient == nil {
-		if ctx == nil {
-			ctx = context.Background()
-		}
-
 		_aiClient = &aiClient{
-			geminiProvider: initializeGeminiClient(ctx, errLogger),
-			errLogger:      errLogger,
+			groqProvider: &GroqClient{},
+			errLogger:    errLogger,
 		}
 	}
-
 	return _aiClient
 }
 
-func (a *aiClient) ExtractChildInfo(birthCertB64 string, guardianIdB64 string) (*response.ExtractChildInfoResponse, error) {
-	prompt := "You are a specialized OCR data extractor. Extract information from the provided images. " +
-		"Image 1 is a child's birth certificate. Image 2 is the guardian's identity card. " +
-		"Return ONLY a valid JSON object with the following keys: " +
-		"region, first_name, last_name, gender, date_of_birth, home_address, guardian_full_name. " +
-		"Do not use markdown blocks or extra text."
-
-	var contentParts = []ContentPart{
-		{Type: "text", Text: prompt},
-		{Type: "image_url", ImageURL: &ImageURL{URL: birthCertB64}},
-		{Type: "image_url", ImageURL: &ImageURL{URL: guardianIdB64}},
-	}
-
-	var reqBody ChatRequest = ChatRequest{
-		Model: model, // Your configured text/vision model
-		Messages: []Message{
-			{Role: "user", Content: contentParts},
-		},
-	}
-
-	bodyBytes, err := json.Marshal(reqBody)
+func GetAiProvider() IAiClientProvider {
+	return _aiClient
+}
+func (a *aiClient) ExtractChildInfo(birthCertURL string, guardianIdURL string) (*response.ExtractChildInfoResponse, error) {
+	raw, err := a.groqProvider.AskWithImages(
+		os.Getenv("GROQ_API_KEY"),
+		prompts.ChildExtractionPrompt,
+		[]string{birthCertURL, guardianIdURL},
+	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("extract child info: %w", err)
 	}
 
-	req, err := http.NewRequest("POST", groqAPIURL, bytes.NewBuffer(bodyBytes))
-	if err != nil {
-		return nil, err
+	var result response.ExtractChildInfoResponse
+	if err := json.Unmarshal([]byte(raw), &result); err != nil {
+		return nil, fmt.Errorf("parse AI response: %w", err)
 	}
 
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", "Bearer "+os.Getenv("GROQ_API_KEY"))
-
-	client := &http.Client{}
-	resp, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer resp.Body.Close()
-
-	respBytes, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	var chatResp ChatResponse
-	if err := json.Unmarshal(respBytes, &chatResp); err != nil {
-		return nil, err
-	}
-
-	if chatResp.Error != nil {
-		return nil, fmt.Errorf("groq error: %s", chatResp.Error.Message)
-	}
-
-	if len(chatResp.Choices) == 0 {
-		return nil, fmt.Errorf("no choices returned")
-	}
-
-	result := chatResp.Choices[0].Message.Content
-
-	// Parse result into struct
-	var extractResp response.ExtractChildInfoResponse
-	if err := json.Unmarshal([]byte(result), &extractResp); err != nil {
-		return nil, fmt.Errorf("failed to parse AI response: %w", err)
-	}
-
-	return &extractResp, nil
+	return &result, nil
 }
 
 // ValidateTaskProof implements IAiClientProvider.

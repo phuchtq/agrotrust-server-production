@@ -215,6 +215,7 @@ definitions:
       updatedAt:
         type: string
       withdrawAmount:
+        format: int64
         type: integer
     type: object
   entities.Profile:
@@ -690,6 +691,16 @@ definitions:
     - signature
     - tx_bytes
     type: object
+  request.ExtractChildInfoRequest:
+    properties:
+      child_birth_certificate_url:
+        type: string
+      guardian_id_card_url:
+        type: string
+    required:
+    - child_birth_certificate_url
+    - guardian_id_card_url
+    type: object
   request.LoginRequestV2:
     properties:
       address:
@@ -1086,6 +1097,31 @@ definitions:
       total_donation:
         type: integer
       url:
+        type: string
+    type: object
+  response.ExtractChildInfoResponse:
+    properties:
+      date_of_birth:
+        type: string
+      first_name:
+        type: string
+      gender:
+        type: string
+      guardian_date_of_birth:
+        type: string
+      guardian_full_name:
+        description: Thông tin người thân — trích từ CCCD/CMND
+        type: string
+      guardian_gender:
+        type: string
+      guardian_identity_code:
+        type: string
+      home_address:
+        type: string
+      last_name:
+        type: string
+      region:
+        description: Thông tin trẻ — trích từ giấy khai sinh
         type: string
     type: object
   response.GetTransactionRecordsResponse:
@@ -2362,6 +2398,39 @@ paths:
       security:
       - BearerAuth: []
       summary: Review an upload-child request
+      tags:
+      - Child Upload Request
+  /child-upload-reqs/extract:
+    post:
+      consumes:
+      - application/json
+      description: Nhận Cloudinary URL của giấy khai sinh và CCCD người thân, gọi
+        AI để
+      parameters:
+      - description: Document URLs
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.ExtractChildInfoRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ExtractChildInfoResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "503":
+          description: AI provider unavailable
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+      security:
+      - BearerAuth: []
+      summary: Extract child info from document images
       tags:
       - Child Upload Request
   /child-upload-reqs/user/{id}:

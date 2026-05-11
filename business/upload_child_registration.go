@@ -62,7 +62,11 @@ func GenerateUploadChildRequestService() (business.IUploadChildRequestService, e
 		return nil, err
 	}
 
-	return initializeUploadChildRequestService(repository.InitializeUploadChildRequestRepo(cnn, errLogger), ai.InitializeAiProvider(nil, errLogger), walrus_pkg.InitializeWalrusProvider(errLogger), _networkAliases, errLogger), nil
+	return initializeUploadChildRequestService(
+		repository.InitializeUploadChildRequestRepo(cnn, errLogger),
+		ai.InitializeAiProvider(errLogger),
+		walrus_pkg.InitializeWalrusProvider(errLogger),
+		_networkAliases, errLogger), nil
 }
 
 // ReviewUploadChildRequest implements business.IUploadChildRequestService.
@@ -403,10 +407,10 @@ func (u *uploadChildRequestService) CreateUploadChildRequest(req request.UploadC
 		FirstGuardianProfile:   firstGuardianProfile,
 		SecondGuardianProfile:  secondGuardianProfile,
 		// AIEvaluation:           aiEvaluation,
-		Status:                 request_pending_status,
-		CreatedBy:              ctx.Value("address").(string),
-		CreatedAt:              curTime,
-		UpdatedAt:              curTime,
+		Status:    request_pending_status,
+		CreatedBy: ctx.Value("address").(string),
+		CreatedAt: curTime,
+		UpdatedAt: curTime,
 	}
 
 	return &request, u.uploadChildRequestRepo.CreateUploadChildRequest(request, ctx)

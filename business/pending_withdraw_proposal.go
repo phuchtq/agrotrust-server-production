@@ -70,7 +70,7 @@ func GeneratePendingWithdrawProposalService() (business.IPendingWithdrawProposal
 	return initializePendingWithdrawProposalService(
 		repository.InitializePendingWithdrawProposalRepo(cnn, errLogger),
 		repository.InitializeBankProfileRepository(cnn, errLogger),
-		ai.InitializeAiProvider(nil, errLogger),
+		ai.InitializeAiProvider(errLogger),
 		walrus_pkg.InitializeWalrusProvider(errLogger),
 		_networkAliases,
 		errLogger,

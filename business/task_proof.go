@@ -76,7 +76,7 @@ func GenerateTaskProofService() (business.ITaskProofService, error) {
 		repository.InitializeTaskProofRepository(cnn, errLogger),
 		repository.InitializeChildTaskDetailRepository(cnn, errLogger),
 		repository.InitializeTaskRepository(cnn, errLogger),
-		ai.InitializeAiProvider(nil, errLogger),
+		ai.InitializeAiProvider(errLogger),
 		walrus_pkg.InitializeWalrusProvider(errLogger),
 		_networkAliases,
 		errLogger,

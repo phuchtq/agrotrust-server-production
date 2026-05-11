@@ -1219,6 +1219,57 @@ const docTemplate = `{
                 }
             }
         },
+        "/child-upload-reqs/extract": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Nhận Cloudinary URL của giấy khai sinh và CCCD người thân, gọi AI để",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Child Upload Request"
+                ],
+                "summary": "Extract child info from document images",
+                "parameters": [
+                    {
+                        "description": "Document URLs",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.ExtractChildInfoRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.ExtractChildInfoResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    },
+                    "503": {
+                        "description": "AI provider unavailable",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/child-upload-reqs/user/{id}": {
             "get": {
                 "description": "Retrieve child upload requests associated with a specific wallet and page number.",
@@ -7707,7 +7758,8 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "withdrawAmount": {
-                    "type": "integer"
+                    "type": "integer",
+                    "format": "int64"
                 }
             }
         },
@@ -8400,6 +8452,21 @@ const docTemplate = `{
                 }
             }
         },
+        "request.ExtractChildInfoRequest": {
+            "type": "object",
+            "required": [
+                "child_birth_certificate_url",
+                "guardian_id_card_url"
+            ],
+            "properties": {
+                "child_birth_certificate_url": {
+                    "type": "string"
+                },
+                "guardian_id_card_url": {
+                    "type": "string"
+                }
+            }
+        },
         "request.LoginRequestV2": {
             "type": "object",
             "required": [
@@ -8984,6 +9051,43 @@ const docTemplate = `{
                     "type": "integer"
                 },
                 "url": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.ExtractChildInfoResponse": {
+            "type": "object",
+            "properties": {
+                "date_of_birth": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "gender": {
+                    "type": "string"
+                },
+                "guardian_date_of_birth": {
+                    "type": "string"
+                },
+                "guardian_full_name": {
+                    "description": "Thông tin người thân — trích từ CCCD/CMND",
+                    "type": "string"
+                },
+                "guardian_gender": {
+                    "type": "string"
+                },
+                "guardian_identity_code": {
+                    "type": "string"
+                },
+                "home_address": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "region": {
+                    "description": "Thông tin trẻ — trích từ giấy khai sinh",
                     "type": "string"
                 }
             }
