@@ -24,9 +24,7 @@ import (
 	"time"
 
 	"github.com/block-vision/sui-go-sdk/constant"
-	"github.com/block-vision/sui-go-sdk/models"
 	"github.com/block-vision/sui-go-sdk/sui"
-	"github.com/block-vision/sui-go-sdk/utils"
 )
 
 type centerRequestService struct {
@@ -371,7 +369,11 @@ func (c *centerRequestService) CreateRequest(req request.CreateCenterRequest, ct
 	}
 
 	if senderLeaderNft == nil {
-		return nil, genericRightErr
+		return nil, internalErr
+	}
+
+	if senderLeaderNft.Region != req.Region {
+		return nil, errors.New(noti.NOT_STAFF_OF_REGION_MESSAGE)
 	}
 
 	staffs, err := on_chain.GetOnChainObjects[entities.StaffNft](on_chain.GetOnChainObjectsRequest{
@@ -426,35 +428,12 @@ func (c *centerRequestService) CreateRequest(req request.CreateCenterRequest, ct
 
 // GetRequest implements business.ICenterRequestService.
 func (c *centerRequestService) GetRequest(id string, ctx context.Context) (*entities.CenterRequest, error) {
-	var data entities.CenterRequest
-	var redisKey string = c.getCenterRequestRedisKey(id)
-	if c.redisCache.Get(redisKey, &data, ctx) {
-		return &data, nil
-	}
-
 	res, err := c.centerRequestRepo.GetRequest(id, ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	return res, nil
-
-	// /////////////////////
-	// // MOCK DATA
-	// var data entities.CenterRequest
-	// var redisKey string = c.getCenterRequestRedisKey(id)
-	// if c.redisCache.Get(redisKey, &data, ctx) {
-	// 	return &data, nil
-	// }
-
-	// for _, req := range mockCenterRequests {
-	// 	if req.ID == id {
-	// 		c.redisCache.Set(redisKey, req, time.Minute, ctx)
-	// 		return &req, nil
-	// 	}
-	// }
-
-	// return nil, nil
 }
 
 // GetRequests implements business.ICenterRequestService.
@@ -491,34 +470,6 @@ func (c *centerRequestService) GetRequests(req request.GetCenterRequests, ctx co
 	//c.redisCache.Set(redisKey, res, time.Minute*5, ctx)
 
 	return res, err
-
-	// //////////////////
-	// // MOCK DATA
-	// if req.Page < 1 {
-	// 	req.Page = 1
-	// }
-
-	// if req.PageSize < 1 {
-	// 	req.PageSize = default_page_size
-	// }
-
-	// var res response.PaginationDataResponse
-	// var redisKey string = c.getGetCenterRequestsRedisKey(req)
-	// if c.redisCache.Get(redisKey, &res, ctx) {
-	// 	return res, nil
-	// }
-
-	// var data []entities.CenterRequest = mockCenterRequests[(req.Page-1)*req.PageSize : req.Page*req.PageSize]
-	// res = response.PaginationDataResponse{
-	// 	Data:       data,
-	// 	Amount:     len(data),
-	// 	Page:       req.Page,
-	// 	TotalPages: int(math.Ceil(float64(len(mockCenterRequests)) / float64(req.PageSize))),
-	// }
-
-	// c.redisCache.Set(redisKey, res, time.Minute*5, ctx)
-
-	// return res, nil
 }
 
 // GetWalletRequests implements business.ICenterRequestService.
@@ -542,48 +493,26 @@ func (c *centerRequestService) GetWalletRequests(id string, ctx context.Context)
 	//c.redisCache.Set(redisKey, res, time.Minute*5, ctx)
 
 	return res, errRes
-
-	//////////////////
-	// // MOCK DATA
-	// var res []entities.CenterRequest
-	// var redisKey string = c.getGetWalletCenterRequestsRedisKey(id)
-	// if c.redisCache.Get(redisKey, &res, ctx) {
-	// 	return res, nil
-	// }
-
-	// for _, req := range mockCenterRequests {
-	// 	if id == req.CreatedBy {
-	// 		res = append(res, req)
-	// 	}
-	// }
-
-	// c.redisCache.Set(redisKey, res, time.Minute*5, ctx)
-
-	// return res, nil
 }
 
 // VoteRequest implements business.ICenterRequestService.
 func (c *centerRequestService) VoteRequest(id string, req request.VoteRequest, ctx context.Context) error {
-	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
-
-	var voter string = ctx.Value("address").(string)
-	if !utils.IsValidSuiAddress(models.SuiAddress(voter)) {
-		return genericErr
-	}
-
 	request, err := c.centerRequestRepo.GetRequest(id, ctx)
 	if err != nil {
 		return err
 	}
 
+	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
 	if request == nil {
 		return genericErr
 	}
 
-	if request.ClosedAt.Before(time.Now()) {
+	var curTime time.Time = time.Now()
+	if request.ClosedAt.Before(curTime) {
 		return errors.New(noti.REQUEST_CLOSED_MESSAGE)
 	}
 
+	var voter string = ctx.Value("address").(string)
 	if voter == request.CreatedBy {
 		return errors.New(noti.OWNER_VOTE_WARN_MSG)
 	}
@@ -607,7 +536,6 @@ func (c *centerRequestService) VoteRequest(id string, req request.VoteRequest, c
 		return internalErr
 	}
 
-	var staffId string
 	var searchLen int
 	if len(manage.VolunteerIds) > len(manage.LocalLeaderIds) {
 		searchLen = len(manage.VolunteerIds)
@@ -615,6 +543,7 @@ func (c *centerRequestService) VoteRequest(id string, req request.VoteRequest, c
 		searchLen = len(manage.LocalLeaderIds)
 	}
 
+	var staffId string
 	for i := 0; i < searchLen; i++ {
 		if i < len(manage.VolunteerIds) {
 			if voter == manage.VolunteerIds[i] {
@@ -663,7 +592,7 @@ func (c *centerRequestService) VoteRequest(id string, req request.VoteRequest, c
 		request.RefuseReasons = append(request.RefuseReasons, strings.TrimSpace(req.RefuseReason))
 	}
 
-	request.UpdatedAt = time.Now()
+	request.UpdatedAt = curTime
 
 	return c.centerRequestRepo.UpdateRegistrationRequest(*request, ctx)
 }

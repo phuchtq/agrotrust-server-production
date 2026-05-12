@@ -83,7 +83,7 @@ func GetGiftsOfChild(ctx *gin.Context) {
 // @Param        request  body      request.CreateGiftRequest   true  "Create gift details"
 // @Success      201  {object}  response.MessageAPIResponse "Success"
 // @Failure      400  {object}  response.MessageAPIResponse "Invalid data. Please try again."
-// @Failure      401  {object}  response.MessageAPIResponse "You have no rights to access this action."
+// @Failure      403  {object}  response.MessageAPIResponse "You have no rights to access this action."
 // @Failure      500  {object}  response.MessageAPIResponse "There is something wrong in the system during the process. Please try again later."
 // @Router       /gifts [post]
 func CreateGift(ctx *gin.Context) {
