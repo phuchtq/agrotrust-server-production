@@ -200,27 +200,23 @@ func (p *pendingChildSpecialNeedProposalService) ApprovePendingChildSpecialNeedP
 	}
 
 	var pool *entities.MainPool
-	var localPoolIds []string
 	var mainPoolId string = os.Getenv(env.POOL_ID)
-	if p.redisCache.Get(mainPoolId, pool, ctx) {
-		localPoolIds = pool.LocalPools
-	} else {
-		pool, err = on_chain.GetOnChainObject[entities.MainPool](on_chain.GetOnChainObjectRequest{
-			Client:    client,
-			ObjectId:  mainPoolId,
-			ErrLogger: p.errLogger,
-		}, ctx)
-		if err != nil {
-			return err
-		}
+	pool, err = on_chain.GetOnChainObject[entities.MainPool](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  mainPoolId,
+		ErrLogger: p.errLogger,
+	}, ctx)
+	if err != nil {
+		return err
+	}
 
-		p.redisCache.Set(mainPoolId, pool, time.Minute*2, ctx)
-		localPoolIds = pool.LocalPools
+	if pool == nil {
+		return errors.New(noti.INTERNALL_ERR_MSG)
 	}
 
 	localPools, err := on_chain.GetOnChainObjects[entities.LocalPool](on_chain.GetOnChainObjectsRequest{
 		Client:    client,
-		ObjectIds: localPoolIds,
+		ObjectIds: pool.LocalPools,
 		ErrLogger: p.errLogger,
 	}, ctx)
 	if err != nil {
@@ -282,21 +278,13 @@ func (p *pendingChildSpecialNeedProposalService) GetPendingChildSpecialNeedPropo
 
 	var sender string = ctx.Value("address").(string)
 	if res.ActorAddress != sender {
-		var manageObj entities.Manage
-		if !p.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
-			res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-				Client:    p.clients[constant.SuiTestnet],
-				ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-				ErrLogger: p.errLogger,
-			}, ctx)
-			if err != nil {
-				return nil, err
-			}
-
-			if res != nil {
-				p.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
-				manageObj = *res
-			}
+		manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+			Client:    p.clients[constant.SuiTestnet],
+			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+			ErrLogger: p.errLogger,
+		}, ctx)
+		if err != nil {
+			return nil, err
 		}
 
 		if !slices.Contains(manageObj.AdminIds, sender) {
@@ -325,21 +313,13 @@ func (p *pendingChildSpecialNeedProposalService) GetPendingChildSpecialNeedPropo
 
 	var sender string = ctx.Value("address").(string)
 	if sender != req.Creator {
-		var manageObj entities.Manage
-		if !p.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
-			res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-				Client:    p.clients[constant.SuiTestnet],
-				ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-				ErrLogger: p.errLogger,
-			}, ctx)
-			if err != nil {
-				return response.PaginationDataResponse{}, err
-			}
-
-			if res != nil {
-				p.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
-				manageObj = *res
-			}
+		manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+			Client:    p.clients[constant.SuiTestnet],
+			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+			ErrLogger: p.errLogger,
+		}, ctx)
+		if err != nil {
+			return response.PaginationDataResponse{}, err
 		}
 
 		if !slices.Contains(manageObj.AdminIds, sender) {
@@ -425,21 +405,13 @@ func (p *pendingChildSpecialNeedProposalService) RefusePendingChildSpecialNeedPr
 
 	var client = p.clients[constant.SuiTestnet]
 	var reviewer string = ctx.Value("address").(string)
-	var manageObj entities.Manage
-	if !p.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
-		res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-			Client:    client,
-			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-			ErrLogger: p.errLogger,
-		}, ctx)
-		if err != nil {
-			return err
-		}
-
-		if res != nil {
-			p.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
-			manageObj = *res
-		}
+	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: p.errLogger,
+	}, ctx)
+	if err != nil {
+		return err
 	}
 
 	if !slices.Contains(manageObj.AdminIds, reviewer) {

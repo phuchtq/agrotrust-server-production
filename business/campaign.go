@@ -311,11 +311,6 @@ func (c *campaignService) GetCampaigns(req request.GetCampaignsRequest, ctx cont
 	}
 
 	var res response.PaginationDataResponse
-	var redisKey string = c.getGetCampaignsRedisKey(req)
-	if c.redisCache.Get(redisKey, &res, ctx) {
-		return res, nil
-	}
-
 	var client = c.clients[constant.SuiTestnet]
 	pool, err := on_chain.GetOnChainObject[entities.MainPool](on_chain.GetOnChainObjectRequest{
 		Client:    client,
@@ -324,6 +319,10 @@ func (c *campaignService) GetCampaigns(req request.GetCampaignsRequest, ctx cont
 	}, ctx)
 	if err != nil {
 		return response.PaginationDataResponse{}, err
+	}
+
+	if pool == nil {
+		return response.PaginationDataResponse{}, errors.New(noti.INTERNALL_ERR_MSG)
 	}
 
 	var camapaigns []entities.OnChainCampaign
@@ -455,7 +454,6 @@ func (c *campaignService) GetCampaigns(req request.GetCampaignsRequest, ctx cont
 		TotalPages: int(math.Ceil(float64(len(filteredCampaigns)) / float64(req.PageSize))),
 	}
 
-	c.redisCache.Set(redisKey, res, time.Minute*5, ctx)
 	return res, nil
 }
 

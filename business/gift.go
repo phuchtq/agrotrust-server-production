@@ -796,11 +796,6 @@ func (g *giftService) GetGiftsOfChild(id string, req request.GetGiftsRequest, ct
 	req.SortOrder = util.StandardizeSortOrder(req.SortOrder)
 	req.Category = strings.TrimSpace(req.Category)
 	var res response.PaginationDataResponse
-	var redisKey string = g.getGetGiftsRedisKey(id, req)
-	if g.redisCache.Get(redisKey, &res, ctx) {
-		return res, nil
-	}
-
 	var client = g.clients[constant.SuiTestnet]
 	var giftIds []string
 	var getOnchainObjReq = on_chain.GetOnChainObjectRequest{
@@ -865,8 +860,6 @@ func (g *giftService) GetGiftsOfChild(id string, req request.GetGiftsRequest, ct
 		Page:       req.Page,
 		TotalPages: int(math.Ceil(float64(len(filteredGifts)) / float64(req.PageSize))),
 	}
-
-	g.redisCache.Set(redisKey, res, time.Minute*5, ctx)
 
 	return res, nil
 }

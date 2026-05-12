@@ -147,21 +147,13 @@ func newRegionsStorage() {
 
 // GetEstablishedRegions implements business.IRegionService.
 func (r *regionService) GetEstablishedRegions(ctx context.Context) (response.RegionsResponse, error) {
-	var manage entities.Manage
-	if !r.redisCache.Get(manage.GetRedisKey(), &manage, ctx) {
-		res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-			Client:    r.clients[constant.SuiTestnet],
-			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-			ErrLogger: r.errLogger,
-		}, ctx)
-		if err != nil {
-			return response.RegionsResponse{}, err
-		}
-
-		if res != nil {
-			r.redisCache.Set(manage.GetRedisKey(), res, time.Minute, ctx)
-			manage = *res
-		}
+	manage, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    r.clients[constant.SuiTestnet],
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: r.errLogger,
+	}, ctx)
+	if err != nil {
+		return response.RegionsResponse{}, err
 	}
 
 	var res []string
@@ -189,27 +181,14 @@ func (r *regionService) GetRegionDetail(region string, req request.GetChildrenFr
 	}
 
 	var res response.RegionDetailResponse
-	var redisKey string = r.getGetRegionDetailRedisKey(region, req)
-	if r.redisCache.Get(redisKey, &res, ctx) {
-		return res, nil
-	}
-
 	var client = r.clients[constant.SuiTestnet]
-	var manage entities.Manage
-	if !r.redisCache.Get(manage.GetRedisKey(), &manage, ctx) {
-		res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-			Client:    r.clients[constant.SuiTestnet],
-			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-			ErrLogger: r.errLogger,
-		}, ctx)
-		if err != nil {
-			return response.RegionDetailResponse{}, err
-		}
-
-		if res != nil {
-			r.redisCache.Set(manage.GetRedisKey(), res, time.Minute, ctx)
-			manage = *res
-		}
+	manage, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    r.clients[constant.SuiTestnet],
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: r.errLogger,
+	}, ctx)
+	if err != nil {
+		return response.RegionDetailResponse{}, err
 	}
 
 	var centerId string
@@ -341,8 +320,6 @@ func (r *regionService) GetRegionDetail(region string, req request.GetChildrenFr
 		Children:          paginationChildrenResponse,
 	}
 
-	r.redisCache.Set(redisKey, res, time.Minute*5, ctx)
-
 	return res, nil
 }
 
@@ -430,21 +407,13 @@ func (r *regionService) ReviewRegionSuggestion(id string, req request.VoteReques
 		return errors.New(noti.REQUEST_REVIEWED_MESSAGE)
 	}
 
-	var manageObj entities.Manage
-	if !r.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
-		res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-			Client:    r.clients[constant.SuiTestnet],
-			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-			ErrLogger: r.errLogger,
-		}, ctx)
-		if err != nil {
-			return err
-		}
-
-		if res != nil {
-			r.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
-			manageObj = *res
-		}
+	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    r.clients[constant.SuiTestnet],
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: r.errLogger,
+	}, ctx)
+	if err != nil {
+		return err
 	}
 
 	var sender string = ctx.Value("address").(string)
@@ -479,21 +448,13 @@ func (r *regionService) GetSupportedRegionSuggestion(id string, ctx context.Cont
 
 		address, _ := addressValue.(string)
 		if res.CreatedBy != address {
-			var manageObj entities.Manage
-			if !r.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
-				res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-					Client:    r.clients[constant.SuiTestnet],
-					ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-					ErrLogger: r.errLogger,
-				}, ctx)
-				if err != nil {
-					return nil, err
-				}
-
-				if res != nil {
-					r.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
-					manageObj = *res
-				}
+			manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+				Client:    r.clients[constant.SuiTestnet],
+				ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+				ErrLogger: r.errLogger,
+			}, ctx)
+			if err != nil {
+				return nil, err
 			}
 
 			if !slices.Contains(manageObj.AdminIds, address) {
@@ -503,16 +464,6 @@ func (r *regionService) GetSupportedRegionSuggestion(id string, ctx context.Cont
 	}
 
 	return res, nil
-
-	// ///////////////////
-	// // MOCK DATA
-	// for _, suggestion := range mockSuggestions {
-	// 	if suggestion.ID == id {
-	// 		return &suggestion, nil
-	// 	}
-	// }
-
-	// return nil, nil
 }
 
 // GetSupportedRegionSuggestions implements business.IRegionService.

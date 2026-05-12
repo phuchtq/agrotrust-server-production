@@ -973,22 +973,12 @@ func (p *paymentService) RefusePayment(id string, ctx context.Context) error {
 		return errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
 	}
 
-	var manage entities.Manage
 	var client = p.clients[constant.SuiTestnet]
-	if !p.redisCache.Get(manage.GetRedisKey(), &manage, ctx) {
-		for i := 1; i <= 3; i++ {
-			res, _ := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-				Client:    client,
-				ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-				ErrLogger: p.errLogger,
-			}, ctx)
-			if res != nil {
-				p.redisCache.Set(manage.GetRedisKey(), res, time.Minute, ctx)
-				manage = *res
-				break
-			}
-		}
-	}
+	manage, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: p.errLogger,
+	}, ctx)
 
 	if slices.Contains(manage.AdminIds, sender) {
 		return errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)

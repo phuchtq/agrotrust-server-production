@@ -18,7 +18,6 @@ import (
 	"raise-child/util/cache"
 	on_chain "raise-child/util/on_chain"
 	"strings"
-	"time"
 
 	"github.com/block-vision/sui-go-sdk/constant"
 	"github.com/block-vision/sui-go-sdk/sui"
@@ -98,11 +97,6 @@ func (s *donorService) GetDonors(req request.GetDonorsRequest, ctx context.Conte
 	}
 
 	var res response.PaginationDataResponse
-	var redisKey string = s.getGetDonorsRedisKey(req)
-	if s.redisCache.Get(redisKey, &res, ctx) {
-		return res, nil
-	}
-
 	var client = s.clients[constant.SuiTestnet]
 	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
 		Client:    client,
@@ -207,8 +201,6 @@ func (s *donorService) GetDonors(req request.GetDonorsRequest, ctx context.Conte
 		Page:       req.Page,
 		TotalPages: int(math.Ceil(float64(len(filteredDonors)) / float64(req.PageSize))),
 	}
-
-	s.redisCache.Set(redisKey, res, time.Minute*5, ctx)
 
 	return res, nil
 }

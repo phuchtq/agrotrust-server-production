@@ -119,11 +119,6 @@ func (c *childService) GetChild(id string, ctx context.Context) (response.ChildR
 	}
 
 	var res response.ChildResponse
-	var redisKey string = c.getGetChildRediskey(id)
-	if c.redisCache.Get(redisKey, &res, ctx) {
-		return res, nil
-	}
-
 	var client = c.clients[constant.SuiTestnet]
 	child, err := on_chain.GetOnChainObject[entities.Child](on_chain.GetOnChainObjectRequest{
 		Client:    client,
@@ -141,8 +136,6 @@ func (c *childService) GetChild(id string, ctx context.Context) (response.ChildR
 			res.DynamicValues = dynamicValues
 		}
 	}
-
-	c.redisCache.Set(redisKey, res, time.Minute*5, ctx)
 
 	return res, err
 }
