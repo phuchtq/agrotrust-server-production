@@ -44,6 +44,6 @@ const (
 
 // Payment
 const (
-	PAYMENT_INIT_ENV_ERR_MSG                 string = "Error while setup %s enrionment - "
+	PAYMENT_INIT_ENV_ERR_MSG                 string = "Error while setup %s environment - "
 	PAYMENT_GENERATE_TRANSACTION_URL_ERR_MSG string = "Error while generating %s transaction URL - "
 )

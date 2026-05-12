@@ -12,8 +12,8 @@ Dockerfile
 # Dev tools & IDE
 .vscode
 .idea
-*.env
-*.env.*
+# *.env
+# *.env.*
  
 # Test artifacts
 **/*_test.go

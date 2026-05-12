@@ -75,7 +75,7 @@ func Execute() {
 	// Execute gin server in another goroutine
 	var infoLogger = util.GetLogConfig(shared.INFO_LEVEL)
 	go func() {
-		infoLogger.Println("Server starts on port ", apiPort)
+		infoLogger.Println("Server starts on port: ", apiPort)
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			errLogger.Fatalln("Error run server - " + err.Error())
 		}
