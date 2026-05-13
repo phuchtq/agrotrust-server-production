@@ -32,13 +32,13 @@ func InitializeTaskProofRepository(db *sql.DB, errLogger *log.Logger) repository
 func (t *taskProofRepo) CreateTaskProof(proof entities.TaskProof, ctx context.Context) error {
 	var query string = "INSERT INTO " + task_proof_table +
 		" (id, task_id, description, actor_profile_id, actor_address, " +
-		"image_blob_id, ai_evaluation, raw_submit_date, created_at, updated_at) " +
-		"values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)"
+		"image_blob_id, ai_evaluation, ai_reason, raw_submit_date, created_at, updated_at) " +
+		"values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)"
 
 	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.TASK_PROOF_REPOSITORY) + "CreateTaskProof - "
 
 	if _, err := t.db.ExecContext(ctx, query, proof.ID, proof.TaskID, proof.Description, proof.ActorProfileID, proof.ActorAddress,
-		proof.ImageBlobID, proof.AIEvaluation, proof.RawSubmitDate, proof.CreatedAt, proof.UpdatedAt); err != nil {
+		proof.ImageBlobID, proof.AIEvaluation, proof.AIReason, proof.RawSubmitDate, proof.CreatedAt, proof.UpdatedAt); err != nil {
 
 		t.errLogger.Println(errLogMsg + err.Error())
 		return errors.New(noti.INTERNALL_ERR_MSG)
@@ -55,7 +55,7 @@ func (t *taskProofRepo) GetTaskProof(id string, ctx context.Context) (*entities.
 	var res entities.TaskProof
 	if err := t.db.QueryRowContext(ctx, query, id).Scan(
 		&res.ID, &res.TaskID, &res.Description, &res.ActorProfileID, &res.ActorAddress,
-		&res.ImageBlobID, &res.ReviewedBy, &res.AIEvaluation, &res.ReviewStatus,
+		&res.ImageBlobID, &res.ReviewedBy, &res.AIEvaluation, &res.AIReason, &res.ReviewStatus,
 		&res.RawSubmitDate, &res.CreatedAt, &res.UpdatedAt); err != nil {
 
 		if err == sql.ErrNoRows {
@@ -135,7 +135,7 @@ func (t *taskProofRepo) GetTaskProofs(req request.GetTaskProofsRequest, ctx cont
 
 		if err := rows.Scan(
 			&x.ID, &x.TaskID, &x.Description, &x.ActorProfileID, &x.ActorAddress,
-			&x.ImageBlobID, &x.ReviewedBy, &x.AIEvaluation, &x.ReviewStatus,
+			&x.ImageBlobID, &x.ReviewedBy, &x.AIEvaluation, &x.AIReason, &x.ReviewStatus,
 			&x.RawSubmitDate, &x.CreatedAt, &x.UpdatedAt); err != nil {
 
 			t.errLogger.Println(errLogMsg + err.Error())
@@ -239,7 +239,7 @@ func (t *taskProofRepo) GetTaskProofsWithIsChildTask(req request.GetTaskProofsRe
 
 		if err := rows.Scan(
 			&x.ID, &x.TaskID, &x.Description, &x.ActorProfileID, &x.ActorAddress,
-			&x.ImageBlobID, &x.ReviewedBy, &x.AIEvaluation, &x.ReviewStatus,
+			&x.ImageBlobID, &x.ReviewedBy, &x.AIEvaluation, &x.AIReason, &x.ReviewStatus,
 			&x.RawSubmitDate, &x.CreatedAt, &x.UpdatedAt, &x.IsChildTask); err != nil {
 
 			t.errLogger.Println(errLogMsg + err.Error())
@@ -339,7 +339,7 @@ func (t *taskProofRepo) GetTaskProofsV2(req request.GetTaskProofsRequest, ctx co
 
 		if err := rows.Scan(
 			&x.ID, &x.TaskID, &x.Description, &x.ActorProfileID, &x.ActorAddress,
-			&x.ImageBlobID, &x.ReviewedBy, &x.AIEvaluation, &x.ReviewStatus,
+			&x.ImageBlobID, &x.ReviewedBy, &x.AIEvaluation, &x.AIReason, &x.ReviewStatus,
 			&x.RawSubmitDate, &x.CreatedAt, &x.UpdatedAt); err != nil {
 
 			t.errLogger.Println(errLogMsg + err.Error())
