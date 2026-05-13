@@ -2914,31 +2914,47 @@ func (c *childService) CreateSpecialNeedProposalV2(req request.CreateSpecialNeed
 		return nil, genericErr
 	}
 
-	var sender string = ctx.Value("address").(string)
-	var staffModule = on_chain.InitializeModuleStaff()
-	staffNfts, err := on_chain.GetOnChainOwnedObjects[entities.StaffNft](on_chain.GetOnChainOwnedObjectsRequest{
-		Client:       client,
-		OwnerAddress: sender,
-		StructType:   fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), staffModule.GetModule(), staffModule.GetStaffNftObjectStruct()),
-		ErrLogger:    c.errLogger,
+	manage, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: c.errLogger,
 	}, ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	if staffNfts == nil || len(staffNfts) == 0 {
-		return nil, errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
+	if manage == nil {
+		return nil, internalErr
 	}
 
-	var isLeaderOfRegion bool = false
-	for _, nft := range staffNfts {
-		if nft.Region == child.Region && nft.Role == local_leader_role {
-			isLeaderOfRegion = true
+	var leaderNftId string
+	var sender string = ctx.Value("address").(string)
+	for i, leader := range manage.LocalLeaderIds {
+		if leader == sender {
+			leaderNftId = manage.LocalLeaderNfts[i]
 			break
 		}
 	}
 
-	if !isLeaderOfRegion {
+	if leaderNftId == "" {
+		return nil, errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
+	}
+
+	nft, err := on_chain.GetOnChainObject[entities.StaffNft](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  leaderNftId,
+		ErrLogger: c.errLogger,
+	}, ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if nft == nil {
+		return nil, internalErr
+	}
+
+	if nft.Region != child.Region {
 		return nil, errors.New(noti.LEADER_NOT_OF_REGION_MESSAGE)
 	}
 
