@@ -1,12 +1,10 @@
 package cmd
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"raise-child/constants/env"
-	"raise-child/constants/noti"
 
 	"strings"
 	"time"
@@ -23,9 +21,7 @@ import (
 
 // Load .env file
 func loadEnv(logger *log.Logger) {
-	if err := godotenv.Load(); err != nil {
-		logger.Println(fmt.Sprint(noti.ENV_LOAD_ERR_MSG) + err.Error())
-	}
+	godotenv.Load(".env")
 }
 
 // Enable CORS

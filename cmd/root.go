@@ -61,9 +61,9 @@ func Execute() {
 	walrus_pkg.InitializeWalrusProvider(errLogger)
 
 	// Get API port
-	var apiPort string = os.Getenv("HTTP_PLATFORM_PORT")
+	var apiPort string = os.Getenv(env.API_PORT)
 	if apiPort == "" {
-		apiPort = os.Getenv(env.API_PORT)
+		apiPort = "8080"
 	}
 
 	// Convert gin server to HTTP server
