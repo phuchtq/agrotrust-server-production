@@ -18,6 +18,7 @@ type UploadChildRequest struct {
 	FirstGuardianProfile   ChildGuardianProfile  `json:"first_guardian_profile"`
 	SecondGuardianProfile  *ChildGuardianProfile `json:"second_guardian_profile"`
 	AIEvaluation           string                `json:"ai_evaluation"`
+	AIReason               string                `json:"ai_reason"`
 	Status                 string                `json:"status"`            // e.g. "Pending", "Approved", "Refused"
 	IsConfirmUpload        bool                  `json:"is_confirm_upload"` // Default as false, when status aprroved, user clicks to update to true, call smart contract to register role
 	CreatedBy              string                `json:"created_by"`

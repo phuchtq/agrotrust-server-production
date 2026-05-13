@@ -52,6 +52,7 @@ type TaskProof struct {
 	ImageBlobID    string    `json:"image_blob_id"`
 	ReviewedBy     *string   `json:"reviewed_by"`
 	AIEvaluation   string    `json:"ai_evaluation"`
+	AIReason       string    `json:"ai_reason"`
 	ReviewStatus   string    `json:"review_status"`
 	RawSubmitDate  string    `json:"raw_submit_date"`
 	CreatedAt      time.Time `json:"created_at"`
@@ -67,6 +68,7 @@ type TaskProofWithIsChildTask struct {
 	ImageBlobID    string    `json:"image_blob_id"`
 	ReviewedBy     *string   `json:"reviewed_by"`
 	AIEvaluation   string    `json:"ai_evaluation"`
+	AIReason       string    `json:"ai_reason"`
 	ReviewStatus   string    `json:"review_status"`
 	RawSubmitDate  string    `json:"raw_submit_date"`
 	CreatedAt      time.Time `json:"created_at"`
