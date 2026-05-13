@@ -30,6 +30,16 @@ type ContentPart struct {
 	ImageURL *ImageURL `json:"image_url,omitempty"`
 }
 
+// TextPart creates a text ContentPart.
+func TextPart(text string) ContentPart {
+	return ContentPart{Type: "text", Text: text}
+}
+
+// ImagePart creates an image_url ContentPart.
+func ImagePart(url string) ContentPart {
+	return ContentPart{Type: "image_url", ImageURL: &ImageURL{URL: url}}
+}
+
 type Message struct {
 	Role    string        `json:"role"`
 	Content []ContentPart `json:"content"`
@@ -40,28 +50,34 @@ type ChatRequest struct {
 	Messages []Message `json:"messages"`
 }
 
+// ChoiceMessage holds the content returned by the model for a single choice.
+type ChoiceMessage struct {
+	Content string `json:"content"`
+}
+
+// Choice represents one completion choice from the Groq API.
 type Choice struct {
-	Message struct {
-		Content string `json:"content"`
-	} `json:"message"`
+	Message ChoiceMessage `json:"message"`
 }
 
+// ApiError is the error object returned by the Groq API on failure.
+type ApiError struct {
+	Message string `json:"message"`
+}
+
+// ChatResponse is the top-level response envelope from the Groq API.
+// Choices is a slice because the API always returns an array.
 type ChatResponse struct {
-	Choices Choice `json:"choices"`
-	Error   *struct {
-		Message string `json:"message"`
-	} `json:"error,omitempty"`
+	Choices []Choice  `json:"choices"`
+	Error   *ApiError `json:"error,omitempty"`
 }
 
-// AskWithImages gửi prompt kèm nhiều ảnh (Cloudinary URL) tới Groq vision model.
-// Dùng cho các tác vụ cần phân tích nhiều tài liệu cùng lúc (vd: giấy khai sinh + CCCD).
+// AskWithImages sends a prompt together with multiple image URLs to the Groq
+// vision model and returns the raw text content of the first choice.
 func (g *GroqClient) AskWithImages(apiKey, prompt string, imageURLs []string) (string, error) {
-	parts := []ContentPart{{Type: "text", Text: prompt}}
+	parts := []ContentPart{TextPart(prompt)}
 	for _, url := range imageURLs {
-		parts = append(parts, ContentPart{
-			Type:     "image_url",
-			ImageURL: &ImageURL{URL: url},
-		})
+		parts = append(parts, ImagePart(url))
 	}
 
 	reqBody := ChatRequest{
@@ -73,39 +89,39 @@ func (g *GroqClient) AskWithImages(apiKey, prompt string, imageURLs []string) (s
 
 	bodyBytes, err := json.Marshal(reqBody)
 	if err != nil {
-		return "", fmt.Errorf("marshal request thất bại: %w", err)
+		return "", fmt.Errorf("marshal request: %w", err)
 	}
 
 	req, err := http.NewRequest("POST", groqAPIURL, bytes.NewBuffer(bodyBytes))
 	if err != nil {
-		return "", fmt.Errorf("tạo HTTP request thất bại: %w", err)
+		return "", fmt.Errorf("create HTTP request: %w", err)
 	}
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Set("Authorization", "Bearer "+apiKey)
 
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
-		return "", fmt.Errorf("gọi API thất bại: %w", err)
+		return "", fmt.Errorf("call API: %w", err)
 	}
 	defer resp.Body.Close()
 
 	respBytes, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", fmt.Errorf("đọc response thất bại: %w", err)
+		return "", fmt.Errorf("read response: %w", err)
 	}
 
 	var chatResp ChatResponse
 	if err := json.Unmarshal(respBytes, &chatResp); err != nil {
-		return "", fmt.Errorf("parse response thất bại: %w", err)
+		return "", fmt.Errorf("parse response: %w", err)
 	}
 
 	if chatResp.Error != nil {
-		return "", fmt.Errorf("Groq API lỗi: %s", chatResp.Error.Message)
+		return "", fmt.Errorf("groq API error: %s", chatResp.Error.Message)
 	}
 
-	if chatResp.Choices.Message.Content == "" {
-		return "", fmt.Errorf("không có kết quả trả về")
+	if len(chatResp.Choices) == 0 || chatResp.Choices[0].Message.Content == "" {
+		return "", fmt.Errorf("no content returned")
 	}
 
-	return chatResp.Choices.Message.Content, nil
+	return chatResp.Choices[0].Message.Content, nil
 }

@@ -1,8 +1,8 @@
 package prompts
 
-// ChildExtractionPrompt là prompt dùng để trích xuất thông tin trẻ từ giấy khai sinh
+//  ChildExtractionPrompt là prompt dùng để trích xuất thông tin trẻ từ giấy khai sinh
 // và thông tin người thân từ CCCD/CMND. Được gửi kèm 2 ảnh Cloudinary URL.
-//
+// 
 // Ảnh 1: Giấy khai sinh của trẻ
 // Ảnh 2: CCCD/CMND của người thân
 const ChildExtractionPrompt = `You are a specialized OCR data extractor for Vietnamese civil documents.

@@ -82,7 +82,7 @@ func (p *platformConfigService) GetConfigs(req request.GetPlatformConfigsRequest
 
 	data, pages, err := p.platformConfigRepo.GetConfigs(req, p.getPlatformConfigTable(isNumericConfig), ctx)
 	var amount int
-	if data == nil || len(data) == 0 {
+	if len(data) == 0 {
 		amount = 0
 	} else {
 		amount = len(data)
