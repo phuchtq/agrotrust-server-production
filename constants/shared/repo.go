@@ -25,5 +25,6 @@ const (
 	PENDING_CHILD_SPECIAL_NEED_PROPOSAL_REPOSITORY  string = "Pending Child Special Need Proposal Repository"
 	PENDING_CAMPAIGN_REPOSITORY                     string = "Pending Campaign Repository"
 	BACKGROUND_CHILDREN_WITHDRAW_REQUEST_REPOSITORY string = "Background Children Withdraw Requests Repository"
+	PLATFORM_CONFIG_REPOSITORY                      string = "Platform Config Repository"
 	TX_REPOSITORY                                   string = "Transaction Repository"
 )

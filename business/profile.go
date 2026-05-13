@@ -176,11 +176,6 @@ func (p *profileService) GetWalletPersonalProfile(id string, req request.GetTran
 	}
 
 	var res response.PersonalWalletProfileResponse
-	var redisKey string = p.getGetWalletPersonalProfileRedisKey(id, req)
-	if p.redisCache.Get(redisKey, &res, ctx) {
-		return res, nil
-	}
-
 	var client = p.clients[constant.SuiTestnet]
 	var packageId string = os.Getenv(env.PACKAGE_ID)
 	manage, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
@@ -324,8 +319,6 @@ func (p *profileService) GetWalletPersonalProfile(id string, req request.GetTran
 		Page:            req.Page,
 		TotalPages:      int(math.Ceil(float64(len(filteredTxs)) / float64(req.PageSize))),
 	}
-
-	p.redisCache.Set(redisKey, res, time.Minute, ctx)
 
 	return res, nil
 }

@@ -23,9 +23,7 @@ import (
 	"time"
 
 	"github.com/block-vision/sui-go-sdk/constant"
-	"github.com/block-vision/sui-go-sdk/models"
 	"github.com/block-vision/sui-go-sdk/sui"
-	"github.com/block-vision/sui-go-sdk/utils"
 )
 
 type bankProfileService struct {
@@ -127,21 +125,17 @@ func (b *bankProfileService) GetBankProfile(id string, ctx context.Context) (res
 
 	var address string = ctx.Value("address").(string)
 	if res.ProfileID != ctx.Value("sub").(string) || res.Owner != address {
-		var manageObj entities.Manage
-		if !b.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
-			res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-				Client:    b.clients[constant.SuiTestnet],
-				ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-				ErrLogger: b.errLogger,
-			}, ctx)
-			if err != nil {
-				return response.BankProfileResponse{}, err
-			}
+		manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+			Client:    b.clients[constant.SuiTestnet],
+			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+			ErrLogger: b.errLogger,
+		}, ctx)
+		if err != nil {
+			return response.BankProfileResponse{}, err
+		}
 
-			if res != nil {
-				b.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
-				manageObj = *res
-			}
+		if manageObj == nil {
+			return response.BankProfileResponse{}, errors.New(noti.INTERNALL_ERR_MSG)
 		}
 
 		if !slices.Contains(manageObj.AdminIds, address) {
@@ -172,18 +166,12 @@ func (b *bankProfileService) GetBankProfileByOwner(id string, ctx context.Contex
 
 // UpdateBankProfile implements business.IBankProfileService.
 func (b *bankProfileService) UpdateBankProfile(id string, req request.UpdateBankProfileRequest, ctx context.Context) (*entities.BankProfile, error) {
-	var genereicErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
-
-	var sender string = ctx.Value("address").(string)
-	if !utils.IsValidSuiAddress(models.SuiAddress(sender)) {
-		return nil, genereicErr
-	}
-
 	bp, err := b.bankProfileRepo.GetBankProfileById(id, ctx)
 	if err != nil {
 		return nil, err
 	}
 
+	var sender string = ctx.Value("address").(string)
 	if bp.Owner != sender {
 		return nil, errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
 	}
@@ -205,19 +193,22 @@ func (b *bankProfileService) UpdateBankProfile(id string, req request.UpdateBank
 
 	var payosClientId string = strings.TrimSpace(req.PayosClientID)
 	if payosClientId != "" {
-		bp.PayosClientID = payosClientId
+		payosClientId = util.Encrypt(payosClientId)
 	}
 
 	var payosApiKey string = strings.TrimSpace(req.PayosApiKey)
 	if payosApiKey != "" {
-		bp.PayosApiKey = payosApiKey
+		payosApiKey = util.Encrypt(payosApiKey)
 	}
 
 	var payosCheckSumKey string = strings.TrimSpace(req.PayosCheckSumKey)
 	if payosCheckSumKey != "" {
-		bp.PayosCheckSumKey = payosCheckSumKey
+		payosCheckSumKey = util.Encrypt(payosCheckSumKey)
 	}
 
+	bp.PayosClientID = payosClientId
+	bp.PayosApiKey = payosApiKey
+	bp.PayosCheckSumKey = payosCheckSumKey
 	bp.UpdatedAt = time.Now()
 
 	return bp, b.bankProfileRepo.UpdateBankProfile(*bp, ctx)

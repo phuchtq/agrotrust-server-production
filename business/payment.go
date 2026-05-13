@@ -973,22 +973,12 @@ func (p *paymentService) RefusePayment(id string, ctx context.Context) error {
 		return errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
 	}
 
-	var manage entities.Manage
 	var client = p.clients[constant.SuiTestnet]
-	if !p.redisCache.Get(manage.GetRedisKey(), &manage, ctx) {
-		for i := 1; i <= 3; i++ {
-			res, _ := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-				Client:    client,
-				ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-				ErrLogger: p.errLogger,
-			}, ctx)
-			if res != nil {
-				p.redisCache.Set(manage.GetRedisKey(), res, time.Minute, ctx)
-				manage = *res
-				break
-			}
-		}
-	}
+	manage, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: p.errLogger,
+	}, ctx)
 
 	if slices.Contains(manage.AdminIds, sender) {
 		return errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
@@ -1550,13 +1540,25 @@ func (p *paymentService) RefusePayment(id string, ctx context.Context) error {
 func (p *paymentService) CallbackV2(id string, ctx context.Context) error {
 	log.Println("Payment ID:", id)
 
-	payment, err := p.paymentRepo.GetPaymentById(id, ctx)
-	if err != nil {
-		return err
+	var payment *entities.Payment
+	for i := 1; i <= 5; i++ {
+		res, _ := p.paymentRepo.GetPaymentById(id, ctx)
+		if res != nil {
+			payment = res
+			break
+		}
+
+		var duration time.Duration = time.Duration(i) * 200 * time.Millisecond
+		time.Sleep(duration)
+	}
+
+	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
+	if payment == nil {
+		return internalErr
 	}
 
 	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
-	if payment == nil || payment.Method == shared.MANUAL_BANK_METHOD || payment.Status != payment_pending_status || payment.IsTransferred || payment.TransferredAt != nil {
+	if payment.Method == shared.MANUAL_BANK_METHOD || payment.Status != payment_pending_status || payment.IsTransferred || payment.TransferredAt != nil {
 		p.errLogger.Println("Fail check 1")
 		return genericErr
 	}
@@ -1569,40 +1571,108 @@ func (p *paymentService) CallbackV2(id string, ctx context.Context) error {
 
 	var data *payos.PaymentLinkDataType
 	if payment.IsDonateTx {
-		res, err := payos.GetPaymentLinkInformation(payment.TransactionId)
-		if err != nil {
-			p.errLogger.Println("Error while get payos payment link information: " + err.Error())
-			return errors.New(noti.INTERNALL_ERR_MSG)
+		var errRes error
+		for i := 1; i <= 5; i++ {
+			res, err := payos.GetPaymentLinkInformation(payment.TransactionId)
+			if res != nil {
+				data = res
+				break
+			}
+
+			errRes = err
+
+			var duration time.Duration = time.Duration(i) * 200 * time.Millisecond
+			time.Sleep(duration)
 		}
 
-		data = res
+		if errRes != nil {
+			p.errLogger.Println("Error while get payment info:", errRes.Error())
+			return internalErr
+		}
 	} else {
-		proposal, err := on_chain.GetOnChainObject[entities.WithdrawProposal](on_chain.GetOnChainObjectRequest{
-			Client:    p.clients[constant.SuiTestnet],
-			ObjectId:  *payment.ProposalID,
-			ErrLogger: p.errLogger,
-		}, ctx)
-		if err != nil {
-			return err
+		var proposal *entities.WithdrawProposal
+		for i := 1; i <= 5; i++ {
+			res, _ := on_chain.GetOnChainObject[entities.WithdrawProposal](on_chain.GetOnChainObjectRequest{
+				Client:    p.clients[constant.SuiTestnet],
+				ObjectId:  *payment.ProposalID,
+				ErrLogger: p.errLogger,
+			}, ctx)
+			if res != nil {
+				proposal = res
+				break
+			}
+
+			var duration time.Duration = time.Duration(i) * 200 * time.Millisecond
+			time.Sleep(duration)
 		}
 
-		bankProfile, err := p.bankProfileRepo.GetBankProfileByOwner(proposal.Creator, ctx)
-		if err != nil {
-			return err
+		if proposal == nil {
+			return internalErr
 		}
 
-		if err := payos.Key(util.Decrypt(bankProfile.PayosClientID), util.Decrypt(bankProfile.PayosApiKey), util.Decrypt(bankProfile.PayosCheckSumKey)); err != nil {
-			return errors.New(noti.INTERNALL_ERR_MSG)
+		var bankProfile *entities.BankProfile
+		for i := 1; i <= 5; i++ {
+			res, _ := p.bankProfileRepo.GetBankProfileByOwner(proposal.Creator, ctx)
+			if res != nil {
+				bankProfile = res
+				break
+			}
+
+			var duration time.Duration = time.Duration(i) * 200 * time.Millisecond
+			time.Sleep(duration)
 		}
 
-		res, err := payos.GetPaymentLinkInformation(payment.TransactionId)
-		if err != nil {
-			p.errLogger.Println("Error while get payos payment link information: " + err.Error())
-			return errors.New(noti.INTERNALL_ERR_MSG)
+		if bankProfile == nil {
+			return internalErr
 		}
 
-		data = res
-		payos.Key(os.Getenv(payment_env.PAYOS_CLIENT_ID), os.Getenv(payment_env.PAYOS_API_KEY), os.Getenv(payment_env.PAYOS_CHECKSUM_KEY))
+		var errSetPayos error
+		for i := 1; i <= 5; i++ {
+			if err := payos.Key(util.Decrypt(bankProfile.PayosClientID), util.Decrypt(bankProfile.PayosApiKey), util.Decrypt(bankProfile.PayosCheckSumKey)); err != nil {
+				errSetPayos = err
+				var duration time.Duration = time.Duration(i) * 200 * time.Millisecond
+				time.Sleep(duration)
+			} else {
+				break
+			}
+		}
+
+		if errSetPayos != nil {
+			return internalErr
+		}
+
+		var errRes error
+		for i := 1; i <= 5; i++ {
+			res, err := payos.GetPaymentLinkInformation(payment.TransactionId)
+			if res != nil {
+				data = res
+				break
+			}
+
+			errRes = err
+
+			var duration time.Duration = time.Duration(i) * 200 * time.Millisecond
+			time.Sleep(duration)
+		}
+
+		if errRes != nil {
+			p.errLogger.Println("Error while get payment info:", errRes.Error())
+			return internalErr
+		}
+
+		for i := 1; i <= 5; i++ {
+			if err := payos.Key(os.Getenv(payment_env.PAYOS_CLIENT_ID), os.Getenv(payment_env.PAYOS_API_KEY), os.Getenv(payment_env.PAYOS_CHECKSUM_KEY)); err != nil {
+				errSetPayos = err
+				var duration time.Duration = time.Duration(i) * 200 * time.Millisecond
+				time.Sleep(duration)
+			} else {
+				break
+			}
+		}
+
+		if errSetPayos != nil {
+			return internalErr
+		}
 	}
 
 	switch data.Status {
@@ -1634,9 +1704,20 @@ func (p *paymentService) CallbackV2(id string, ctx context.Context) error {
 		return nil
 	}
 
-	profile, err := p.profileRepo.GetProfile(payment.ProfileID, ctx)
-	if err != nil {
-		return err
+	var profile *entities.Profile
+	for i := 1; i <= 5; i++ {
+		res, _ := p.profileRepo.GetProfile(payment.ProfileID, ctx)
+		if res != nil {
+			profile = res
+			break
+		}
+
+		var duration time.Duration = time.Duration(i) * 200 * time.Millisecond
+		time.Sleep(duration)
+	}
+
+	if profile == nil {
+		return internalErr
 	}
 
 	var client = p.clients[constant.SuiTestnet]
@@ -1644,9 +1725,20 @@ func (p *paymentService) CallbackV2(id string, ctx context.Context) error {
 	var function string
 	var args []interface{}
 	if payment.IsDonateTx {
-		detail, err := p.donationRepo.GetDonation(*payment.DonationID, ctx)
-		if err != nil {
-			return err
+		var detail *entities.OffChainDonation
+		for i := 1; i <= 5; i++ {
+			res, _ := p.donationRepo.GetDonation(*payment.DonationID, ctx)
+			if res != nil {
+				detail = res
+				break
+			}
+
+			var duration time.Duration = time.Duration(i) * 200 * time.Millisecond
+			time.Sleep(duration)
+		}
+
+		if detail == nil {
+			return internalErr
 		}
 
 		manage, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
@@ -1810,9 +1902,20 @@ func (p *paymentService) CallbackV2(id string, ctx context.Context) error {
 					return nil
 				}
 
-				duration, err := p.mealSupportDurationRepo.GetMealSupportDuration(*detail.MealDurationID, ctx)
-				if err != nil {
-					return nil
+				var duration *entities.OffChainMealSupportDuration
+				for i := 1; i <= 5; i++ {
+					res, _ := p.mealSupportDurationRepo.GetMealSupportDuration(*detail.MealDurationID, ctx)
+					if res != nil {
+						duration = res
+						break
+					}
+
+					var duration time.Duration = time.Duration(i) * 200 * time.Millisecond
+					time.Sleep(duration)
+				}
+
+				if duration == nil {
+					return internalErr
 				}
 
 				var startPeriod time.Time = util.ToStartOfDate(util.RawDateToTime(duration.StartPeriod))
@@ -2049,9 +2152,20 @@ func (p *paymentService) CallbackV2(id string, ctx context.Context) error {
 				Sender:             payment.Actor,
 			})
 
-			profile, err := p.profileRepo.GetProfileByWalletAddress(proposal.Creator, ctx)
-			if err != nil {
-				return err
+			var profile *entities.Profile
+			for i := 1; i <= 5; i++ {
+				res, _ := p.profileRepo.GetProfileByWalletAddress(proposal.Creator, ctx)
+				if res != nil {
+					profile = res
+					break
+				}
+
+				var duration time.Duration = time.Duration(i) * 200 * time.Millisecond
+				time.Sleep(duration)
+			}
+
+			if profile == nil {
+				return internalErr
 			}
 
 			if err := p.taskRepo.CreateTask(entities.Task{

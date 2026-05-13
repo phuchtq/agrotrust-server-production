@@ -123,28 +123,20 @@ func (c *centerService) GetCenters(req request.GetCentersRequest, ctx context.Co
 		req.PageSize = default_page_size
 	}
 
-	var redisKey string = c.getGetCentersRedisKey(req)
 	var res response.PaginationDataResponse
-	if c.redisCache.Get(redisKey, &res, ctx) {
-		return res, nil
+	var client = c.clients[constant.SuiTestnet]
+	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: c.errLogger,
+	}, ctx)
+	if err != nil {
+		return response.PaginationDataResponse{}, err
 	}
 
-	var client = c.clients[constant.SuiTestnet]
-	var manageObj entities.Manage
-	if !c.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
-		res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-			Client:    client,
-			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-			ErrLogger: c.errLogger,
-		}, ctx)
-		if err != nil {
-			return response.PaginationDataResponse{}, err
-		}
-
-		if res != nil {
-			c.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
-			manageObj = *res
-		}
+	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
+	if manageObj == nil {
+		return response.PaginationDataResponse{}, internalErr
 	}
 
 	centers, err := on_chain.GetOnChainObjects[entities.Center](on_chain.GetOnChainObjectsRequest{
@@ -203,8 +195,6 @@ func (c *centerService) GetCenters(req request.GetCentersRequest, ctx context.Co
 		Page:       req.Page,
 		TotalPages: int(math.Ceil(float64(len(filteredCenters)) / float64(req.PageSize))),
 	}
-
-	c.redisCache.Set(redisKey, res, time.Minute*5, ctx)
 
 	return res, nil
 }

@@ -237,21 +237,13 @@ func (p *pendingCampaignService) ApprovePendingCampaign(id string, ctx context.C
 // CreatePendingCampaign implements business.IPendingCampaignService.
 func (p *pendingCampaignService) CreatePendingCampaign(req request.CreatePendingCampaignRequest, ctx context.Context) (*entities.PendingCampaign, error) {
 	var client = p.clients[constant.SuiTestnet]
-	var manage entities.Manage
-	if !p.redisCache.Get(manage.GetRedisKey(), &manage, ctx) {
-		res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-			Client:    p.clients[constant.SuiTestnet],
-			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-			ErrLogger: p.errLogger,
-		}, ctx)
-		if err != nil {
-			return nil, err
-		}
-
-		if res != nil {
-			p.redisCache.Set(manage.GetRedisKey(), res, time.Minute, ctx)
-			manage = *res
-		}
+	manage, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    p.clients[constant.SuiTestnet],
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: p.errLogger,
+	}, ctx)
+	if err != nil {
+		return nil, err
 	}
 
 	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
@@ -354,21 +346,13 @@ func (p *pendingCampaignService) GetPendingCampaigns(req request.GetPendingCampa
 
 	var sender string = ctx.Value("address").(string)
 	if sender != req.Creator {
-		var manageObj entities.Manage
-		if !p.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
-			res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-				Client:    p.clients[constant.SuiTestnet],
-				ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-				ErrLogger: p.errLogger,
-			}, ctx)
-			if err != nil {
-				return response.PaginationDataResponse{}, err
-			}
-
-			if res != nil {
-				p.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
-				manageObj = *res
-			}
+		manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+			Client:    p.clients[constant.SuiTestnet],
+			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+			ErrLogger: p.errLogger,
+		}, ctx)
+		if err != nil {
+			return response.PaginationDataResponse{}, err
 		}
 
 		if !slices.Contains(manageObj.AdminIds, sender) {
@@ -454,21 +438,13 @@ func (p *pendingCampaignService) RefusePendingCampaign(id string, ctx context.Co
 
 	var client = p.clients[constant.SuiTestnet]
 	var reviewer string = ctx.Value("address").(string)
-	var manageObj entities.Manage
-	if !p.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
-		res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-			Client:    client,
-			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-			ErrLogger: p.errLogger,
-		}, ctx)
-		if err != nil {
-			return err
-		}
-
-		if res != nil {
-			p.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
-			manageObj = *res
-		}
+	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: p.errLogger,
+	}, ctx)
+	if err != nil {
+		return err
 	}
 
 	if !slices.Contains(manageObj.AdminIds, reviewer) {

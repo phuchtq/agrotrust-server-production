@@ -200,17 +200,6 @@ func (c *campaignService) CreateCampaignWithdrawProposal(req request.CreateCampa
 		localPoolId = campaign.PoolID
 	}
 
-	var offchainProposalId string = util.GenerateId()
-	if err := c.withdrawRepo.CreateOffChainWithdrawProposal(entities.OffChainWithdrawProposal{
-		ID:          offchainProposalId,
-		Purpose:     string(entities.CAMPAIGN_PURPOSE),
-		Target:      req.CampaignID,
-		LocalPoolID: localPoolId,
-		CreatedAt:   time.Now(),
-	}, ctx); err != nil {
-		return err
-	}
-
 	var campaignModule = on_chain.InitializeModuleCampaign()
 	_, errRes := on_chain.ExecuteTransactionV2(on_chain.ExecuteTransactionRequestV2{
 		Client:   client,
@@ -226,25 +215,6 @@ func (c *campaignService) CreateCampaignWithdrawProposal(req request.CreateCampa
 			Creator:        sender,
 		}),
 	}, ctx)
-	// if err != nil {
-	// 	return err
-	// }
-
-	// var events = res.Events
-	// var poolModule = on_chain.InitializeModulePool()
-	// var eventType string = fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), poolModule.GetModule(), poolModule.GetWithdrawProposalEventEmittedStruct())
-	// for _, event := range events {
-	// 	if event.Type == eventType {
-	// 		if onChainProposal, ok := event.ParsedJson["id"].(string); ok {
-	// 			for i := 1; i <= 3; i++ {
-	// 				if c.withdrawRepo.SetOnChainProposalIdAfterExecuteTx(offchainProposalId, onChainProposal, ctx) == nil {
-	// 					return nil
-	// 				}
-	// 			}
-	// 			break
-	// 		}
-	// 	}
-	// }
 
 	return errRes
 }
@@ -311,11 +281,6 @@ func (c *campaignService) GetCampaigns(req request.GetCampaignsRequest, ctx cont
 	}
 
 	var res response.PaginationDataResponse
-	var redisKey string = c.getGetCampaignsRedisKey(req)
-	if c.redisCache.Get(redisKey, &res, ctx) {
-		return res, nil
-	}
-
 	var client = c.clients[constant.SuiTestnet]
 	pool, err := on_chain.GetOnChainObject[entities.MainPool](on_chain.GetOnChainObjectRequest{
 		Client:    client,
@@ -324,6 +289,10 @@ func (c *campaignService) GetCampaigns(req request.GetCampaignsRequest, ctx cont
 	}, ctx)
 	if err != nil {
 		return response.PaginationDataResponse{}, err
+	}
+
+	if pool == nil {
+		return response.PaginationDataResponse{}, errors.New(noti.INTERNALL_ERR_MSG)
 	}
 
 	var camapaigns []entities.OnChainCampaign
@@ -455,7 +424,6 @@ func (c *campaignService) GetCampaigns(req request.GetCampaignsRequest, ctx cont
 		TotalPages: int(math.Ceil(float64(len(filteredCampaigns)) / float64(req.PageSize))),
 	}
 
-	c.redisCache.Set(redisKey, res, time.Minute*5, ctx)
 	return res, nil
 }
 

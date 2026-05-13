@@ -78,27 +78,15 @@ func (a *adminService) GetAdmins(req request.GetAdminsRequest, ctx context.Conte
 	}
 
 	var res response.PaginationDataResponse
-	var redisKey string = a.getGetAdminsRedisKey(req)
-	if a.redisCache.Get(redisKey, &res, ctx) {
-		return res, nil
-	}
 
-	var manageObj entities.Manage
 	var client = a.clients[constant.SuiTestnet]
-	if !a.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
-		res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-			Client:    client,
-			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-			ErrLogger: a.errLogger,
-		}, ctx)
-		if err != nil {
-			return response.PaginationDataResponse{}, err
-		}
-
-		if res != nil {
-			a.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
-			manageObj = *res
-		}
+	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: a.errLogger,
+	}, ctx)
+	if err != nil {
+		return response.PaginationDataResponse{}, err
 	}
 
 	admins, err := on_chain.GetOnChainObjects[entities.AdminNft](on_chain.GetOnChainObjectsRequest{
@@ -243,8 +231,6 @@ func (a *adminService) GetAdmins(req request.GetAdminsRequest, ctx context.Conte
 		Page:       req.Page,
 		TotalPages: int(math.Ceil(float64(len(filteredAdmins)) / float64(req.PageSize))),
 	}
-
-	a.redisCache.Set(redisKey, res, time.Minute*5, ctx)
 
 	return res, nil
 }

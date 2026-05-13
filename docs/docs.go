@@ -3035,7 +3035,7 @@ const docTemplate = `{
                             "$ref": "#/definitions/response.MessageAPIResponse"
                         }
                     },
-                    "401": {
+                    "403": {
                         "description": "You have no rights to access this action.",
                         "schema": {
                             "$ref": "#/definitions/response.MessageAPIResponse"
@@ -4602,6 +4602,342 @@ const docTemplate = `{
                         }
                     },
                     "401": {
+                        "description": "You have no rights to access this action.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "There is something wrong in the system during the process. Please try again later.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/platform-configs/numeric": {
+            "get": {
+                "description": "Get numeric platform configs",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Platform Config"
+                ],
+                "summary": "Get numeric platform configs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "name": "actor_address",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "keyword",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "sort_order",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.PaginationDataResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid data. Please try again.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "There is something wrong in the system during the process. Please try again later.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/platform-configs/numeric/{id}": {
+            "get": {
+                "description": "Get numeric platform config",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Platform Config"
+                ],
+                "summary": "Get numeric platform config",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Platform Config ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.PaginationDataResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid data. Please try again.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "There is something wrong in the system during the process. Please try again later.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update numeric platform config",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Platform Config"
+                ],
+                "summary": "Update numeric platform config",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Platform Config ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update Platform Config Detail",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.UpdatePlatformConfigRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid data. Please try again.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "You have no rights to access this action.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "There is something wrong in the system during the process. Please try again later.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/platform-configs/string": {
+            "get": {
+                "description": "Get string platform configs",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Platform Config"
+                ],
+                "summary": "Get string platform configs",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "name": "actor_address",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "keyword",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "sort_order",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.PaginationDataResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid data. Please try again.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "There is something wrong in the system during the process. Please try again later.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/platform-configs/string/{id}": {
+            "get": {
+                "description": "Get string platform config",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Platform Config"
+                ],
+                "summary": "Get string platform config",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Platform Config ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.PaginationDataResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid data. Please try again.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "There is something wrong in the system during the process. Please try again later.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Update string platform config",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Platform Config"
+                ],
+                "summary": "Update string platform config",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Platform Config ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Update Platform Config Detail",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.UpdatePlatformConfigRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "success",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid data. Please try again.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    },
+                    "403": {
                         "description": "You have no rights to access this action.",
                         "schema": {
                             "$ref": "#/definitions/response.MessageAPIResponse"
@@ -8603,6 +8939,15 @@ const docTemplate = `{
                 "value": {
                     "type": "integer"
                 }
+            }
+        },
+        "request.UpdatePlatformConfigRequest": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "value": {}
             }
         },
         "request.UpdatePublisherInfoRequest": {
