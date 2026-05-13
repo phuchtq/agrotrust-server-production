@@ -172,7 +172,7 @@ func (s *supportedRegionProposalRepo) UpdateSupportedRegionSuggestion(proposal e
 	}
 
 	if rowsAffected == 0 {
-		return errors.New(fmt.Sprintf(noti.UNDEFINED_OBJECT_WARN_MSG, supported_region_proposal_table))
+		return fmt.Errorf(noti.UNDEFINED_OBJECT_WARN_MSG, supported_region_proposal_table)
 	}
 
 	return nil

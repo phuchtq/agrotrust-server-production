@@ -83,142 +83,95 @@ func GenerateTaskProofService() (business.ITaskProofService, error) {
 	), nil
 }
 
-// // ApproveTaskProof implements business.ITaskProofService.
-// func (t *taskProofService) ApproveTaskProof(id string, ctx context.Context) (response.BuildTransactionResponse, error) {
-// 	proof, err := t.taskProofRepo.GetTaskProof(id, ctx)
-// 	if err != nil {
-// 		return response.BuildTransactionResponse{}, err
-// 	}
+// GetTaskProof implements business.ITaskProofService.
+func (t *taskProofService) GetTaskProof(id string, ctx context.Context) (*entities.TaskProof, error) {
+	return t.taskProofRepo.GetTaskProof(id, ctx)
+}
 
-// 	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
-// 	if proof == nil {
-// 		return response.BuildTransactionResponse{}, genericErr
-// 	}
+// GetTaskProofs implements business.ITaskProofService.
+func (t *taskProofService) GetTaskProofs(req request.GetTaskProofsRequest, ctx context.Context) (response.PaginationDataResponse, error) {
+	req.SortOrder = util.StandardizeSortOrder(req.SortOrder)
+	req.Keyword = strings.TrimSpace(req.Keyword)
+	if req.Page < 1 {
+		req.Page = 1
+	}
 
-// 	if proof.ReviewStatus != request_pending_status {
-// 		return response.BuildTransactionResponse{}, errors.New(noti.TASK_PROOF_REVIEWED_MESSAGE)
-// 	}
+	if req.PageSize < 1 {
+		req.PageSize = default_page_size
+	}
 
-// 	task, err := t.taskRepo.GetTask(proof.TaskID, ctx)
-// 	if err != nil {
-// 		return response.BuildTransactionResponse{}, err
-// 	}
+	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
+	if req.ActorAddress != "" {
+		if !util.IsValidSuiAddressStrict(req.ActorAddress) {
+			return response.PaginationDataResponse{}, genericErr
+		}
+	}
 
-// 	var sender string = ctx.Value("address").(string)
-// 	var staffModule = on_chain.InitializeModuleStaff()
-// 	var client = t.clients[constant.SuiTestnet]
-// 	staffNfts, err := on_chain.GetOnChainOwnedObjects[entities.StaffNft](on_chain.GetOnChainOwnedObjectsRequest{
-// 		Client:       client,
-// 		OwnerAddress: sender,
-// 		StructType:   fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), staffModule.GetModule, staffModule.GetStaffNftObjectStruct()),
-// 		ErrLogger:    t.errLogger,
-// 	}, ctx)
-// 	if err != nil {
-// 		return response.BuildTransactionResponse{}, err
-// 	}
+	if req.ReviewedBy != "" {
+		if !util.IsValidSuiAddressStrict(req.ReviewedBy) {
+			return response.PaginationDataResponse{}, genericErr
+		}
+	}
 
-// 	if staffNfts == nil || len(staffNfts) == 0 {
-// 		return response.BuildTransactionResponse{}, errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
-// 	}
+	var res response.PaginationDataResponse
+	// var redisKey string = t.getGetTaskProofsRedisKey(req)
+	// if t.redisCache.Get(redisKey, &res, ctx) {
+	// 	return res, nil
+	// }
 
-// 	var leaderNftId string
-// 	for _, nft := range staffNfts {
-// 		if nft.Region == task.Region && nft.Role == local_leader_role {
-// 			leaderNftId = nft.ID.ID
-// 			break
-// 		}
-// 	}
+	data, pages, err := t.taskProofRepo.GetTaskProofsWithIsChildTask(req, ctx)
+	if err != nil {
+		return response.PaginationDataResponse{}, err
+	}
 
-// 	if leaderNftId == "" {
-// 		return response.BuildTransactionResponse{}, errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
-// 	}
+	var amount int
+	if len(data) == 0 {
+		amount = 0
+	} else {
+		amount = len(data)
+	}
 
-// 	profile, err := t.profileRepo.GetProfile(ctx.Value("sub").(string), ctx)
-// 	if err != nil {
-// 		return response.BuildTransactionResponse{}, err
-// 	}
+	res = response.PaginationDataResponse{
+		Data:       data,
+		Amount:     amount,
+		Page:       req.Page,
+		TotalPages: pages,
+	}
 
-// 	if profile.Status == "Suspended" {
-// 		return response.BuildTransactionResponse{}, errors.New(noti.CURRENTLY_SUSPENDED_MESSAGE)
-// 	}
+	//t.redisCache.Set(redisKey, res, time.Minute*5, ctx)
 
-// 	var args []interface{}
-// 	var function string
-// 	var childModule = on_chain.InitializeModuleChild()
-// 	if task.IsChildTask {
-// 		detail, err := t.childTaskDetailRepo.GetChildTaskDetail(*task.ChildTaskDetailID, ctx)
-// 		if err != nil {
-// 			return response.BuildTransactionResponse{}, err
-// 		}
+	return res, nil
 
-// 		switch detail.Purpose {
-// 		case string(entities.MEAL_NEED_PURPOSE):
-// 			function = childModule.GetFunctionConfirmProvideMealForChildV2()
-// 			args = childModule.ToConfirmProvideNeedForChildArgumentsV2(on_chain.ConfirmProvideNeedForChildArgumentsV2{
-// 				ChildID:     detail.ChildID,
-// 				NeedID:      detail.Target,
-// 				StaffNft:    leaderNftId,
-// 				ImageBlobID: proof.ImageBlobID,
-// 				ProvideDate: proof.RawSubmitDate,
-// 				Actor:       proof.ActorAddress,
-// 			})
-// 			// Other cases in future if have
-// 		}
-// 	} else {
-// 		var manageObj entities.Manage
-// 		if !t.redisCache.Get(manageObj.GetRedisKey(), &manageObj, ctx) {
-// 			res, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-// 				Client:    t.clients[constant.SuiTestnet],
-// 				ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-// 				ErrLogger: t.errLogger,
-// 			}, ctx)
-// 			if err != nil {
-// 				return response.BuildTransactionResponse{}, err
-// 			}
+	// ////////////////////////
+	// // MOCK DATA
+	// req.SortOrder = util.StandardizeSortOrder(req.SortOrder)
+	// req.Keyword = strings.TrimSpace(req.Keyword)
+	// if req.Page < 1 {
+	// 	req.Page = 1
+	// }
 
-// 			if res != nil {
-// 				t.redisCache.Set(manageObj.GetRedisKey(), res, time.Minute, ctx)
-// 				manageObj = *res
-// 			}
-// 		}
+	// if req.PageSize < 1 {
+	// 	req.PageSize = default_page_size
+	// }
 
-// 		var centerId string
-// 		for i, region := range manageObj.LocalRegions {
-// 			if region == task.Region {
-// 				centerId = manageObj.ChildrenCenters[i]
-// 				break
-// 			}
-// 		}
+	// var res response.PaginationDataResponse
+	// var redisKey string = t.getGetTaskProofsRedisKey(req)
+	// if t.redisCache.Get(redisKey, &res, ctx) {
+	// 	return res, nil
+	// }
 
-// 		function = childModule.GetFunctionSubmitTask()
-// 		args = childModule.ToSubmitTaskArguments(on_chain.SubmitTaskArguments{
-// 			Center:      centerId,
-// 			StaffNft:    leaderNftId,
-// 			Description: task.Description,
-// 			ImageBlobID: proof.ImageBlobID,
-// 			Actor:       proof.ActorAddress,
-// 		})
-// 	}
+	// var data []entities.TaskProof = mockTaskProofs[(req.Page-1)*req.PageSize : req.Page*req.PageSize]
+	// res = response.PaginationDataResponse{
+	// 	Data:       data,
+	// 	Amount:     len(data),
+	// 	Page:       req.Page,
+	// 	TotalPages: int(math.Ceil(float64(len(mockTaskProofs)) / float64(req.PageSize))),
+	// }
 
-// 	txBytes, err := on_chain.BuildTransaction(on_chain.BuildTransactionRequest{
-// 		Client:    client,
-// 		Sender:    sender,
-// 		Module:    childModule.GetModule(),
-// 		Function:  function,
-// 		Arguments: args,
-// 		ErrLogger: t.errLogger,
-// 	}, ctx)
-// 	if err != nil {
-// 		return response.BuildTransactionResponse{}, err
-// 	}
+	// t.redisCache.Set(redisKey, res, time.Minute*5, ctx)
 
-// 	proof.ReviewedBy = &sender
-// 	proof.ReviewStatus = request_approved_status
-
-// 	return response.BuildTransactionResponse{
-// 		TxBytes: txBytes,
-// 	}, t.taskProofRepo.UpdateTaskProof(*proof, ctx)
-// }
+	// return res, nil
+}
 
 // ApproveTaskProof implements business.ITaskProofService.
 func (t *taskProofService) ApproveTaskProof(id string, ctx context.Context) error {
@@ -354,96 +307,6 @@ func (t *taskProofService) ApproveTaskProof(id string, ctx context.Context) erro
 	}
 
 	return internalErr
-}
-
-// GetTaskProof implements business.ITaskProofService.
-func (t *taskProofService) GetTaskProof(id string, ctx context.Context) (*entities.TaskProof, error) {
-	return t.taskProofRepo.GetTaskProof(id, ctx)
-}
-
-// GetTaskProofs implements business.ITaskProofService.
-func (t *taskProofService) GetTaskProofs(req request.GetTaskProofsRequest, ctx context.Context) (response.PaginationDataResponse, error) {
-	req.SortOrder = util.StandardizeSortOrder(req.SortOrder)
-	req.Keyword = strings.TrimSpace(req.Keyword)
-	if req.Page < 1 {
-		req.Page = 1
-	}
-
-	if req.PageSize < 1 {
-		req.PageSize = default_page_size
-	}
-
-	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
-	if req.ActorAddress != "" {
-		if !util.IsValidSuiAddressStrict(req.ActorAddress) {
-			return response.PaginationDataResponse{}, genericErr
-		}
-	}
-
-	if req.ReviewedBy != "" {
-		if !util.IsValidSuiAddressStrict(req.ReviewedBy) {
-			return response.PaginationDataResponse{}, genericErr
-		}
-	}
-
-	var res response.PaginationDataResponse
-	// var redisKey string = t.getGetTaskProofsRedisKey(req)
-	// if t.redisCache.Get(redisKey, &res, ctx) {
-	// 	return res, nil
-	// }
-
-	data, pages, err := t.taskProofRepo.GetTaskProofsWithIsChildTask(req, ctx)
-	if err != nil {
-		return response.PaginationDataResponse{}, err
-	}
-
-	var amount int
-	if data == nil || len(data) == 0 {
-		amount = 0
-	} else {
-		amount = len(data)
-	}
-
-	res = response.PaginationDataResponse{
-		Data:       data,
-		Amount:     amount,
-		Page:       req.Page,
-		TotalPages: pages,
-	}
-
-	//t.redisCache.Set(redisKey, res, time.Minute*5, ctx)
-
-	return res, nil
-
-	// ////////////////////////
-	// // MOCK DATA
-	// req.SortOrder = util.StandardizeSortOrder(req.SortOrder)
-	// req.Keyword = strings.TrimSpace(req.Keyword)
-	// if req.Page < 1 {
-	// 	req.Page = 1
-	// }
-
-	// if req.PageSize < 1 {
-	// 	req.PageSize = default_page_size
-	// }
-
-	// var res response.PaginationDataResponse
-	// var redisKey string = t.getGetTaskProofsRedisKey(req)
-	// if t.redisCache.Get(redisKey, &res, ctx) {
-	// 	return res, nil
-	// }
-
-	// var data []entities.TaskProof = mockTaskProofs[(req.Page-1)*req.PageSize : req.Page*req.PageSize]
-	// res = response.PaginationDataResponse{
-	// 	Data:       data,
-	// 	Amount:     len(data),
-	// 	Page:       req.Page,
-	// 	TotalPages: int(math.Ceil(float64(len(mockTaskProofs)) / float64(req.PageSize))),
-	// }
-
-	// t.redisCache.Set(redisKey, res, time.Minute*5, ctx)
-
-	// return res, nil
 }
 
 // RefuseTaskProof implements business.ITaskProofService.
@@ -626,54 +489,4 @@ func (t *taskProofService) getGetTaskProofsRedisKey(req request.GetTaskProofsReq
 
 	return fmt.Sprintf("task:kw:%s:status:%s:actor:%s:reviewed:%s:o:%s:s:%d:p:%d",
 		keyword, status, actorAddress, reviewedBy, req.SortOrder, req.PageSize, req.Page)
-}
-
-var mockTaskProofs = getMockTaskProofs()
-
-func getMockTaskProofs() []entities.TaskProof {
-	proofs := make([]entities.TaskProof, 20)
-	now := time.Now()
-
-	// Dữ liệu mẫu để xoay vòng
-	evaluations := []string{"High Confidence", "Low Confidence", "Manual Review Required", "Verified by AI"}
-	admins := []string{"Admin_01", "Admin_02", "Moderator_X"}
-	var ptrStr = func(s string) *string {
-		return &s
-	}
-
-	for i := 0; i < 20; i++ {
-		id := fmt.Sprintf("%d", i+1)
-
-		var status string
-		var reviewedBy *string
-
-		// Logic phân bổ trạng thái: 0=Pending, 1=Approved, 2=Refused
-		switch i % 3 {
-		case 0:
-			status = "Pending"
-			reviewedBy = nil
-		case 1:
-			status = "Approved"
-			reviewedBy = ptrStr(admins[i%3])
-		case 2:
-			status = "Refused"
-			reviewedBy = ptrStr(admins[i%3])
-		}
-
-		proofs[i] = entities.TaskProof{
-			ID:             id,
-			TaskID:         fmt.Sprintf("TASK-%03d", (i/2)+1),
-			Description:    fmt.Sprintf("Báo cáo hoàn thành công việc đợt %d", i+1),
-			ActorProfileID: fmt.Sprintf("ACT-%03d", i+100),
-			ActorAddress:   fmt.Sprintf("0x%x...%x", 123456+i, 789+i),
-			ImageBlobID:    fmt.Sprintf("img-proof-blob-%d", i+1),
-			ReviewedBy:     reviewedBy,
-			AIEvaluation:   evaluations[i%4],
-			ReviewStatus:   status,
-			RawSubmitDate:  now.Format("2006-01-02"),
-			CreatedAt:      now.Add(time.Duration(-i) * time.Hour),
-			UpdatedAt:      now,
-		}
-	}
-	return proofs
 }

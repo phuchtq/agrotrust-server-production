@@ -150,7 +150,7 @@ func (v *volunteerRequestService) CreateRequest(req request.VolunteerRegistratio
 		return nil, err
 	}
 
-	if reqs != nil && len(reqs) > 0 {
+	if len(reqs) > 0 {
 		for _, req := range reqs {
 			if req.Status == request_pending_status || req.Status == request_approved_status {
 				return nil, genericErr

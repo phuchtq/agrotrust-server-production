@@ -80,7 +80,7 @@ func (b *backgroundChildrenWithdrawRequestRepo) GetCurrentPendingRequests(ctx co
 
 // SetRequestsExecuted implements repository.IBackgroundChildrenWithdrawProposalRequestRepository.
 func (b *backgroundChildrenWithdrawRequestRepo) SetRequestsExecuted(reqs []entities.BackgroundChildrenWithdrawProposalsRequest, ctx context.Context) error {
-	if reqs == nil || len(reqs) == 0 {
+	if len(reqs) == 0 {
 		return nil
 	}
 

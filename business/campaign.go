@@ -380,7 +380,7 @@ func (c *campaignService) GetCampaigns(req request.GetCampaignsRequest, ctx cont
 		}
 	}
 
-	if camapaigns == nil || len(camapaigns) == 0 {
+	if len(camapaigns) == 0 {
 		return response.PaginationDataResponse{
 			Page: req.Page,
 		}, nil

@@ -373,7 +373,7 @@ func (r *registrationRequestService) ConfirmRegistrationRequest(id string, ctx c
 			return err
 		}
 
-		if localPools == nil || len(localPools) == 0 {
+		if len(localPools) == 0 {
 			return internalErr
 		}
 
@@ -505,7 +505,7 @@ func (r *registrationRequestService) CreateRegistrationRequest(req request.Creat
 			}
 		}
 
-		if staffIds != nil && len(staffIds) > 0 {
+		if len(staffIds) > 0 {
 			if len(staffIds) == 2 {
 				return nil, errors.New(noti.ALREADY_STAFF_ROLE_MESSAGE)
 			}
@@ -543,7 +543,7 @@ func (r *registrationRequestService) CreateRegistrationRequest(req request.Creat
 	}
 
 	var curTime time.Time = time.Now()
-	if reqs != nil && len(reqs) > 0 {
+	if len(reqs) > 0 {
 		for _, req := range reqs {
 			if req.RegisterRole == role && (req.Status == request_pending_status || req.Status == request_approved_status) && curTime.Before(req.ClosedAt) {
 				r.errLogger.Println("Error previous reqs!!!")
@@ -627,7 +627,7 @@ func (r *registrationRequestService) GetRegistrationRequests(req request.GetRegi
 
 	data, pages, err := r.registrationRequestRepo.GetRegistrationRequests(req, ctx)
 	var amount int
-	if data == nil || len(data) == 0 {
+	if len(data) == 0 {
 		amount = 0
 	} else {
 		amount = len(data)
@@ -692,13 +692,14 @@ func (r *registrationRequestService) VoteRegistrationRequest(id string, req requ
 	// Not admin
 	if !slices.Contains(manageObj.AdminIds, voter) {
 		var genericRightErr error = errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
-		if request.RegisterRole == admin_role {
+		switch request.RegisterRole {
+		case admin_role:
 			return genericRightErr
-		} else if request.RegisterRole == local_leader_role {
+		case local_leader_role:
 			if !slices.Contains(manageObj.LocalLeaderIds, voter) {
 				return genericRightErr
 			}
-		} else {
+		default:
 			var foundIdx int = -1
 			for i, leader := range manageObj.LocalLeaderIds {
 				if leader == voter {

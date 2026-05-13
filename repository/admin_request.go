@@ -233,7 +233,7 @@ func (a *adminRequestRepo) UpdateRegistrationRequest(req entities.AdminRegistrat
 	}
 
 	if rowsAffected == 0 {
-		return errors.New(fmt.Sprintf(noti.UNDEFINED_OBJECT_WARN_MSG, admin_request_table))
+		return fmt.Errorf(noti.UNDEFINED_OBJECT_WARN_MSG, admin_request_table)
 	}
 
 	return nil

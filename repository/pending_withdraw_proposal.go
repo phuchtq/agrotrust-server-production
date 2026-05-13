@@ -199,7 +199,7 @@ func (p *pendingWithdrawProposalRepo) UpdatePendingWithdrawProposal(proposal ent
 	}
 
 	if rowsAffected == 0 {
-		return errors.New(fmt.Sprintf(noti.UNDEFINED_OBJECT_WARN_MSG, pending_withdraw_proposal_table))
+		return fmt.Errorf(noti.UNDEFINED_OBJECT_WARN_MSG, pending_withdraw_proposal_table)
 	}
 
 	return nil

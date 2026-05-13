@@ -109,8 +109,8 @@ func TestCreateBankProfile(t *testing.T) {
 				bankProfile = &sampleUploadedBankProfile
 			}
 
-			log.Println(fmt.Sprintf("Address in case %d: %s", i, tc.context.Value("address").(string)))
-			log.Println(fmt.Sprintf("Sub in case %d: %s", i, tc.context.Value("sub").(string)))
+			log.Printf("\nAddress in case %d: %s", i, tc.context.Value("address").(string))
+			log.Printf("\nSub in case %d: %s", i, tc.context.Value("sub").(string))
 
 			mockClient.On("SuiXGetOwnedObjects", mock.Anything, mock.Anything).Return(tc.suiPaginatedRes, nil)
 			repo.On("GetBankProfileByOwner", mock.AnythingOfType("string"), mock.Anything).Return(bankProfile, nil)

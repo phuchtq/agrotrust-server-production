@@ -99,7 +99,7 @@ func (o *onChainService) ExecuteTransaction(req request.ExecuteTransactionReques
 
 	if req.ProposalID != "" {
 		var events = res.Events
-		if events == nil || len(events) == 0 {
+		if len(events) == 0 {
 			return genericErr
 		}
 

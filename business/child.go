@@ -196,7 +196,7 @@ func (c *childService) GetUserSupportedChildren(wallet string, req request.GetCh
 		return response.PaginationDataResponse{}, internalErr
 	}
 
-	if nft.SupportedChilds == nil || len(nft.SupportedChilds) == 0 {
+	if len(nft.SupportedChilds) == 0 {
 		return response.PaginationDataResponse{
 			Page:       1,
 			TotalPages: 1,
@@ -2065,7 +2065,7 @@ func (c *childService) CreateBooksNeedWithdrawProposalV2(req request.CreateNorma
 	}
 
 	var genericRightErr error = errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
-	if staffNfts == nil || len(staffNfts) == 0 {
+	if len(staffNfts) == 0 {
 		return nil, genericRightErr
 	}
 
@@ -2236,7 +2236,7 @@ func (c *childService) CreateHealthInsuranceNeedWithdrawProposalV2(req request.C
 	}
 
 	var genericRightErr error = errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
-	if staffNfts == nil || len(staffNfts) == 0 {
+	if len(staffNfts) == 0 {
 		return nil, genericRightErr
 	}
 
@@ -2516,7 +2516,7 @@ func (c *childService) CreateMealNeedWithdrawProposalV2(req request.CreateNormal
 	}
 
 	var genericRightErr error = errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
-	if staffNfts == nil || len(staffNfts) == 0 {
+	if len(staffNfts) == 0 {
 		return nil, genericRightErr
 	}
 
@@ -2933,7 +2933,7 @@ func (c *childService) CreateSpecialNeedProposalV2(req request.CreateSpecialNeed
 		return nil, err
 	}
 
-	if staffNfts == nil || len(staffNfts) == 0 {
+	if len(staffNfts) == 0 {
 		return nil, errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
 	}
 
@@ -3124,7 +3124,7 @@ func (c *childService) ConfirmProvideMealForChild(id string, req request.Confirm
 	}
 
 	var genericRightErr error = errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
-	if staffNfts == nil || len(staffNfts) == 0 {
+	if len(staffNfts) == 0 {
 		return response.BuildTransactionResponse{}, genericRightErr
 	}
 
@@ -3396,7 +3396,7 @@ func (c *childService) SupportMealNeed(id string, req request.SupportMealNeadReq
 
 	var curTime time.Time = time.Now()
 	var endPeriod time.Time
-	if need.Durations != nil && len(need.Durations) > 0 {
+	if len(need.Durations) > 0 {
 		var lastDuration = need.Durations[len(need.Durations)-1]
 		endPeriod = util.RawDateToTime(lastDuration.Fields.EndPeriod)
 	} else {

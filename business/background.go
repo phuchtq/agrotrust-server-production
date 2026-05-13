@@ -121,7 +121,7 @@ func (b *backgroundService) ProcessCreateChildrenWithdrawProposals(ctx context.C
 
 	healthNeedWithdrawDate, _ := on_chain.GetOnChainObject[entities.HealthInsuranceNeedWithdrawDate](on_chain.GetOnChainObjectRequest{
 		Client:    client,
-		ObjectId:  os.Getenv(env.HEALTH_INSURANCE_NEED_wITHDRAW_DATE_ID),
+		ObjectId:  os.Getenv(env.HEALTH_INSURANCE_NEED_WITHDRAW_DATE_ID),
 		ErrLogger: b.errLogger,
 	}, ctx)
 	if healthNeedWithdrawDate == nil {
@@ -264,7 +264,7 @@ func (b *backgroundService) ProcessRefundVotePower(ctx context.Context) {
 		ObjectIds: pool.PendingWithdrawProposals,
 		ErrLogger: b.errLogger,
 	}, ctx)
-	if pendingProposals == nil || len(pendingProposals) == 0 {
+	if len(pendingProposals) == 0 {
 		return
 	}
 
@@ -337,7 +337,7 @@ func (b *backgroundService) ProcessBackgroundCenterRequests(ctx context.Context)
 		return
 	}
 
-	if pendingRes != nil && len(pendingRes) > 0 {
+	if len(pendingRes) > 0 {
 		var refusedReqs []entities.BackgroundRecord
 		for _, req := range pendingRes {
 			var rate float32 = float32(len(req.Approvers)) / float32(len(req.Approvers)+len(req.Refusers))
@@ -390,7 +390,7 @@ func (b *backgroundService) ProcessBackgroundRegistrationRequests(ctx context.Co
 		return
 	}
 
-	if pendingRes != nil && len(pendingRes) > 0 {
+	if len(pendingRes) > 0 {
 		var refusedReqs, approvedReqs []entities.RegistrationRequest
 		for _, req := range pendingRes {
 			var rate float32 = float32(len(req.Approvers)) / float32(len(req.Approvers)+len(req.Refusers))
@@ -443,7 +443,7 @@ func (b *backgroundService) ProcessBackgroundRegistrationRequests(ctx context.Co
 					ErrLogger: b.errLogger,
 				}, ctx)
 
-				if localPools == nil || len(localPools) == 0 {
+				if len(localPools) == 0 {
 					return
 				}
 

@@ -246,12 +246,12 @@ func (c *centerRequestService) ConfirmRequest(id string, ctx context.Context) er
 		return errors.New(noti.STILL_PENDING_REQUEST_MESSAGE)
 	}
 
-	if req.Approvers == nil || len(req.Approvers) == 0 {
+	if len(req.Approvers) == 0 {
 		return errors.New(noti.NOT_ARRPOVED_REQUEST_WARN_MSG)
 	}
 
 	var refuseCounts int
-	if req.Refusers != nil && len(req.Refusers) > 0 {
+	if len(req.Refusers) > 0 {
 		refuseCounts = len(req.Refusers)
 	}
 
@@ -475,7 +475,7 @@ func (c *centerRequestService) GetRequests(req request.GetCenterRequests, ctx co
 
 	data, pages, err := c.centerRequestRepo.GetRegistrationRequests(req, ctx)
 	var amount int
-	if data == nil || len(data) == 0 {
+	if len(data) == 0 {
 		amount = 0
 	} else {
 		amount = len(data)
@@ -488,37 +488,7 @@ func (c *centerRequestService) GetRequests(req request.GetCenterRequests, ctx co
 		TotalPages: pages,
 	}
 
-	//c.redisCache.Set(redisKey, res, time.Minute*5, ctx)
-
 	return res, err
-
-	// //////////////////
-	// // MOCK DATA
-	// if req.Page < 1 {
-	// 	req.Page = 1
-	// }
-
-	// if req.PageSize < 1 {
-	// 	req.PageSize = default_page_size
-	// }
-
-	// var res response.PaginationDataResponse
-	// var redisKey string = c.getGetCenterRequestsRedisKey(req)
-	// if c.redisCache.Get(redisKey, &res, ctx) {
-	// 	return res, nil
-	// }
-
-	// var data []entities.CenterRequest = mockCenterRequests[(req.Page-1)*req.PageSize : req.Page*req.PageSize]
-	// res = response.PaginationDataResponse{
-	// 	Data:       data,
-	// 	Amount:     len(data),
-	// 	Page:       req.Page,
-	// 	TotalPages: int(math.Ceil(float64(len(mockCenterRequests)) / float64(req.PageSize))),
-	// }
-
-	// c.redisCache.Set(redisKey, res, time.Minute*5, ctx)
-
-	// return res, nil
 }
 
 // GetWalletRequests implements business.ICenterRequestService.
@@ -539,27 +509,7 @@ func (c *centerRequestService) GetWalletRequests(id string, ctx context.Context)
 		return nil, errRes
 	}
 
-	//c.redisCache.Set(redisKey, res, time.Minute*5, ctx)
-
 	return res, errRes
-
-	//////////////////
-	// // MOCK DATA
-	// var res []entities.CenterRequest
-	// var redisKey string = c.getGetWalletCenterRequestsRedisKey(id)
-	// if c.redisCache.Get(redisKey, &res, ctx) {
-	// 	return res, nil
-	// }
-
-	// for _, req := range mockCenterRequests {
-	// 	if id == req.CreatedBy {
-	// 		res = append(res, req)
-	// 	}
-	// }
-
-	// c.redisCache.Set(redisKey, res, time.Minute*5, ctx)
-
-	// return res, nil
 }
 
 // VoteRequest implements business.ICenterRequestService.
@@ -681,7 +631,7 @@ func (c *centerRequestService) EditStaffNumbersToRequestCenter(req request.EditS
 		return err
 	}
 
-	if caps == nil || len(caps) == 0 {
+	if len(caps) == 0 {
 		return errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
 	}
 

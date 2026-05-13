@@ -398,7 +398,7 @@ func (t *taskProofRepo) UpdateTaskProof(proof entities.TaskProof, ctx context.Co
 	}
 
 	if rowsAffected == 0 {
-		return errors.New(fmt.Sprintf(noti.UNDEFINED_OBJECT_WARN_MSG, task_proof_table))
+		return fmt.Errorf(noti.UNDEFINED_OBJECT_WARN_MSG, task_proof_table)
 	}
 
 	return nil

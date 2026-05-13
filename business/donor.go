@@ -75,7 +75,7 @@ func (s *donorService) GetDonor(id string, ctx context.Context) (response.DonorR
 	}, ctx)
 
 	var res response.DonorResponse = donor.ToDonorResponse()
-	if txs != nil && len(txs) > 0 {
+	if len(txs) > 0 {
 		var contributions []response.TransactionResponse
 		for _, tx := range txs {
 			contributions = append(contributions, tx.ToTransactionResponse())

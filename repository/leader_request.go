@@ -240,7 +240,7 @@ func (v *localLeaderRequestRepo) UpdateRegistrationRequest(req entities.LocalLea
 	}
 
 	if rowsAffected == 0 {
-		return errors.New(fmt.Sprintf(noti.UNDEFINED_OBJECT_WARN_MSG, local_leader_request_table))
+		return fmt.Errorf(noti.UNDEFINED_OBJECT_WARN_MSG, local_leader_request_table)
 	}
 
 	return nil

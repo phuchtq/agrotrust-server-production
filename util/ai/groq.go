@@ -47,12 +47,11 @@ type Choice struct {
 }
 
 type ChatResponse struct {
-	Choices []Choice `json:"choices"`
+	Choices Choice `json:"choices"`
 	Error   *struct {
 		Message string `json:"message"`
 	} `json:"error,omitempty"`
 }
-
 
 // AskWithImages gửi prompt kèm nhiều ảnh (Cloudinary URL) tới Groq vision model.
 // Dùng cho các tác vụ cần phân tích nhiều tài liệu cùng lúc (vd: giấy khai sinh + CCCD).
@@ -104,9 +103,9 @@ func (g *GroqClient) AskWithImages(apiKey, prompt string, imageURLs []string) (s
 		return "", fmt.Errorf("Groq API lỗi: %s", chatResp.Error.Message)
 	}
 
-	if len(chatResp.Choices) == 0 {
+	if chatResp.Choices.Message.Content == "" {
 		return "", fmt.Errorf("không có kết quả trả về")
 	}
 
-	return chatResp.Choices[0].Message.Content, nil
+	return chatResp.Choices.Message.Content, nil
 }

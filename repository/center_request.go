@@ -259,7 +259,7 @@ func (c *centerRequestRepo) UpdateRegistrationRequest(req entities.CenterRequest
 	}
 
 	if rowsAffected == 0 {
-		return errors.New(fmt.Sprintf(noti.UNDEFINED_OBJECT_WARN_MSG, center_request_table))
+		return fmt.Errorf(noti.UNDEFINED_OBJECT_WARN_MSG, center_request_table)
 	}
 
 	return nil
@@ -301,7 +301,7 @@ func (c *centerRequestRepo) GetPendingRequests(ctx context.Context) ([]entities.
 
 // SetApprovedStatuses implements repository.ICenterRequestRepository.
 func (c *centerRequestRepo) SetApprovedStatuses(reqs []entities.BackgroundRecord, ctx context.Context) error {
-	if reqs == nil || len(reqs) == 0 {
+	if len(reqs) == 0 {
 		return nil
 	}
 
@@ -323,7 +323,7 @@ func (c *centerRequestRepo) SetApprovedStatuses(reqs []entities.BackgroundRecord
 
 // SetRefusedStatuses implements repository.ICenterRequestRepository.
 func (c *centerRequestRepo) SetRefusedStatuses(reqs []entities.BackgroundRecord, ctx context.Context) error {
-	if reqs == nil || len(reqs) == 0 {
+	if len(reqs) == 0 {
 		return nil
 	}
 

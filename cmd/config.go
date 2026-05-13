@@ -24,18 +24,14 @@ import (
 // Load .env file
 func loadEnv(logger *log.Logger) {
 	if err := godotenv.Load(); err != nil {
-		logger.Println(fmt.Sprintf(noti.ENV_LOAD_ERR_MSG, "") + err.Error())
+		logger.Println(fmt.Sprint(noti.ENV_LOAD_ERR_MSG) + err.Error())
 	}
 }
 
 // Enable CORS
 func corsConfig(server *gin.Engine) {
 	server.Use(cors.New(cors.Config{
-		// AllowOrigins:     []string{"*"},
-		AllowOrigins: []string{
-			"https://argo-web-deploy.vercel.app",
-			"http://localhost:3000",
-		},
+		AllowAllOrigins: true,
 
 		AllowMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"},
 
@@ -48,7 +44,7 @@ func corsConfig(server *gin.Engine) {
 			"X-Requested-With",
 		},
 
-		AllowCredentials: true,
+		AllowCredentials: false,
 
 		MaxAge: 12 * time.Hour,
 	}))

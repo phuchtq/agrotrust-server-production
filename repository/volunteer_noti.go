@@ -47,7 +47,7 @@ func (v *volunteerNotiRepo) AssignVolunteer(volunteer string, region string, ctx
 	}
 
 	if rowsAffected == 0 {
-		return errors.New(fmt.Sprintf(noti.UNDEFINED_OBJECT_WARN_MSG, volunteer_noti_table))
+		return fmt.Errorf(noti.UNDEFINED_OBJECT_WARN_MSG, volunteer_noti_table)
 	}
 
 	return nil

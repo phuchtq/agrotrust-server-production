@@ -64,7 +64,7 @@ func GenerateRegionService() (business.IRegionService, error) {
 		return nil, err
 	}
 
-	if _regions == nil || len(_regions) == 0 {
+	if len(_regions) == 0 {
 		_regions = []string{
 			shared.AGROTRUST_REGION,
 			shared.TUYEN_QUANG_REGION,
@@ -328,7 +328,7 @@ func (r *regionService) GetRegionDetail(region string, req request.GetChildrenFr
 	}
 
 	var centerBlobId string
-	if center.ImageBlobIDs != nil && len(center.ImageBlobIDs) > 0 {
+	if len(center.ImageBlobIDs) > 0 {
 		centerBlobId = center.ImageBlobIDs[len(center.ImageBlobIDs)-1]
 	}
 	res = response.RegionDetailResponse{
@@ -541,7 +541,7 @@ func (r *regionService) GetSupportedRegionSuggestions(req request.GetSupportedRe
 
 	data, pages, err := r.regionRepo.GetSupportedRegionSuggestions(req, true, ctx)
 	var amount int
-	if data == nil || len(data) == 0 {
+	if len(data) == 0 {
 		amount = 0
 	} else {
 		amount = len(data)
@@ -628,7 +628,7 @@ func (r *regionService) AdminGetSupportedRegionSuggestions(req request.GetSuppor
 
 	data, pages, err := r.regionRepo.GetSupportedRegionSuggestions(req, false, ctx)
 	var amount int
-	if data == nil || len(data) == 0 {
+	if len(data) == 0 {
 		amount = 0
 	} else {
 		amount = len(data)
@@ -671,7 +671,7 @@ func (r *regionService) GetWalletSupportedRegionSuggestions(req request.GetSuppo
 
 	data, pages, err := r.regionRepo.GetSupportedRegionSuggestions(req, false, ctx)
 	var amount int
-	if data == nil || len(data) == 0 {
+	if len(data) == 0 {
 		amount = 0
 	} else {
 		amount = len(data)
@@ -779,7 +779,7 @@ func (r *regionService) getGetRegionDetailRedisKey(region string, req request.Ge
 }
 
 func isRegionExist(region string) bool {
-	if _regions == nil || len(_regions) == 0 {
+	if len(_regions) == 0 {
 		newRegionsStorage()
 	}
 

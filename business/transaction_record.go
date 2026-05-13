@@ -141,7 +141,7 @@ func (t *transactionRecordService) GetTransactionRecordsV2(req request.GetTransa
 		return res, errRes
 	}
 
-	if txs == nil || len(txs) == 0 {
+	if len(txs) == 0 {
 		return res, nil
 	}
 
@@ -334,7 +334,7 @@ func (t *transactionRecordService) GetTransactionRecords(req request.GetTransact
 		return res, errRes
 	}
 
-	if txs == nil || len(txs) == 0 {
+	if len(txs) == 0 {
 		return res, nil
 	}
 

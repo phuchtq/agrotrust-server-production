@@ -510,7 +510,7 @@ func (p *pendingWithdrawProposalService) GetPendingWithdrawProposals(req request
 	}
 
 	var amount int
-	if data == nil || len(data) == 0 {
+	if len(data) == 0 {
 		amount = 0
 	} else {
 		amount = len(data)

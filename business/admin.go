@@ -110,7 +110,7 @@ func (a *adminService) GetAdmins(req request.GetAdminsRequest, ctx context.Conte
 		return response.PaginationDataResponse{}, err
 	}
 
-	if admins == nil || len(admins) == 0 {
+	if len(admins) == 0 {
 		return response.PaginationDataResponse{
 			Page:   req.Page,
 			Amount: 0,
