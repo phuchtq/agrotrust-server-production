@@ -3229,6 +3229,52 @@
                 }
             }
         },
+        "/images/presign": {
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Presign before upload image to Cloudinary",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "image"
+                ],
+                "summary": "Presign before upload image to Cloudinary",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.PresignUrlResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid data. Please try again.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    },
+                    "403": {
+                        "description": "You have no rights to access this action.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "There is something wrong in the system during the process. Please try again later.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/notis/user/{id}": {
             "get": {
                 "security": [
@@ -8277,6 +8323,9 @@
                 "ai_evaluation": {
                     "type": "string"
                 },
+                "ai_reason": {
+                    "type": "string"
+                },
                 "avatar_blob_id": {
                     "type": "string"
                 },
@@ -9844,6 +9893,26 @@
                 },
                 "total_donation": {
                     "type": "integer"
+                }
+            }
+        },
+        "response.PresignUrlResponse": {
+            "type": "object",
+            "properties": {
+                "api_key": {
+                    "type": "string"
+                },
+                "folder": {
+                    "type": "string"
+                },
+                "signature": {
+                    "type": "string"
+                },
+                "timestamp": {
+                    "type": "integer"
+                },
+                "upload_url": {
+                    "type": "string"
                 }
             }
         },

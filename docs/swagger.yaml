@@ -334,6 +334,8 @@ definitions:
     properties:
       ai_evaluation:
         type: string
+      ai_reason:
+        type: string
       avatar_blob_id:
         type: string
       birth_certificate_blob_id:
@@ -1401,6 +1403,19 @@ definitions:
         type: string
       total_donation:
         type: integer
+    type: object
+  response.PresignUrlResponse:
+    properties:
+      api_key:
+        type: string
+      folder:
+        type: string
+      signature:
+        type: string
+      timestamp:
+        type: integer
+      upload_url:
+        type: string
     type: object
   response.RegionsResponse:
     properties:
@@ -3670,6 +3685,36 @@ paths:
       summary: List gifts of a child
       tags:
       - gift
+  /images/presign:
+    post:
+      consumes:
+      - application/json
+      description: Presign before upload image to Cloudinary
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.PresignUrlResponse'
+        "400":
+          description: Invalid data. Please try again.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "403":
+          description: You have no rights to access this action.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "500":
+          description: There is something wrong in the system during the process.
+            Please try again later.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+      security:
+      - BearerAuth: []
+      summary: Presign before upload image to Cloudinary
+      tags:
+      - image
   /notis/user/{id}:
     get:
       consumes:
