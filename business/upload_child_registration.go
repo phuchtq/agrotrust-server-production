@@ -29,6 +29,7 @@ import (
 )
 
 type uploadChildRequestService struct {
+	platformConfigRepo     i_repository.IPlatformConfigRepository
 	uploadChildRequestRepo i_repository.IUploadChildRequestRepository
 	aiProvider             ai.IAiClientProvider
 	walrusProvider         walrus_pkg.IWalrusProvider
@@ -38,6 +39,7 @@ type uploadChildRequestService struct {
 }
 
 func initializeUploadChildRequestService(
+	platformConfigRepo i_repository.IPlatformConfigRepository,
 	uploadChildRequestRepo i_repository.IUploadChildRequestRepository,
 	aiProvider ai.IAiClientProvider,
 	walrusProvider walrus_pkg.IWalrusProvider,
@@ -45,6 +47,7 @@ func initializeUploadChildRequestService(
 	errLogger *log.Logger,
 ) business.IUploadChildRequestService {
 	return &uploadChildRequestService{
+		platformConfigRepo:     platformConfigRepo,
 		uploadChildRequestRepo: uploadChildRequestRepo,
 		aiProvider:             aiProvider,
 		walrusProvider:         walrusProvider,
@@ -62,7 +65,7 @@ func GenerateUploadChildRequestService() (business.IUploadChildRequestService, e
 		return nil, err
 	}
 
-	return initializeUploadChildRequestService(repository.InitializeUploadChildRequestRepo(cnn, errLogger), ai.InitializeAiProvider(nil, errLogger), walrus_pkg.InitializeWalrusProvider(errLogger), _networkAliases, errLogger), nil
+	return initializeUploadChildRequestService(repository.InitializePlatformConfigRepository(cnn, errLogger), repository.InitializeUploadChildRequestRepo(cnn, errLogger), ai.InitializeAiProvider(nil, errLogger), walrus_pkg.InitializeWalrusProvider(errLogger), _networkAliases, errLogger), nil
 }
 
 // ReviewUploadChildRequest implements business.IUploadChildRequestService.
@@ -317,7 +320,23 @@ func (u *uploadChildRequestService) CreateUploadChildRequest(req request.UploadC
 	if dob := util.RawDateToTime(dateOfBirth); dob.IsZero() {
 		return nil, errors.New(noti.INVALID_DATE_FORMAT_WARN_MSG)
 	} else {
-		if !isChildAgeInSupport(dob.Year()) {
+		var maxAgeAccepted, minAgeAccepted int
+		var tmp *entities.PlatformConfig
+		var numericTmp *entities.NumericConfig
+
+		if config, _ := u.platformConfigRepo.GetConfigByKey(numericTmp.GetTable(), tmp.GetChildAgeMaxLimitConfigKey(), ctx); config != nil {
+			maxAgeAccepted = config.Value.(int)
+		} else {
+			maxAgeAccepted = child_max_age_accepted
+		}
+
+		if config, _ := u.platformConfigRepo.GetConfigByKey(numericTmp.GetTable(), tmp.GetChildAgeMinLimitConfigKey(), ctx); config != nil {
+			minAgeAccepted = config.Value.(int)
+		} else {
+			minAgeAccepted = child_min_age_accepted
+		}
+
+		if !isChildAgeInSupport(dob.Year(), maxAgeAccepted, minAgeAccepted) {
 			return nil, errors.New(noti.CHILD_AGE_OUT_OF_SUPPORT_MESSAGE)
 		}
 	}

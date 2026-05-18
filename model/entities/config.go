@@ -27,6 +27,18 @@ type PlatformConfig struct {
 	Value interface{} `json:"value"`
 }
 
+func (c *PlatformConfig) GetChildAgeMaxLimitConfigKey() string {
+	return "child_age_max_limit"
+}
+
+func (c *PlatformConfig) GetChildAgeMinLimitConfigKey() string {
+	return "child_age_min_limit"
+}
+
+func (c *PlatformConfig) GetMinRegionStaffsConfigKey() string {
+	return "min_region_staffs"
+}
+
 func (c *NumericConfig) GetTable() string {
 	return "numeric_configs"
 }

@@ -28,11 +28,12 @@ import (
 )
 
 type centerRequestService struct {
-	centerRequestRepo i_repository.ICenterRequestRepository
-	profileRepo       i_repository.IProfileRepository
-	redisCache        cache.IRedisCache
-	clients           map[string]sui.ISuiAPI
-	errLogger         *log.Logger
+	platformConfigRepo i_repository.IPlatformConfigRepository
+	centerRequestRepo  i_repository.ICenterRequestRepository
+	profileRepo        i_repository.IProfileRepository
+	redisCache         cache.IRedisCache
+	clients            map[string]sui.ISuiAPI
+	errLogger          *log.Logger
 }
 
 const (
@@ -44,6 +45,7 @@ var (
 )
 
 func initializeCenterRequestService(
+	platformConfigRepo i_repository.IPlatformConfigRepository,
 	centerRequestRepo i_repository.ICenterRequestRepository,
 	profileRepo i_repository.IProfileRepository,
 	clients map[string]sui.ISuiAPI,
@@ -67,6 +69,7 @@ func GenerateCenterRequestService() (business.ICenterRequestService, error) {
 	}
 
 	return initializeCenterRequestService(
+		repository.InitializePlatformConfigRepository(cnn, errLogger),
 		repository.InitializeCenterRequestRepository(cnn, errLogger),
 		repository.InitializeProfileRepository(cnn, errLogger),
 		_networkAliases,
@@ -401,7 +404,16 @@ func (c *centerRequestService) CreateRequest(req request.CreateCenterRequest, ct
 
 	regionStaffCounts += 1
 
-	if regionStaffCounts < min_region_staffs {
+	var minRegionStaffsAccepted int
+	var tmp *entities.PlatformConfig
+	var numericTmp *entities.NumericConfig
+	if config, _ := c.platformConfigRepo.GetConfigByKey(numericTmp.GetTable(), tmp.GetMinRegionStaffsConfigKey(), ctx); config != nil {
+		minRegionStaffsAccepted = config.Value.(int)
+	} else {
+		minRegionStaffsAccepted = min_region_staffs
+	}
+
+	if regionStaffCounts < minRegionStaffsAccepted {
 		return nil, errors.New("Not enough staffs")
 	}
 

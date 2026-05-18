@@ -51,6 +51,27 @@ func (p *platformConfigRepo) GetConfig(id string, table string, ctx context.Cont
 	return &res, nil
 }
 
+// GetConfigByKey implements repository.IPlatformConfigRepository.
+func (p *platformConfigRepo) GetConfigByKey(table string, key string, ctx context.Context) (*entities.PlatformConfig, error) {
+	var query string = "SELECT * FROM " + table + " WHERE key = $1"
+	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.PLATFORM_CONFIG_REPOSITORY) + "GetConfigByKey - "
+
+	var res entities.PlatformConfig
+	if err := p.db.QueryRowContext(ctx, query, key).Scan(
+		&res.ID, &res.Key, &res.Value, &res.Description, &res.ActorProfileID, &res.ActorAddress,
+		&res.CreatedAt, &res.UpdatedAt); err != nil {
+
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+
+		p.errLogger.Println(errLogMsg + err.Error())
+		return nil, errors.New(noti.INTERNALL_ERR_MSG)
+	}
+
+	return &res, nil
+}
+
 // GetConfigs implements repository.IPlatformConfigRepository.
 func (p *platformConfigRepo) GetConfigs(req request.GetPlatformConfigsRequest, table string, ctx context.Context) ([]entities.PlatformConfig, int, error) {
 	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.PLATFORM_CONFIG_REPOSITORY) + "GetConfigs - "

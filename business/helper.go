@@ -13,7 +13,7 @@ import (
 	"github.com/block-vision/sui-go-sdk/sui"
 )
 
-const (
+var (
 	child_max_age_accepted int = 17
 	child_min_age_accepted int = 2
 )
@@ -48,9 +48,10 @@ func getOnChainObject[T any](client sui.ISuiAPI, id string, errLogger *log.Logge
 	return obj, err
 }
 
-func isChildAgeInSupport(yearOfBirth int) bool {
+func isChildAgeInSupport(yearOfBirth, maxAgeSupported, minAgeSupported int) bool {
 	var curTime time.Time = time.Now()
-	return curTime.Year()-yearOfBirth <= child_max_age_accepted && curTime.Year()-yearOfBirth >= child_min_age_accepted
+	var age int = curTime.Year() - yearOfBirth
+	return age <= maxAgeSupported && age >= minAgeSupported
 }
 
 func isProposalRateAvailableToConfirm(dao entities.DaoStruct, approverNum, refuserNum int, approveWeight, refuseWeight string) bool {
