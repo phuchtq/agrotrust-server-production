@@ -136,6 +136,23 @@ func (p *platformConfigService) UpdateConfig(id string, req request.UpdatePlatfo
 		case int, int64, float64:
 			switch req.Value.(type) {
 			case int, int64, float64:
+				var ageMaxLimitConfig string = res.GetChildAgeMaxLimitConfigKey()
+				var ageMinLimitConfig string = res.GetChildAgeMinLimitConfigKey()
+				var minRegionStaffsConfig string = res.GetMinRegionStaffsConfigKey()
+				if res.Key == ageMaxLimitConfig || res.Key == ageMinLimitConfig {
+					if req.Value.(int) < 0 {
+						return errors.New(noti.NEGATIVE_AGE_WARN_MSG)
+					}
+
+					switch res.Key {
+					case ageMaxLimitConfig:
+						child_max_age_accepted = req.Value.(int)
+					case ageMinLimitConfig:
+						child_min_age_accepted = req.Value.(int)
+					case minRegionStaffsConfig:
+						min_region_staffs = req.Value.(int)
+					}
+				}
 			default:
 				return genericErr
 			}

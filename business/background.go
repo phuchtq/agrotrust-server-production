@@ -222,17 +222,19 @@ func (b *backgroundService) ProcessCreateChildrenWithdrawProposals(ctx context.C
 
 	var errExecuteTxs error
 	b.errLogger.Println("Create children withdraws call")
-	for i := 1; i <= 3; i++ {
-		if err := on_chain.BuildMultiBackgroundTransactions(on_chain.BuildMultiBackgroundTransactionsRequest{
-			Client:    client,
-			Modules:   modules,
-			Functions: functions,
-			Arguments: args,
-			ErrLogger: b.errLogger,
-		}, ctx); err == nil {
-			break
-		} else {
-			errExecuteTxs = err
+	if args != nil && len(functions) > 0 && len(modules) > 0 {
+		for i := 1; i <= 3; i++ {
+			if err := on_chain.BuildMultiBackgroundTransactions(on_chain.BuildMultiBackgroundTransactionsRequest{
+				Client:    client,
+				Modules:   modules,
+				Functions: functions,
+				Arguments: args,
+				ErrLogger: b.errLogger,
+			}, ctx); err == nil {
+				break
+			} else {
+				errExecuteTxs = err
+			}
 		}
 	}
 
@@ -321,13 +323,19 @@ func (b *backgroundService) ProcessRefundVotePower(ctx context.Context) {
 	}
 
 	b.errLogger.Println("Refund vote power call")
-	on_chain.BuildMultiBackgroundTransactions(on_chain.BuildMultiBackgroundTransactionsRequest{
-		Client:    client,
-		Modules:   modules,
-		Functions: functions,
-		Arguments: args,
-		ErrLogger: b.errLogger,
-	}, ctx)
+	if args != nil && len(functions) > 0 && len(modules) > 0 {
+		for i := 1; i <= 3; i++ {
+			if on_chain.BuildMultiBackgroundTransactions(on_chain.BuildMultiBackgroundTransactionsRequest{
+				Client:    client,
+				Modules:   modules,
+				Functions: functions,
+				Arguments: args,
+				ErrLogger: b.errLogger,
+			}, ctx) == nil {
+				break
+			}
+		}
+	}
 }
 
 // ProcessBackgroundCenterRequests implements business.IBackgroundService.
@@ -497,14 +505,18 @@ func (b *backgroundService) ProcessBackgroundRegistrationRequests(ctx context.Co
 		}
 
 		b.errLogger.Println("Registration Background call")
-		if err := on_chain.BuildMultiBackgroundTransactions(on_chain.BuildMultiBackgroundTransactionsRequest{
-			Client:    client,
-			Modules:   modules,
-			Functions: functions,
-			Arguments: args,
-			ErrLogger: b.errLogger,
-		}, ctx); err != nil {
-			return
+		if args != nil && len(functions) > 0 && len(modules) > 0 {
+			for i := 1; i <= 3; i++ {
+				if on_chain.BuildMultiBackgroundTransactions(on_chain.BuildMultiBackgroundTransactionsRequest{
+					Client:    client,
+					Modules:   modules,
+					Functions: functions,
+					Arguments: args,
+					ErrLogger: b.errLogger,
+				}, ctx) == nil {
+					break
+				}
+			}
 		}
 
 		b.registrationRequestRepo.SetApprovedStatusesV2(approvedReqs, ctx)
