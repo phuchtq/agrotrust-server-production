@@ -4699,7 +4699,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.PaginationDataResponse"
+                            "$ref": "#/definitions/entities.PlatformConfig"
                         }
                     },
                     "400": {
@@ -4867,7 +4867,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.PaginationDataResponse"
+                            "$ref": "#/definitions/entities.PlatformConfig"
                         }
                     },
                     "400": {
@@ -8091,6 +8091,33 @@ const docTemplate = `{
                 "withdrawAmount": {
                     "type": "integer"
                 }
+            }
+        },
+        "entities.PlatformConfig": {
+            "type": "object",
+            "properties": {
+                "actor_address": {
+                    "type": "string"
+                },
+                "actor_profile_id": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "key": {
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
+                },
+                "value": {}
             }
         },
         "entities.Profile": {

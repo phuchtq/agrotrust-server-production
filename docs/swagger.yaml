@@ -217,6 +217,24 @@ definitions:
       withdrawAmount:
         type: integer
     type: object
+  entities.PlatformConfig:
+    properties:
+      actor_address:
+        type: string
+      actor_profile_id:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      key:
+        type: string
+      updated_at:
+        type: string
+      value: {}
+    type: object
   entities.Profile:
     properties:
       created_at:
@@ -4607,7 +4625,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.PaginationDataResponse'
+            $ref: '#/definitions/entities.PlatformConfig'
         "400":
           description: Invalid data. Please try again.
           schema:
@@ -4718,7 +4736,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.PaginationDataResponse'
+            $ref: '#/definitions/entities.PlatformConfig'
         "400":
           description: Invalid data. Please try again.
           schema:
