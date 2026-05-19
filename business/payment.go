@@ -1546,10 +1546,10 @@ func (p *paymentService) CallbackV2(id string, ctx context.Context) error {
 		if res != nil {
 			payment = res
 			break
+		} else {
+			var duration time.Duration = time.Duration(i) * 200 * time.Millisecond
+			time.Sleep(duration)
 		}
-
-		var duration time.Duration = time.Duration(i) * 200 * time.Millisecond
-		time.Sleep(duration)
 	}
 
 	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
@@ -1577,12 +1577,11 @@ func (p *paymentService) CallbackV2(id string, ctx context.Context) error {
 			if res != nil {
 				data = res
 				break
+			} else {
+				errRes = err
+				var duration time.Duration = time.Duration(i) * 200 * time.Millisecond
+				time.Sleep(duration)
 			}
-
-			errRes = err
-
-			var duration time.Duration = time.Duration(i) * 200 * time.Millisecond
-			time.Sleep(duration)
 		}
 
 		if errRes != nil {
@@ -1600,10 +1599,10 @@ func (p *paymentService) CallbackV2(id string, ctx context.Context) error {
 			if res != nil {
 				proposal = res
 				break
+			} else {
+				var duration time.Duration = time.Duration(i) * 200 * time.Millisecond
+				time.Sleep(duration)
 			}
-
-			var duration time.Duration = time.Duration(i) * 200 * time.Millisecond
-			time.Sleep(duration)
 		}
 
 		if proposal == nil {
@@ -1616,10 +1615,10 @@ func (p *paymentService) CallbackV2(id string, ctx context.Context) error {
 			if res != nil {
 				bankProfile = res
 				break
+			} else {
+				var duration time.Duration = time.Duration(i) * 200 * time.Millisecond
+				time.Sleep(duration)
 			}
-
-			var duration time.Duration = time.Duration(i) * 200 * time.Millisecond
-			time.Sleep(duration)
 		}
 
 		if bankProfile == nil {
@@ -1647,12 +1646,11 @@ func (p *paymentService) CallbackV2(id string, ctx context.Context) error {
 			if res != nil {
 				data = res
 				break
+			} else {
+				errRes = err
+				var duration time.Duration = time.Duration(i) * 200 * time.Millisecond
+				time.Sleep(duration)
 			}
-
-			errRes = err
-
-			var duration time.Duration = time.Duration(i) * 200 * time.Millisecond
-			time.Sleep(duration)
 		}
 
 		if errRes != nil {
