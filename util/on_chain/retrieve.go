@@ -295,7 +295,7 @@ func GetDynamicFields(id string, client sui.ISuiAPI, errLogger *log.Logger, ctx 
 		return nil, internalErr
 	}
 
-	var res map[string]interface{}
+	var res = make(map[string]interface{})
 	for _, fieldInfo := range fields.Data {
 		fieldValue, err := client.SuiXGetDynamicFieldObject(ctx, models.SuiXGetDynamicFieldObjectRequest{
 			ObjectId: fieldInfo.ObjectId,
@@ -314,6 +314,7 @@ func GetDynamicFields(id string, client sui.ISuiAPI, errLogger *log.Logger, ctx 
 		for k, v := range field {
 			res[k] = v
 		}
+
 	}
 
 	return res, nil
@@ -367,10 +368,8 @@ func handleGetEmptyOnChainObject(err, id string, logger *log.Logger) {
 	switch err {
 	case "deleted":
 		msg = fmt.Sprintf("Object %s was deleted from the network.", id)
-		break
 	case "notExists":
 		msg = fmt.Sprintf("Object %s does not exist.", id)
-		break
 	}
 
 	if msg != "" {
