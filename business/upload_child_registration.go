@@ -65,7 +65,16 @@ func GenerateUploadChildRequestService() (business.IUploadChildRequestService, e
 		return nil, err
 	}
 
-	return initializeUploadChildRequestService(repository.InitializeUploadChildRequestRepo(cnn, errLogger), ai.InitializeAiProvider(nil, errLogger), walrus_pkg.InitializeWalrusProvider(errLogger), _networkAliases, errLogger), nil
+	var uploadChildRequestService = initializeUploadChildRequestService(
+		repository.InitializePlatformConfigRepository(cnn, errLogger),
+		repository.InitializeUploadChildRequestRepo(cnn, errLogger),
+		ai.InitializeAiProvider(errLogger),
+		walrus_pkg.InitializeWalrusProvider(errLogger),
+		_networkAliases,
+		errLogger,
+	)
+
+	return uploadChildRequestService, nil
 }
 
 // ReviewUploadChildRequest implements business.IUploadChildRequestService.
