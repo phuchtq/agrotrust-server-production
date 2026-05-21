@@ -8345,12 +8345,6 @@ const docTemplate = `{
                 "region"
             ],
             "properties": {
-                "ai_evaluation": {
-                    "type": "string"
-                },
-                "ai_reason": {
-                    "type": "string"
-                },
                 "avatar_blob_id": {
                     "type": "string"
                 },
@@ -8388,7 +8382,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "is_confirm_upload": {
-                    "description": "Default as false, when status aprroved, user clicks to update to true, call smart contract to register role",
                     "type": "boolean"
                 },
                 "last_name": {
@@ -8407,7 +8400,6 @@ const docTemplate = `{
                     "$ref": "#/definitions/entities.ChildGuardianProfile"
                 },
                 "status": {
-                    "description": "e.g. \"Pending\", \"Approved\", \"Refused\"",
                     "type": "string"
                 },
                 "updated_at": {
@@ -8906,14 +8898,14 @@ const docTemplate = `{
         "request.SubmitTaskProofRequest": {
             "type": "object",
             "required": [
-                "image_base64",
-                "image_blob_id"
+                "image_blob_id",
+                "image_url"
             ],
             "properties": {
-                "image_base64": {
+                "image_blob_id": {
                     "type": "string"
                 },
-                "image_blob_id": {
+                "image_url": {
                     "type": "string"
                 }
             }
