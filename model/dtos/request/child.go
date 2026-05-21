@@ -18,10 +18,8 @@ type UploadChildExtractRequest struct {
 
 type UploadChildRequest struct {
 	HomeBlobID             string                `json:"home_blob_id" validate:"required"`
-	HomeBase64             string                `json:"home_base64" validate:"required"`
 	IdentityCode           string                `json:"identity_code" validate:"required"`
 	BirthCertificateBlobID string                `json:"birth_certificate_blob_id" validate:"required"`
-	BirthCertificateBase64 string                `json:"birth_certificate_base64" validate:"required"`
 	Region                 string                `json:"region" validate:"required"`
 	FirstName              string                `json:"first_name" validate:"required"`
 	LastName               string                `json:"last_name" validate:"required"`
@@ -29,7 +27,6 @@ type UploadChildRequest struct {
 	DateOfBirth            string                `json:"date_of_birth" validate:"required"`
 	HomeAddress            string                `json:"home_address" validate:"required"`
 	AvatarBlobId           string                `json:"avatar_blob_id" validate:"required"`
-	AvatarBase64           string                `json:"avatar_base64" validate:"required"`
 	FirstGuardian          ChildGuardianProfile  `json:"first_guardian" validate:"required"`
 	SecondGuardian         *ChildGuardianProfile `json:"second_guardian"`
 }
@@ -39,7 +36,6 @@ type ChildGuardianProfile struct {
 	PhoneNumber        string `json:"guardian_phone_number" validate:"required"`
 	Relation           string `json:"guardian_relation" validate:"required"`
 	IdentityCardBlobID string `json:"identity_card_blob_id" validate:"required"`
-	IdentityCardBase64 string `json:"identity_card_base64" validate:"required"`
 }
 
 type AddChildStringMetadataRequest struct {

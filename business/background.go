@@ -423,16 +423,15 @@ func (b *backgroundService) ProcessBackgroundRegistrationRequests(ctx context.Co
 			case admin_role:
 				functions = append(functions, staffModule.GetFunctionRegisterAdmin())
 				args = append(args, staffModule.ToRegisterAdminArguments(on_chain.RegisterAdminArguments{
-					IdentityCode:       req.IdentityCode,
-					IdentityCardBlobID: req.IdentityCardBlobID,
-					AvatarBlobID:       req.AvatarBlobID,
-					FirstName:          req.FirstName,
-					LastName:           req.LastName,
-					Gender:             req.Gender,
-					DateOfBirth:        req.DateOfBirth,
-					PhoneNumber:        req.PhoneNumber,
-					Email:              req.Email,
-					Owner:              req.CreatedBy,
+					IdentityCode: req.IdentityCode,
+					AvatarBlobID: req.AvatarBlobID,
+					FirstName:    req.FirstName,
+					LastName:     req.LastName,
+					Gender:       req.Gender,
+					DateOfBirth:  req.DateOfBirth,
+					PhoneNumber:  req.PhoneNumber,
+					Email:        req.Email,
+					Owner:        req.CreatedBy,
 				}))
 			case local_leader_role:
 				pool, _ := on_chain.GetOnChainObject[entities.MainPool](on_chain.GetOnChainObjectRequest{
@@ -472,16 +471,15 @@ func (b *backgroundService) ProcessBackgroundRegistrationRequests(ctx context.Co
 					LocalPoolID: localPoolId,
 					Region:      req.Region,
 					RegisterAdminArguments: on_chain.RegisterAdminArguments{
-						IdentityCode:       req.IdentityCode,
-						IdentityCardBlobID: req.IdentityCardBlobID,
-						AvatarBlobID:       req.AvatarBlobID,
-						FirstName:          req.FirstName,
-						LastName:           req.LastName,
-						Gender:             req.Gender,
-						DateOfBirth:        req.DateOfBirth,
-						PhoneNumber:        req.PhoneNumber,
-						Email:              req.Email,
-						Owner:              req.CreatedBy,
+						IdentityCode: req.IdentityCode,
+						AvatarBlobID: req.AvatarBlobID,
+						FirstName:    req.FirstName,
+						LastName:     req.LastName,
+						Gender:       req.Gender,
+						DateOfBirth:  req.DateOfBirth,
+						PhoneNumber:  req.PhoneNumber,
+						Email:        req.Email,
+						Owner:        req.CreatedBy,
 					},
 				}))
 			case volunteer_role:
@@ -489,16 +487,15 @@ func (b *backgroundService) ProcessBackgroundRegistrationRequests(ctx context.Co
 				args = append(args, staffModule.ToRegisterNormalStaffArguments(on_chain.RegisterNormalStaffArguments{
 					Region: req.Region,
 					RegisterAdminArguments: on_chain.RegisterAdminArguments{
-						IdentityCode:       req.IdentityCode,
-						IdentityCardBlobID: req.IdentityCardBlobID,
-						AvatarBlobID:       req.AvatarBlobID,
-						FirstName:          req.FirstName,
-						LastName:           req.LastName,
-						Gender:             req.Gender,
-						DateOfBirth:        req.DateOfBirth,
-						PhoneNumber:        req.PhoneNumber,
-						Email:              req.Email,
-						Owner:              req.CreatedBy,
+						IdentityCode: req.IdentityCode,
+						AvatarBlobID: req.AvatarBlobID,
+						FirstName:    req.FirstName,
+						LastName:     req.LastName,
+						Gender:       req.Gender,
+						DateOfBirth:  req.DateOfBirth,
+						PhoneNumber:  req.PhoneNumber,
+						Email:        req.Email,
+						Owner:        req.CreatedBy,
 					},
 				}))
 			}

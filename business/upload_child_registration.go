@@ -148,47 +148,57 @@ func (u *uploadChildRequestService) ReviewUploadChildRequest(id string, req requ
 		return u.uploadChildRequestRepo.UpdateUploadChildRequest(*request, ctx)
 	}
 
-	var secondGuardianFullName, secondGuardianPhone, secondGuardianRelation, secondGuardianIdentityCardBlobID string
+	var secondGuardianFullName, secondGuardianPhone, secondGuardianRelation string
 	if request.SecondGuardianProfile != nil {
 		secondGuardianFullName = request.SecondGuardianProfile.FullName
 		secondGuardianPhone = request.SecondGuardianProfile.PhoneNumber
 		secondGuardianRelation = request.SecondGuardianProfile.Relation
-		secondGuardianIdentityCardBlobID = request.SecondGuardianProfile.IdentityCardBlobID
 	}
 
 	var childModule = on_chain.InitializeModuleChild()
-	if _, err := on_chain.ExecuteTransactionV2(on_chain.ExecuteTransactionRequestV2{
+	res, err := on_chain.ExecuteTransactionV2(on_chain.ExecuteTransactionRequestV2{
 		Client:   client,
 		Module:   childModule.GetModule(),
 		Function: childModule.GetFunctionAddChild(),
 		Arguments: childModule.ToAddChildArguments(on_chain.AddChildArguments{
-			Center:                           centerId,
-			IdentityCode:                     request.IdentityCode,
-			BirthCertificateBlobID:           request.BirthCertificateBlobID,
-			FirstName:                        request.FirstName,
-			LastName:                         request.LastName,
-			Gender:                           request.Gender,
-			DateOfBirth:                      request.DateOfBirth,
-			HomeAddress:                      request.HomeAddress,
-			Region:                           request.Region,
-			AvatarBlobId:                     request.AvatarBlobId,
-			HomeBlobID:                       request.HomeBlobID,
-			FirstGuardianFullName:            request.FirstGuardianProfile.FullName,
-			FirstGuardianPhone:               request.FirstGuardianProfile.PhoneNumber,
-			FirstGuardianRelation:            request.FirstGuardianProfile.Relation,
-			FirstGuardianIdentityCardBlobID:  request.FirstGuardianProfile.IdentityCardBlobID,
-			SecondGuardianFullName:           secondGuardianFullName,
-			SecondGuardianPhone:              secondGuardianPhone,
-			SecondGuardianRelation:           secondGuardianRelation,
-			SecondGuardianIdentityCardBlobID: secondGuardianIdentityCardBlobID,
-			Sender:                           request.CreatedBy,
+			Center:                 centerId,
+			IdentityCode:           request.IdentityCode,
+			FirstName:              request.FirstName,
+			LastName:               request.LastName,
+			Gender:                 request.Gender,
+			DateOfBirth:            request.DateOfBirth,
+			HomeAddress:            request.HomeAddress,
+			Region:                 request.Region,
+			AvatarBlobId:           request.AvatarBlobId,
+			HomeBlobID:             request.HomeBlobID,
+			FirstGuardianFullName:  request.FirstGuardianProfile.FullName,
+			FirstGuardianPhone:     request.FirstGuardianProfile.PhoneNumber,
+			FirstGuardianRelation:  request.FirstGuardianProfile.Relation,
+			SecondGuardianFullName: secondGuardianFullName,
+			SecondGuardianPhone:    secondGuardianPhone,
+			SecondGuardianRelation: secondGuardianRelation,
+			Sender:                 request.CreatedBy,
 		}),
 		ErrLogger: u.errLogger,
-	}, ctx); err != nil {
+	}, ctx)
+	if err != nil {
 		return err
 	}
 
+	var onchainId string
+	var module = on_chain.InitializeModuleChild()
+	var eventType string = fmt.Sprintf("%s::%s::%s", os.Getenv(env.PACKAGE_ID), module.GetModule(), module.GetChildEventEmittedStruct())
+	for _, event := range res.Events {
+		if event.Type == eventType {
+			if eventId, ok := event.ParsedJson["id"].(string); ok {
+				onchainId = eventId
+				break
+			}
+		}
+	}
+
 	request.Status = request_approved_status
+	request.OnchainID = &onchainId
 
 	for i := 1; i <= 3; i++ {
 		if u.uploadChildRequestRepo.UpdateUploadChildRequest(*request, ctx) == nil {
@@ -379,9 +389,6 @@ func (u *uploadChildRequestService) CreateUploadChildRequest(req request.UploadC
 	var firstNasme string = strings.TrimSpace(req.FirstName)
 	var lastName string = strings.TrimSpace(req.LastName)
 	var homeAddr string = strings.TrimSpace(req.HomeAddress)
-
-	// var aiEvaluation string = u.aiProvider.ExtractChildInfo()(validateReq, ctx)
-
 	var curTime time.Time = time.Now()
 	var request = entities.UploadChildRequest{
 		ID:                     util.GenerateId(),
@@ -398,7 +405,6 @@ func (u *uploadChildRequestService) CreateUploadChildRequest(req request.UploadC
 		HomeAddress:            homeAddr,
 		FirstGuardianProfile:   firstGuardianProfile,
 		SecondGuardianProfile:  secondGuardianProfile,
-		// AIEvaluation:           aiEvaluation,
 		Status:    request_pending_status,
 		CreatedBy: ctx.Value("address").(string),
 		CreatedAt: curTime,

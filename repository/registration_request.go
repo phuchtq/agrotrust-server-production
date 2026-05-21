@@ -65,8 +65,8 @@ func (r *registratioRequestRepo) GetRoleRegistrationRequests(role string, ctx co
 			&x.ID, &x.ProfileID, &x.RegisterRole, &x.IdentityCode, &x.IdentityCardBlobID,
 			&x.AvatarBlobID, &x.Region, &x.FirstName, &x.LastName, &x.Gender,
 			&x.DateOfBirth, &x.PhoneNumber, &x.Email, pq.Array(&x.Approvers), pq.Array(&x.Refusers),
-			pq.Array(&x.RefuseReasons), &x.Status, &x.IsConfirmRegister,
-			&x.CreatedBy, &x.CreatedAt, &x.UpdatedAt, &x.ClosedAt); err != nil {
+			pq.Array(&x.RefuseReasons), &x.Status, &x.IsConfirmRegister, &x.CreatedBy,
+			&x.OnchainID, &x.CreatedAt, &x.UpdatedAt, &x.ClosedAt); err != nil {
 
 			r.errLogger.Println(errLogMsg + err.Error())
 			return nil, internalErr
@@ -83,7 +83,7 @@ func (r *registratioRequestRepo) CreateRegistrationRequest(req entities.Registra
 	var query string = "INSERT INTO " + registration_request_table +
 		" (id, profile_id, register_role, identity_code, identity_card_blob_id, avatar_blob_id, " +
 		"region, first_name, last_name, gender, date_of_birth, phone_number, email, " +
-		"approvers, refusers, refuse_reasons, status, ai_evaluation, is_confirm_register, " +
+		"approvers, refusers, refuse_reasons, status, is_confirm_register, " +
 		"created_by, created_at, updated_at, closed_at) " +
 		"values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, " +
 		"$13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)"
@@ -93,7 +93,7 @@ func (r *registratioRequestRepo) CreateRegistrationRequest(req entities.Registra
 	if _, err := r.db.ExecContext(ctx, query, req.ID, req.ProfileID, req.RegisterRole, req.IdentityCode, req.IdentityCardBlobID,
 		req.AvatarBlobID, req.Region, req.FirstName, req.LastName, req.Gender,
 		req.DateOfBirth, req.PhoneNumber, req.Email, pq.Array(req.Approvers), pq.Array(req.Refusers),
-		pq.Array(req.RefuseReasons), req.Status, req.AIEvaluation, req.IsConfirmRegister,
+		pq.Array(req.RefuseReasons), req.Status, req.IsConfirmRegister,
 		req.CreatedBy, req.CreatedAt, req.UpdatedAt, req.ClosedAt); err != nil {
 
 		r.errLogger.Println(errLogMsg + err.Error())
@@ -108,8 +108,8 @@ func (r *registratioRequestRepo) UpdateRegistrationRequest(req entities.Registra
 	var query string = "UPDATE " + registration_request_table + " SET " +
 		"region = $1, first_name = $2, last_name = $3, gender = $4, " +
 		"date_of_birth = $5, phone_number = $6, email = $7, " +
-		"approvers = $8, refusers = $9, refuse_reasons = $10, " +
-		"status = $11, is_confirm_register = $12, updated_at = $13 WHERE id = $14"
+		"approvers = $8, refusers = $9, refuse_reasons = $10, status = $11, " +
+		"is_confirm_register = $12, on_chain_id = $13, updated_at = $14 WHERE id = $15"
 
 	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRATION_REQUEST_REPOSITORY) + "UpdateRegistrationRequest - "
 	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
@@ -117,7 +117,7 @@ func (r *registratioRequestRepo) UpdateRegistrationRequest(req entities.Registra
 	res, err := r.db.ExecContext(ctx, query, req.Region, req.FirstName, req.LastName, req.Gender,
 		req.DateOfBirth, req.PhoneNumber, req.Email,
 		pq.Array(req.Approvers), pq.Array(req.Refusers), pq.Array(req.RefuseReasons),
-		req.Status, req.IsConfirmRegister, req.UpdatedAt, req.ID)
+		req.Status, req.IsConfirmRegister, req.OnchainID, req.UpdatedAt, req.ID)
 	if err != nil {
 		r.errLogger.Println(errLogMsg + err.Error())
 		return internalErr
@@ -146,8 +146,65 @@ func (r *registratioRequestRepo) GetRegistrationRequest(id string, ctx context.C
 		&res.ID, &res.ProfileID, &res.RegisterRole, &res.IdentityCode, &res.IdentityCardBlobID,
 		&res.AvatarBlobID, &res.Region, &res.FirstName, &res.LastName, &res.Gender,
 		&res.DateOfBirth, &res.PhoneNumber, &res.Email, pq.Array(&res.Approvers), pq.Array(&res.Refusers),
-		pq.Array(&res.RefuseReasons), &res.Status, &res.AIEvaluation, &res.IsConfirmRegister,
-		&res.CreatedBy, &res.CreatedAt, &res.UpdatedAt, &res.ClosedAt); err != nil {
+		pq.Array(&res.RefuseReasons), &res.Status, &res.IsConfirmRegister, &res.CreatedBy,
+		&res.OnchainID, &res.CreatedAt, &res.UpdatedAt, &res.ClosedAt); err != nil {
+
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+
+		r.errLogger.Println(errLogMsg + err.Error())
+		return nil, errors.New(noti.INTERNALL_ERR_MSG)
+	}
+
+	return &res, nil
+}
+
+// GetRegistrationRequestByOnchainId implements repository.IRegistrationRequestRepository.
+func (r *registratioRequestRepo) GetRegistrationRequestByOnchainId(id string, ctx context.Context) (*entities.RegistrationRequest, error) {
+	var query string = "SELECT * FROM " + registraion_request_table + " WHERE on_chain_id = $1"
+	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRAION_REQUEST_REPOSITORY) + "GetRegistrationRequestByOnchainId - "
+
+	var res entities.RegistrationRequest
+	if err := r.db.QueryRowContext(ctx, query, id).Scan(
+		&res.ID, &res.ProfileID, &res.RegisterRole, &res.IdentityCode, &res.IdentityCardBlobID,
+		&res.AvatarBlobID, &res.Region, &res.FirstName, &res.LastName, &res.Gender,
+		&res.DateOfBirth, &res.PhoneNumber, &res.Email, pq.Array(&res.Approvers), pq.Array(&res.Refusers),
+		pq.Array(&res.RefuseReasons), &res.Status, &res.IsConfirmRegister, &res.CreatedBy,
+		&res.OnchainID, &res.CreatedAt, &res.UpdatedAt, &res.ClosedAt); err != nil {
+
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+
+		r.errLogger.Println(errLogMsg + err.Error())
+		return nil, errors.New(noti.INTERNALL_ERR_MSG)
+	}
+
+	return &res, nil
+}
+
+// GetRegistrationRequestWithDetail implements repository.IRegistrationRequestRepository.
+func (r *registratioRequestRepo) GetRegistrationRequestWithDetail(detail entities.GetRegistrationRequestWithDetail, ctx context.Context) (*entities.RegistrationRequest, error) {
+	var query string = "SELECT * FROM " + registraion_request_table + " WHERE " +
+		"register_role = $1 AND identity_code = $2 AND avatar_blob_id = $3 " +
+		"AND region = $4 AND first_name = $5 AND last_name = $6 " +
+		"AND gender = $7 AND date_of_birth = $8 AND phone_number = $9 " +
+		"AND email = $10 AND status = $11 AND is_confirm_register = $12 AND created_by = $13"
+
+	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRAION_REQUEST_REPOSITORY) + "GetRegistrationRequestWithDetail - "
+
+	var res entities.RegistrationRequest
+	if err := r.db.QueryRowContext(ctx, query, detail.RegisterRole, detail.IdentityCode, detail.AvatarBlobID, detail.Region,
+		detail.FirstName, detail.LastName, detail.Gender, detail.DateOfBirth, detail.PhoneNumber,
+		detail.Email, detail.Status, detail.IsConfirmRegister, detail.CreatedBy,
+	).Scan(
+		&res.ID, &res.ProfileID, &res.RegisterRole, &res.IdentityCode, &res.IdentityCardBlobID,
+		&res.AvatarBlobID, &res.Region, &res.FirstName, &res.LastName, &res.Gender,
+		&res.DateOfBirth, &res.PhoneNumber, &res.Email, pq.Array(&res.Approvers), pq.Array(&res.Refusers),
+		pq.Array(&res.RefuseReasons), &res.Status, &res.IsConfirmRegister, &res.CreatedBy,
+		&res.OnchainID, &res.CreatedAt, &res.UpdatedAt, &res.ClosedAt,
+	); err != nil {
 
 		if err == sql.ErrNoRows {
 			return nil, nil
@@ -265,8 +322,8 @@ func (r *registratioRequestRepo) GetRegistrationRequests(req request.GetRegistra
 			&x.ID, &x.ProfileID, &x.RegisterRole, &x.IdentityCode, &x.IdentityCardBlobID,
 			&x.AvatarBlobID, &x.Region, &x.FirstName, &x.LastName, &x.Gender,
 			&x.DateOfBirth, &x.PhoneNumber, &x.Email, pq.Array(&x.Approvers), pq.Array(&x.Refusers),
-			pq.Array(&x.RefuseReasons), &x.Status, &x.AIEvaluation, &x.IsConfirmRegister,
-			&x.CreatedBy, &x.CreatedAt, &x.UpdatedAt, &x.ClosedAt); err != nil {
+			pq.Array(&x.RefuseReasons), &x.Status, &x.IsConfirmRegister, &x.CreatedBy,
+			&x.OnchainID, &x.CreatedAt, &x.UpdatedAt, &x.ClosedAt); err != nil {
 
 			r.errLogger.Println(errLogMsg + err.Error())
 			return nil, 0, internalErr
@@ -301,8 +358,8 @@ func (r *registratioRequestRepo) GetWalletRegistrationRequests(id string, ctx co
 			&x.ID, &x.ProfileID, &x.RegisterRole, &x.IdentityCode, &x.IdentityCardBlobID,
 			&x.AvatarBlobID, &x.Region, &x.FirstName, &x.LastName, &x.Gender,
 			&x.DateOfBirth, &x.PhoneNumber, &x.Email, pq.Array(&x.Approvers), pq.Array(&x.Refusers),
-			pq.Array(&x.RefuseReasons), &x.Status, &x.AIEvaluation, &x.IsConfirmRegister,
-			&x.CreatedBy, &x.CreatedAt, &x.UpdatedAt, &x.ClosedAt); err != nil {
+			pq.Array(&x.RefuseReasons), &x.Status, &x.IsConfirmRegister, &x.CreatedBy,
+			&x.OnchainID, &x.CreatedAt, &x.UpdatedAt, &x.ClosedAt); err != nil {
 
 			r.errLogger.Println(errLogMsg + err.Error())
 			return nil, internalErr
@@ -335,8 +392,8 @@ func (r *registratioRequestRepo) GetPendingRequestsV2(ctx context.Context) ([]en
 			&x.ID, &x.ProfileID, &x.RegisterRole, &x.IdentityCode, &x.IdentityCardBlobID,
 			&x.AvatarBlobID, &x.Region, &x.FirstName, &x.LastName, &x.Gender,
 			&x.DateOfBirth, &x.PhoneNumber, &x.Email, pq.Array(&x.Approvers), pq.Array(&x.Refusers),
-			pq.Array(&x.RefuseReasons), &x.Status, &x.AIEvaluation, &x.IsConfirmRegister,
-			&x.CreatedBy, &x.CreatedAt, &x.UpdatedAt, &x.ClosedAt); err != nil {
+			pq.Array(&x.RefuseReasons), &x.Status, &x.IsConfirmRegister, &x.CreatedBy,
+			&x.OnchainID, &x.CreatedAt, &x.UpdatedAt, &x.ClosedAt); err != nil {
 
 			r.errLogger.Println(errLogMsg + err.Error())
 			return nil, internalErr

@@ -269,8 +269,6 @@ definitions:
     type: object
   entities.RegistrationRequest:
     properties:
-      ai_evaluation:
-        type: string
       approvers:
         items:
           type: string
@@ -302,6 +300,8 @@ definitions:
           to true, call smart contract to register role
         type: boolean
       last_name:
+        type: string
+      on_chain_id:
         type: string
       phone_number:
         type: string
@@ -378,6 +378,8 @@ definitions:
         type: boolean
       last_name:
         type: string
+      on_chain_id:
+        type: string
       profile_id:
         type: string
       region:
@@ -416,15 +418,12 @@ definitions:
         type: string
       guardian_relation:
         type: string
-      identity_card_base64:
-        type: string
       identity_card_blob_id:
         type: string
     required:
     - guardian_full_name
     - guardian_phone_number
     - guardian_relation
-    - identity_card_base64
     - identity_card_blob_id
     type: object
   request.ConfirmProvideMealForChildRequest:
@@ -847,11 +846,7 @@ definitions:
     type: object
   request.UploadChildRequest:
     properties:
-      avatar_base64:
-        type: string
       avatar_blob_id:
-        type: string
-      birth_certificate_base64:
         type: string
       birth_certificate_blob_id:
         type: string
@@ -865,8 +860,6 @@ definitions:
         type: string
       home_address:
         type: string
-      home_base64:
-        type: string
       home_blob_id:
         type: string
       identity_code:
@@ -878,16 +871,13 @@ definitions:
       second_guardian:
         $ref: '#/definitions/request.ChildGuardianProfile'
     required:
-    - avatar_base64
     - avatar_blob_id
-    - birth_certificate_base64
     - birth_certificate_blob_id
     - date_of_birth
     - first_guardian
     - first_name
     - gender
     - home_address
-    - home_base64
     - home_blob_id
     - identity_code
     - last_name
@@ -1019,11 +1009,22 @@ definitions:
       uploaded_at:
         type: string
     type: object
+  response.ChildGuardianProfile:
+    properties:
+      guardian_full_name:
+        type: string
+      guardian_phone_number:
+        type: string
+      guardian_relation:
+        type: string
+      identity_card_img_url:
+        type: string
+    type: object
   response.ChildResponse:
     properties:
       avatar_blob_id:
         type: string
-      birth_certificate_blob_id:
+      birth_certificate_img_url:
         type: string
       books_needs:
         items:
@@ -1039,7 +1040,7 @@ definitions:
         additionalProperties: true
         type: object
       first_guardian:
-        $ref: '#/definitions/request.ChildGuardianProfile'
+        $ref: '#/definitions/response.ChildGuardianProfile'
       first_name:
         type: string
       gender:
@@ -1069,7 +1070,7 @@ definitions:
       region:
         type: string
       second_guardian:
-        $ref: '#/definitions/request.ChildGuardianProfile'
+        $ref: '#/definitions/response.ChildGuardianProfile'
       special_need_campaigns:
         items:
           type: string
@@ -1443,7 +1444,7 @@ definitions:
         type: string
       id:
         type: string
-      identity_card_blob_id:
+      identity_card_img_url:
         type: string
       identity_code:
         type: string

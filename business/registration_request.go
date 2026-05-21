@@ -569,11 +569,6 @@ func (r *registrationRequestService) CreateRegistrationRequest(req request.Creat
 	var identityCode string = util.StandardizeString(*profile.IdentityCode)
 	var firstName string = strings.TrimSpace(*profile.FirstName)
 	var lastName string = strings.TrimSpace(*profile.LastName)
-
-	// TODO: AI Evaluation
-	var aiEvaluation string = "To be filled"
-
-	// todo: validate identity code
 	var request = entities.RegistrationRequest{
 		ID:                 util.GenerateId(),
 		ProfileID:          ctx.Value("sub").(string),
@@ -589,7 +584,6 @@ func (r *registrationRequestService) CreateRegistrationRequest(req request.Creat
 		PhoneNumber:        *profile.PhoneNumber,
 		Email:              *profile.Email,
 		Status:             request_pending_status,
-		AIEvaluation:       aiEvaluation,
 		CreatedBy:          sender,
 		CreatedAt:          curTime,
 		UpdatedAt:          curTime,

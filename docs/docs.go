@@ -8217,9 +8217,6 @@ const docTemplate = `{
         "entities.RegistrationRequest": {
             "type": "object",
             "properties": {
-                "ai_evaluation": {
-                    "type": "string"
-                },
                 "approvers": {
                     "type": "array",
                     "items": {
@@ -8264,6 +8261,9 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "last_name": {
+                    "type": "string"
+                },
+                "on_chain_id": {
                     "type": "string"
                 },
                 "phone_number": {
@@ -8387,6 +8387,9 @@ const docTemplate = `{
                 "last_name": {
                     "type": "string"
                 },
+                "on_chain_id": {
+                    "type": "string"
+                },
                 "profile_id": {
                     "type": "string"
                 },
@@ -8428,7 +8431,6 @@ const docTemplate = `{
                 "guardian_full_name",
                 "guardian_phone_number",
                 "guardian_relation",
-                "identity_card_base64",
                 "identity_card_blob_id"
             ],
             "properties": {
@@ -8439,9 +8441,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "guardian_relation": {
-                    "type": "string"
-                },
-                "identity_card_base64": {
                     "type": "string"
                 },
                 "identity_card_blob_id": {
@@ -9062,29 +9061,20 @@ const docTemplate = `{
         "request.UploadChildRequest": {
             "type": "object",
             "required": [
-                "avatar_base64",
                 "avatar_blob_id",
-                "birth_certificate_base64",
                 "birth_certificate_blob_id",
                 "date_of_birth",
                 "first_guardian",
                 "first_name",
                 "gender",
                 "home_address",
-                "home_base64",
                 "home_blob_id",
                 "identity_code",
                 "last_name",
                 "region"
             ],
             "properties": {
-                "avatar_base64": {
-                    "type": "string"
-                },
                 "avatar_blob_id": {
-                    "type": "string"
-                },
-                "birth_certificate_base64": {
                     "type": "string"
                 },
                 "birth_certificate_blob_id": {
@@ -9103,9 +9093,6 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "home_address": {
-                    "type": "string"
-                },
-                "home_base64": {
                     "type": "string"
                 },
                 "home_blob_id": {
@@ -9314,13 +9301,30 @@ const docTemplate = `{
                 }
             }
         },
+        "response.ChildGuardianProfile": {
+            "type": "object",
+            "properties": {
+                "guardian_full_name": {
+                    "type": "string"
+                },
+                "guardian_phone_number": {
+                    "type": "string"
+                },
+                "guardian_relation": {
+                    "type": "string"
+                },
+                "identity_card_img_url": {
+                    "type": "string"
+                }
+            }
+        },
         "response.ChildResponse": {
             "type": "object",
             "properties": {
                 "avatar_blob_id": {
                     "type": "string"
                 },
-                "birth_certificate_blob_id": {
+                "birth_certificate_img_url": {
                     "type": "string"
                 },
                 "books_needs": {
@@ -9343,7 +9347,7 @@ const docTemplate = `{
                     "additionalProperties": true
                 },
                 "first_guardian": {
-                    "$ref": "#/definitions/request.ChildGuardianProfile"
+                    "$ref": "#/definitions/response.ChildGuardianProfile"
                 },
                 "first_name": {
                     "type": "string"
@@ -9388,7 +9392,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "second_guardian": {
-                    "$ref": "#/definitions/request.ChildGuardianProfile"
+                    "$ref": "#/definitions/response.ChildGuardianProfile"
                 },
                 "special_need_campaigns": {
                     "type": "array",
@@ -9957,7 +9961,7 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
-                "identity_card_blob_id": {
+                "identity_card_img_url": {
                     "type": "string"
                 },
                 "identity_code": {

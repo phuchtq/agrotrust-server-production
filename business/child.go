@@ -26,6 +26,7 @@ import (
 	"raise-child/util/ai"
 	"raise-child/util/cache"
 	"raise-child/util/db"
+	"raise-child/util/image/cloudinary"
 	on_chain "raise-child/util/on_chain"
 	walrus_pkg "raise-child/util/walrus_pkg"
 	"slices"
@@ -47,6 +48,7 @@ type childService struct {
 	profileRepo                         i_repository.IProfileRepository
 	bankRepo                            i_repository.IBankProfileRepository
 	leaderNotiRepo                      i_repository.ILeaderNotiRepository
+	uploadChildReqRepo                  i_repository.IUploadChildRequestRepository
 	aiProvider                          ai.IAiClientProvider
 	walrusProvider                      walrus_pkg.IWalrusProvider
 	redisCache                          cache.IRedisCache
@@ -64,6 +66,7 @@ func initializeChildService(
 	profileRepo i_repository.IProfileRepository,
 	bankRepo i_repository.IBankProfileRepository,
 	leaderNotiRepo i_repository.ILeaderNotiRepository,
+	uploadChildReqRepo i_repository.IUploadChildRequestRepository,
 	aiProvider ai.IAiClientProvider,
 	walrusProvider walrus_pkg.IWalrusProvider,
 	clients map[string]sui.ISuiAPI,
@@ -79,6 +82,7 @@ func initializeChildService(
 		profileRepo:                         profileRepo,
 		bankRepo:                            bankRepo,
 		leaderNotiRepo:                      leaderNotiRepo,
+		uploadChildReqRepo:                  uploadChildReqRepo,
 		aiProvider:                          aiProvider,
 		walrusProvider:                      walrusProvider,
 		redisCache:                          cache.InitializeRedisCache(),
@@ -105,6 +109,7 @@ func GenerateChildService() (business.IChildService, error) {
 		repository.InitializeProfileRepository(cnn, errLogger),
 		repository.InitializeBankProfileRepository(cnn, errLogger),
 		repository.InitializeLeaderNotiRepository(cnn, errLogger),
+		repository.InitializeUploadChildRequestRepo(cnn, errLogger),
 		ai.InitializeAiProvider(errLogger),
 		walrus_pkg.InitializeWalrusProvider(errLogger),
 		_networkAliases,
@@ -134,6 +139,16 @@ func (c *childService) GetChild(id string, ctx context.Context) (response.ChildR
 		// Has dynamic fields
 		if dynamicValues, _ := on_chain.GetDynamicFields(id, client, c.errLogger, ctx); dynamicValues != nil {
 			res.DynamicValues = dynamicValues
+		}
+	}
+
+	req, _ := c.uploadChildReqRepo.GetUploadChildRequestByOnchainId(id, ctx)
+	if req != nil {
+		res.BirthCertificateImgUrl = cloudinary.GeneratePresignedUrl(req.BirthCertificateBlobID)
+		res.FirstGuardian.IdentityCardImgUrl = cloudinary.GeneratePresignedUrl(req.FirstGuardianProfile.IdentityCardBlobID)
+
+		if req.SecondGuardianProfile != nil {
+			res.SecondGuardian.IdentityCardImgUrl = cloudinary.GeneratePresignedUrl(req.SecondGuardianProfile.IdentityCardBlobID)
 		}
 	}
 

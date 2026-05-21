@@ -21,6 +21,7 @@ type UploadChildRequest struct {
 	IsConfirmUpload        bool                  `json:"is_confirm_upload"`
 	CreatedBy              string                `json:"created_by"`
 	ReviewedBy             *string               `json:"reviewed_by"`
+	OnchainID              *string               `json:"on_chain_id"`
 	CreatedAt              time.Time             `json:"created_at"`
 	UpdatedAt              time.Time             `json:"updated_at"`
 }
