@@ -28,12 +28,12 @@ func GenerateImageService() business.IImageService {
 	return initializeImageService(errLogger)
 }
 
-// PresignUrl implements business.IImageService.
-func (i *imageService) PresignUrl(ctx context.Context) (response.PresignUrlResponse, error) {
+// PresignedUrl implements business.IImageService.
+func (i *imageService) PresignedUrl(ctx context.Context) (response.PresignedUrlResponse, error) {
 	var timestamp int64 = time.Now().Add(time.Hour).Unix()
 	var folder string = os.Getenv(env.CLOUDINARY_STORAGE_FOLDER)
 
-	return response.PresignUrlResponse{
+	return response.PresignedUrlResponse{
 		UploadUrl: os.Getenv(env.CLOUDINARY_UPLOAD_URL),
 		APIKey:    os.Getenv(env.CLOUDINARY_API_KEY),
 		Timestamp: timestamp,

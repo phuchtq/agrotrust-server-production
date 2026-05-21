@@ -355,20 +355,20 @@ func (p *pendingWithdrawProposalService) CreatePendingWithdrawProposal(req reque
 
 	var purpose string = string(entities.WITHDRAW_PURPOSE)
 	var description string = strings.TrimSpace(req.Description)
-	var aiEvaluation string
-	if req.ProofBlobID != nil {
-		proofBytes, _ := p.walrusProvider.FetchBytesImage(*req.ProofBlobID)
-		if proofBytes != nil {
-			aiEvaluation = p.aiProvider.ValidateWithdrawProposal(ai.ValidateWithdrawProposal{
-				Purpose:         purpose,
-				WithdrawAmount:  req.WithdrawAmount,
-				Description:     description,
-				ProofBytesImage: proofBytes,
-			}, ctx)
-		}
-	}
 
-	// todo: AI validation
+	// var aiEvaluation string
+	// if req.ProofBlobID != nil {
+	// 	proofBytes, _ := p.walrusProvider.FetchBytesImage(*req.ProofBlobID)
+	// 	if proofBytes != nil {
+	// 		aiEvaluation = p.aiProvider.ValidateWithdrawProposal(ai.ValidateWithdrawProposal{
+	// 			Purpose:         purpose,
+	// 			WithdrawAmount:  req.WithdrawAmount,
+	// 			Description:     description,
+	// 			ProofBytesImage: proofBytes,
+	// 		}, ctx)
+	// 	}
+	// }
+
 	var curTime time.Time = time.Now()
 	var proposal = entities.PendingWithdrawProposal{
 		ID:             util.GenerateId(),
@@ -382,9 +382,9 @@ func (p *pendingWithdrawProposalService) CreatePendingWithdrawProposal(req reque
 		ProofBlobID:    req.ProofBlobID,
 		Description:    description,
 		Status:         request_pending_status,
-		AIEvaluation:   aiEvaluation,
-		CreatedAt:      curTime,
-		UpdatedAt:      curTime,
+		// AIEvaluation:   aiEvaluation,
+		CreatedAt: curTime,
+		UpdatedAt: curTime,
 	}
 
 	return &proposal, p.pendingWithdrawProposalRepo.CreatePendingWithdrawProposal(proposal, ctx)

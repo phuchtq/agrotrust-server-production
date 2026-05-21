@@ -2143,20 +2143,19 @@ func (c *childService) CreateBooksNeedWithdrawProposalV2(req request.CreateNorma
 		}
 	}
 
-	var aiEvaluation string
-	if req.ProofBlobID != nil {
-		proofBytes, _ := c.walrusProvider.FetchBytesImage(*req.ProofBlobID)
-		if proofBytes != nil {
-			aiEvaluation = c.aiProvider.ValidateWithdrawProposal(ai.ValidateWithdrawProposal{
-				Purpose:         purpose,
-				WithdrawAmount:  withdrawAmount,
-				Description:     description,
-				ProofBytesImage: proofBytes,
-			}, ctx)
-		}
-	}
+	// var aiEvaluation string
+	// if req.ProofBlobID != nil {
+	// 	proofBytes, _ := c.walrusProvider.FetchBytesImage(*req.ProofBlobID)
+	// 	if proofBytes != nil {
+	// 		aiEvaluation = c.aiProvider.ValidateWithdrawProposal(ai.ValidateWithdrawProposal{
+	// 			Purpose:         purpose,
+	// 			WithdrawAmount:  withdrawAmount,
+	// 			Description:     description,
+	// 			ProofBytesImage: proofBytes,
+	// 		}, ctx)
+	// 	}
+	// }
 
-	// todo: AI validation
 	var res = entities.PendingWithdrawProposal{
 		ID:             util.GenerateId(),
 		ProfileID:      ctx.Value("sub").(string),
@@ -2169,9 +2168,9 @@ func (c *childService) CreateBooksNeedWithdrawProposalV2(req request.CreateNorma
 		ProofBlobID:    req.ProofBlobID,
 		Description:    description,
 		Status:         request_pending_status,
-		AIEvaluation:   aiEvaluation,
-		CreatedAt:      curTime,
-		UpdatedAt:      curTime,
+		// AIEvaluation:   aiEvaluation,
+		CreatedAt: curTime,
+		UpdatedAt: curTime,
 	}
 
 	return &res, c.pendingWithdrawProposalRepo.CreatePendingWithdrawProposal(res, ctx)
@@ -2297,20 +2296,19 @@ func (c *childService) CreateHealthInsuranceNeedWithdrawProposalV2(req request.C
 		}
 	}
 
-	var aiEvaluation string
-	if req.ProofBlobID != nil {
-		proofBytes, _ := c.walrusProvider.FetchBytesImage(*req.ProofBlobID)
-		if proofBytes != nil {
-			aiEvaluation = c.aiProvider.ValidateWithdrawProposal(ai.ValidateWithdrawProposal{
-				Purpose:         purpose,
-				WithdrawAmount:  withdrawAmount,
-				Description:     description,
-				ProofBytesImage: proofBytes,
-			}, ctx)
-		}
-	}
+	// var aiEvaluation string
+	// if req.ProofBlobID != nil {
+	// 	proofBytes, _ := c.walrusProvider.FetchBytesImage(*req.ProofBlobID)
+	// 	if proofBytes != nil {
+	// 		aiEvaluation = c.aiProvider.ValidateWithdrawProposal(ai.ValidateWithdrawProposal{
+	// 			Purpose:         purpose,
+	// 			WithdrawAmount:  withdrawAmount,
+	// 			Description:     description,
+	// 			ProofBytesImage: proofBytes,
+	// 		}, ctx)
+	// 	}
+	// }
 
-	// todo: AI validation
 	var res = entities.PendingWithdrawProposal{
 		ID:             util.GenerateId(),
 		ProfileID:      ctx.Value("sub").(string),
@@ -2323,9 +2321,9 @@ func (c *childService) CreateHealthInsuranceNeedWithdrawProposalV2(req request.C
 		ProofBlobID:    req.ProofBlobID,
 		Description:    description,
 		Status:         request_pending_status,
-		AIEvaluation:   aiEvaluation,
-		CreatedAt:      curTime,
-		UpdatedAt:      curTime,
+		// AIEvaluation:   aiEvaluation,
+		CreatedAt: curTime,
+		UpdatedAt: curTime,
 	}
 
 	return &res, c.pendingWithdrawProposalRepo.CreatePendingWithdrawProposal(res, ctx)
@@ -2585,18 +2583,18 @@ func (c *childService) CreateMealNeedWithdrawProposalV2(req request.CreateNormal
 		}
 	}
 
-	var aiEvaluation string
-	if req.ProofBlobID != nil {
-		proofBytes, _ := c.walrusProvider.FetchBytesImage(*req.ProofBlobID)
-		if proofBytes != nil {
-			aiEvaluation = c.aiProvider.ValidateWithdrawProposal(ai.ValidateWithdrawProposal{
-				Purpose:         purpose,
-				WithdrawAmount:  withdrawAmount,
-				Description:     description,
-				ProofBytesImage: proofBytes,
-			}, ctx)
-		}
-	}
+	// var aiEvaluation string
+	// if req.ProofBlobID != nil {
+	// 	proofBytes, _ := c.walrusProvider.FetchBytesImage(*req.ProofBlobID)
+	// 	if proofBytes != nil {
+	// 		aiEvaluation = c.aiProvider.ValidateWithdrawProposal(ai.ValidateWithdrawProposal{
+	// 			Purpose:         purpose,
+	// 			WithdrawAmount:  withdrawAmount,
+	// 			Description:     description,
+	// 			ProofBytesImage: proofBytes,
+	// 		}, ctx)
+	// 	}
+	// }
 
 	// todo: AI validation
 	var res = entities.PendingWithdrawProposal{
@@ -2611,9 +2609,9 @@ func (c *childService) CreateMealNeedWithdrawProposalV2(req request.CreateNormal
 		ProofBlobID:    req.ProofBlobID,
 		Description:    description,
 		Status:         request_pending_status,
-		AIEvaluation:   aiEvaluation,
-		CreatedAt:      curTime,
-		UpdatedAt:      curTime,
+		// AIEvaluation:   aiEvaluation,
+		CreatedAt: curTime,
+		UpdatedAt: curTime,
 	}
 
 	return &res, c.pendingWithdrawProposalRepo.CreatePendingWithdrawProposal(res, ctx)
@@ -2689,18 +2687,19 @@ func (c *childService) CreateSpecialNeedWithdrawProposalV2(req request.CreateSpe
 
 	var description string = strings.TrimSpace(req.Description)
 	var purpose string = string(entities.SPECIAL_NEED_PURPOSE)
-	var aiEvaluation string
-	if req.ProofBlobID != nil {
-		proofBytes, _ := c.walrusProvider.FetchBytesImage(*req.ProofBlobID)
-		if proofBytes != nil {
-			aiEvaluation = c.aiProvider.ValidateWithdrawProposal(ai.ValidateWithdrawProposal{
-				Purpose:         purpose,
-				WithdrawAmount:  req.Amount,
-				Description:     description,
-				ProofBytesImage: proofBytes,
-			}, ctx)
-		}
-	}
+
+	// var aiEvaluation string
+	// if req.ProofBlobID != nil {
+	// 	proofBytes, _ := c.walrusProvider.FetchBytesImage(*req.ProofBlobID)
+	// 	if proofBytes != nil {
+	// 		aiEvaluation = c.aiProvider.ValidateWithdrawProposal(ai.ValidateWithdrawProposal{
+	// 			Purpose:         purpose,
+	// 			WithdrawAmount:  req.Amount,
+	// 			Description:     description,
+	// 			ProofBytesImage: proofBytes,
+	// 		}, ctx)
+	// 	}
+	// }
 
 	var curTime time.Time = time.Now()
 	var res = entities.PendingWithdrawProposal{
@@ -2715,9 +2714,9 @@ func (c *childService) CreateSpecialNeedWithdrawProposalV2(req request.CreateSpe
 		ProofBlobID:    req.ProofBlobID,
 		Description:    description,
 		Status:         request_pending_status,
-		AIEvaluation:   aiEvaluation,
-		CreatedAt:      curTime,
-		UpdatedAt:      curTime,
+		// AIEvaluation:   aiEvaluation,
+		CreatedAt: curTime,
+		UpdatedAt: curTime,
 	}
 
 	return &res, c.pendingWithdrawProposalRepo.CreatePendingWithdrawProposal(res, ctx)

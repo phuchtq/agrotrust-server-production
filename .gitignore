@@ -27,6 +27,9 @@ go.work.sum
 .idea/
 .vscode/
 
+# AI-generated files
+.gemini
+
 # OS-specific files
 .DS_Store
 Thumbs.db
@@ -37,3 +40,6 @@ Thumbs.db
 
 # Markdown files
 *.md
+
+
+

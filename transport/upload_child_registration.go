@@ -1,13 +1,11 @@
 package transport
 
 import (
-	"errors"
 	"raise-child/business"
 	action_type "raise-child/constants/action_type"
 	"raise-child/model/dtos/request"
 	"raise-child/model/dtos/response"
 	"raise-child/util"
-	"raise-child/util/ai"
 	"strconv"
 
 	"github.com/gin-gonic/gin"
@@ -169,42 +167,6 @@ func ReviewUploadChildRequest(ctx *gin.Context) {
 
 	util.ProcessResponse(response.APIResponse{
 		ErrMsg:  service.ReviewUploadChildRequest(ctx.Param("id"), request, ctx),
-		Context: ctx,
-	})
-}
-
-// ExtractChildInfoFromDocs godoc
-// @Summary      Extract child info from document images
-// @Description  Nhận Cloudinary URL của giấy khai sinh và CCCD người thân, gọi AI để
-//               trích xuất thông tin và trả về dữ liệu đã điền sẵn cho user xác nhận.
-// @Tags         Child Upload Request
-// @Accept       json
-// @Produce      json
-// @Security     BearerAuth
-// @Param        request  body      request.ExtractChildInfoRequest    true  "Document URLs"
-// @Success      200      {object}  response.ExtractChildInfoResponse
-// @Failure      400      {object}  response.MessageAPIResponse        "Invalid request"
-// @Failure      503      {object}  response.MessageAPIResponse        "AI provider unavailable"
-// @Router       /child-upload-reqs/extract [post]
-func ExtractChildInfoFromDocs(ctx *gin.Context) {
-	var req request.ExtractChildInfoRequest
-	if err := ctx.ShouldBindJSON(&req); err != nil {
-		util.ProcessResponse(util.GenerateInvalidRequestAndSystemProblemModel(ctx, nil))
-		return
-	}
-
-	aiProvider := ai.GetAiProvider()
-	if aiProvider == nil {
-		util.ProcessResponse(util.GenerateInvalidRequestAndSystemProblemModel(ctx,
-			errors.New("AI provider is not available"),
-		))
-		return
-	}
-
-	result, err := aiProvider.ExtractChildInfo(req.ChildBirthCertificateURL, req.GuardianIDCardURL)
-	util.ProcessResponse(response.APIResponse{
-		Data1:   result,
-		ErrMsg:  err,
 		Context: ctx,
 	})
 }

@@ -34,5 +34,5 @@ type CreateTaskRequest struct {
 
 type SubmitTaskProofRequest struct {
 	ImageBlobID string `json:"image_blob_id" validate:"required"`
-	ImageBase64 string `json:"image_base64" validate:"required"`
+	ImageURL    string `json:"image_url" validate:"required"`
 }

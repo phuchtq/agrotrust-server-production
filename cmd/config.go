@@ -21,7 +21,10 @@ import (
 
 // Load .env file
 func loadEnv(logger *log.Logger) {
-	godotenv.Load(".env")
+	if err := godotenv.Load(".env"); err != nil {
+		logger.Fatal("Error: ", err)
+	}
+
 }
 
 // Enable CORS

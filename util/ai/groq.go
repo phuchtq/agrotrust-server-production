@@ -2,17 +2,20 @@ package ai
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
+	"os"
+	"raise-child/constants/env"
 )
 
 type GroqClient struct{}
 
-const (
-	groqAPIURL string = "https://api.groq.com/openai/v1/chat/completions"
-	model      string = "meta-llama/llama-4-scout-17b-16e-instruct"
+var (
+	groqAPIURL string = os.Getenv(env.GROQ_API_URL)
+	model      string = os.Getenv(env.GROQ_MODEL)
 )
 
 type AiResponse struct {
@@ -74,7 +77,7 @@ type ChatResponse struct {
 
 // AskWithImages sends a prompt together with multiple image URLs to the Groq
 // vision model and returns the raw text content of the first choice.
-func (g *GroqClient) AskWithImages(apiKey, prompt string, imageURLs []string) (string, error) {
+func (g *GroqClient) AskWithImages(ctx context.Context, apiKey, prompt string, imageURLs []string) (string, error) {
 	parts := []ContentPart{TextPart(prompt)}
 	for _, url := range imageURLs {
 		parts = append(parts, ImagePart(url))
@@ -92,7 +95,7 @@ func (g *GroqClient) AskWithImages(apiKey, prompt string, imageURLs []string) (s
 		return "", fmt.Errorf("marshal request: %w", err)
 	}
 
-	req, err := http.NewRequest("POST", groqAPIURL, bytes.NewBuffer(bodyBytes))
+	req, err := http.NewRequestWithContext(ctx, "POST", groqAPIURL, bytes.NewBuffer(bodyBytes))
 	if err != nil {
 		return "", fmt.Errorf("create HTTP request: %w", err)
 	}

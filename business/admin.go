@@ -164,67 +164,6 @@ func (a *adminService) GetAdmins(req request.GetAdminsRequest, ctx context.Conte
 		}
 	}
 
-	// /////////////
-	// // MOCK DATA
-	// var admins = mockAdmins
-	// var filteredAdmins []response.AdminNftResponse
-	// for i := len(admins) - 1; i >= 0; i-- {
-	// 	var admin response.AdminNftResponse = admins[i]
-
-	// 	if req.Keyword != "" {
-	// 		var firstName string = util.StandardizeString(admin.FirstName)
-	// 		var lastName string = util.StandardizeString(admin.LastName)
-	// 		if !strings.Contains(firstName, req.Keyword) && !strings.Contains(lastName, req.Keyword) && !strings.Contains(admin.IdentityCode, req.Keyword) && !strings.Contains(admin.PhoneNumber, req.Keyword) && !strings.Contains(admin.Email, req.Keyword) { // Not matched
-	// 			continue
-	// 		}
-	// 	}
-
-	// 	if req.Gender != "" {
-	// 		if admin.Gender != req.Gender { // Not matched
-	// 			continue
-	// 		}
-	// 	}
-
-	// 	if req.YearOfBirth != nil {
-	// 		if admin.DateOfBirth.Year() != *req.YearOfBirth { // Not matched
-	// 			continue
-	// 		}
-	// 	}
-
-	// 	filteredAdmins = append(filteredAdmins, admin)
-	// }
-
-	// sort.Slice(filteredAdmins, func(i, j int) bool {
-	// 	if req.SortCriteria == "date_of_birth" {
-	// 		var dob1 time.Time = filteredAdmins[i].DateOfBirth
-	// 		var dob2 time.Time = filteredAdmins[j].DateOfBirth
-	// 		if req.SortOrder == "DESC" {
-	// 			return dob2.After(dob1)
-	// 		}
-
-	// 		return dob2.Before(dob1)
-	// 	}
-
-	// 	if req.SortOrder == "ASC" {
-	// 		return false
-	// 	}
-
-	// 	return true
-	// })
-
-	// var skippedRecords int = (req.Page - 1) * req.PageSize
-	// if len(filteredAdmins) <= skippedRecords {
-	// 	return response.PaginationDataResponse{}, nil
-	// }
-
-	// var data []response.AdminNftResponse
-	// for i := skippedRecords; i < len(filteredAdmins); i++ {
-	// 	data = append(data, filteredAdmins[i])
-	// 	if len(data) == req.PageSize {
-	// 		break
-	// 	}
-	// }
-
 	res = response.PaginationDataResponse{
 		Data:       data,
 		Amount:     len(data),

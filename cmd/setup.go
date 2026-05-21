@@ -21,6 +21,9 @@ func setupApiRoutes(server *gin.Engine) {
 	// Auth API endpoints
 	api_route.InitializeAuthHandlerRoutes(server)
 
+	// OCR API endpoints
+	api_route.InitialORCRoute(server)
+
 	// On-chain API endpoints
 	api_route.InitializeOnChainRoutes(server)
 

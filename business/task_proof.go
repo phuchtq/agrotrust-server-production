@@ -428,7 +428,16 @@ func (t *taskProofService) SubmitTaskProof(id string, req request.SubmitTaskProo
 	}
 
 	// TODO: AI Evaluation
-	var aiEvaluation string
+	taskProof := ai.ValidateTaskProof{
+		TaskDescription: task.Description,
+		ProofImageURL:   req.ImageURL,
+		CreatedAt:       curTime,
+	}
+
+	var aiResponse *ai.ValidateTaskProofResponse = &ai.ValidateTaskProofResponse{
+		AIEvaluation: "uncertain",
+		AIReason:     "AI validation temporarily unavailable, please wait for human review",
+	}
 
 	if task.IsChildTask {
 		if childTaskDetail, err := t.childTaskDetailRepo.GetChildTaskDetail(*task.ChildTaskDetailID, ctx); err == nil {
@@ -439,17 +448,12 @@ func (t *taskProofService) SubmitTaskProof(id string, req request.SubmitTaskProo
 			}, ctx)
 
 			if child != nil {
-				// avatarBytes, _ := t.walrusProvider.FetchBytesImage(child.AvatarBlobId)
-				// Gửi kèm ảnh trẻ để check xem bữa ăn/sách/vật tư phù hợp có đến được với trẻ đó hay không
-				aiEvaluation = "To be filled"
+				aiResponse, err = t.aiProvider.ValidateTaskProof(taskProof, ctx)
+				if err != nil {
+					t.errLogger.Printf("Failed to evaluate task proof with AI: %v", err)
+				}
 			}
 		}
-	} else {
-		aiEvaluation = t.aiProvider.ValidateTaskProof(ai.ValidateTaskProof{
-			TaskDescription: task.Description,
-			ProofBase64:     req.ImageBase64,
-			CreatedAt:       curTime,
-		}, ctx)
 	}
 
 	return t.taskProofRepo.CreateTaskProof(entities.TaskProof{
@@ -459,7 +463,8 @@ func (t *taskProofService) SubmitTaskProof(id string, req request.SubmitTaskProo
 		ActorProfileID: ctx.Value("sub").(string),
 		ActorAddress:   sender,
 		ImageBlobID:    req.ImageBlobID,
-		AIEvaluation:   aiEvaluation,
+		AIEvaluation:   aiResponse.AIEvaluation,
+		AIReason:       aiResponse.AIReason,
 		RawSubmitDate:  rawSubmitDate,
 		CreatedAt:      curTime,
 		UpdatedAt:      curTime,

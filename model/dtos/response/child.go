@@ -41,19 +41,3 @@ type ChildCardMinimumResponse struct {
 	LastName     string `json:"last_name"`
 	Gender       string `json:"gender"`
 }
-
-type ExtractChildInfoResponse struct {
-	// Thông tin trẻ — trích từ giấy khai sinh
-	Region      string `json:"region"`
-	FirstName   string `json:"first_name"`
-	LastName    string `json:"last_name"`
-	Gender      string `json:"gender"`
-	DateOfBirth string `json:"date_of_birth"`
-	HomeAddress string `json:"home_address"`
-
-	// Thông tin người thân — trích từ CCCD/CMND
-	GuardianFullName     string `json:"guardian_full_name"`
-	GuardianIdentityCode string `json:"guardian_identity_code"`
-	GuardianDateOfBirth  string `json:"guardian_date_of_birth"`
-	GuardianGender       string `json:"guardian_gender"`
-}

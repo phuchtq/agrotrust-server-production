@@ -12,5 +12,5 @@ func InitializeImageRoute(server *gin.Engine) {
 
 	// Auth group
 	var authGroup = server.Group(contextPath, middleware.Authorize)
-	authGroup.POST("/presign", transport.PresignUrl)
+	authGroup.POST("/presign", transport.PresignedUrl)
 }

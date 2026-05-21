@@ -1219,57 +1219,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/child-upload-reqs/extract": {
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Nhận Cloudinary URL của giấy khai sinh và CCCD người thân, gọi AI để",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Child Upload Request"
-                ],
-                "summary": "Extract child info from document images",
-                "parameters": [
-                    {
-                        "description": "Document URLs",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/request.ExtractChildInfoRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/response.ExtractChildInfoResponse"
-                        }
-                    },
-                    "400": {
-                        "description": "Invalid request",
-                        "schema": {
-                            "$ref": "#/definitions/response.MessageAPIResponse"
-                        }
-                    },
-                    "503": {
-                        "description": "AI provider unavailable",
-                        "schema": {
-                            "$ref": "#/definitions/response.MessageAPIResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/child-upload-reqs/user/{id}": {
             "get": {
                 "description": "Retrieve child upload requests associated with a specific wallet and page number.",
@@ -3254,7 +3203,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.PresignUrlResponse"
+                            "$ref": "#/definitions/response.PresignedUrlResponse"
                         }
                     },
                     "400": {
@@ -3330,6 +3279,52 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "There is something wrong in the system during the process. Please try again later.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/ocr/extract-child-info": {
+            "post": {
+                "description": "Extract child information from an uploaded OCR payload",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "OCR"
+                ],
+                "summary": "Extract child information from OCR input",
+                "parameters": [
+                    {
+                        "description": "OCR request payload",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.ExtractChildUploadInfoRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.ExtractChildUploadInfoResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/response.MessageAPIResponse"
                         }
@@ -8837,17 +8832,20 @@ const docTemplate = `{
                 }
             }
         },
-        "request.ExtractChildInfoRequest": {
+        "request.ExtractChildUploadInfoRequest": {
             "type": "object",
             "required": [
                 "child_birth_certificate_url",
-                "guardian_id_card_url"
+                "first_guardian_id_card_url"
             ],
             "properties": {
                 "child_birth_certificate_url": {
                     "type": "string"
                 },
-                "guardian_id_card_url": {
+                "first_guardian_id_card_url": {
+                    "type": "string"
+                },
+                "second_guardian_id_card_url": {
                     "type": "string"
                 }
             }
@@ -9449,10 +9447,13 @@ const docTemplate = `{
                 }
             }
         },
-        "response.ExtractChildInfoResponse": {
+        "response.ExtractChildUploadInfoResponse": {
             "type": "object",
             "properties": {
                 "date_of_birth": {
+                    "type": "string"
+                },
+                "first_guardian_full_name": {
                     "type": "string"
                 },
                 "first_name": {
@@ -9461,27 +9462,13 @@ const docTemplate = `{
                 "gender": {
                     "type": "string"
                 },
-                "guardian_date_of_birth": {
-                    "type": "string"
-                },
-                "guardian_full_name": {
-                    "description": "Thông tin người thân — trích từ CCCD/CMND",
-                    "type": "string"
-                },
-                "guardian_gender": {
-                    "type": "string"
-                },
-                "guardian_identity_code": {
-                    "type": "string"
-                },
-                "home_address": {
+                "identity_code": {
                     "type": "string"
                 },
                 "last_name": {
                     "type": "string"
                 },
-                "region": {
-                    "description": "Thông tin trẻ — trích từ giấy khai sinh",
+                "second_guardian_full_name": {
                     "type": "string"
                 }
             }
@@ -9899,7 +9886,7 @@ const docTemplate = `{
                 }
             }
         },
-        "response.PresignUrlResponse": {
+        "response.PresignedUrlResponse": {
             "type": "object",
             "properties": {
                 "api_key": {

@@ -35,7 +35,6 @@ func InitializeUploadChildRequestRoute(server *gin.Engine) {
 	// Auth group
 	var authGroup = server.Group(contextPath, middleware.Authorize)
 	authGroup.POST("", transport.CreateUploadChildRequest)
-	authGroup.POST("/extract", transport.ExtractChildInfoFromDocs) // AI document extraction
 
 	// Admin group
 	var leaderGroup = server.Group(contextPath, middleware.Authorize, middleware.LeaderAuthorize)
