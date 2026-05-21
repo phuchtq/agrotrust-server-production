@@ -8167,9 +8167,6 @@
         "entities.RegistrationRequest": {
             "type": "object",
             "properties": {
-                "ai_evaluation": {
-                    "type": "string"
-                },
                 "approvers": {
                     "type": "array",
                     "items": {
@@ -8214,6 +8211,9 @@
                     "type": "boolean"
                 },
                 "last_name": {
+                    "type": "string"
+                },
+                "on_chain_id": {
                     "type": "string"
                 },
                 "phone_number": {
@@ -8295,12 +8295,6 @@
                 "region"
             ],
             "properties": {
-                "ai_evaluation": {
-                    "type": "string"
-                },
-                "ai_reason": {
-                    "type": "string"
-                },
                 "avatar_blob_id": {
                     "type": "string"
                 },
@@ -8338,10 +8332,12 @@
                     "type": "string"
                 },
                 "is_confirm_upload": {
-                    "description": "Default as false, when status aprroved, user clicks to update to true, call smart contract to register role",
                     "type": "boolean"
                 },
                 "last_name": {
+                    "type": "string"
+                },
+                "on_chain_id": {
                     "type": "string"
                 },
                 "profile_id": {
@@ -8357,7 +8353,6 @@
                     "$ref": "#/definitions/entities.ChildGuardianProfile"
                 },
                 "status": {
-                    "description": "e.g. \"Pending\", \"Approved\", \"Refused\"",
                     "type": "string"
                 },
                 "updated_at": {
@@ -8386,7 +8381,6 @@
                 "guardian_full_name",
                 "guardian_phone_number",
                 "guardian_relation",
-                "identity_card_base64",
                 "identity_card_blob_id"
             ],
             "properties": {
@@ -8397,9 +8391,6 @@
                     "type": "string"
                 },
                 "guardian_relation": {
-                    "type": "string"
-                },
-                "identity_card_base64": {
                     "type": "string"
                 },
                 "identity_card_blob_id": {
@@ -9002,29 +8993,20 @@
         "request.UploadChildRequest": {
             "type": "object",
             "required": [
-                "avatar_base64",
                 "avatar_blob_id",
-                "birth_certificate_base64",
                 "birth_certificate_blob_id",
                 "date_of_birth",
                 "first_guardian",
                 "first_name",
                 "gender",
                 "home_address",
-                "home_base64",
                 "home_blob_id",
                 "identity_code",
                 "last_name",
                 "region"
             ],
             "properties": {
-                "avatar_base64": {
-                    "type": "string"
-                },
                 "avatar_blob_id": {
-                    "type": "string"
-                },
-                "birth_certificate_base64": {
                     "type": "string"
                 },
                 "birth_certificate_blob_id": {
@@ -9043,9 +9025,6 @@
                     "type": "string"
                 },
                 "home_address": {
-                    "type": "string"
-                },
-                "home_base64": {
                     "type": "string"
                 },
                 "home_blob_id": {
@@ -9254,13 +9233,30 @@
                 }
             }
         },
+        "response.ChildGuardianProfile": {
+            "type": "object",
+            "properties": {
+                "guardian_full_name": {
+                    "type": "string"
+                },
+                "guardian_phone_number": {
+                    "type": "string"
+                },
+                "guardian_relation": {
+                    "type": "string"
+                },
+                "identity_card_img_url": {
+                    "type": "string"
+                }
+            }
+        },
         "response.ChildResponse": {
             "type": "object",
             "properties": {
                 "avatar_blob_id": {
                     "type": "string"
                 },
-                "birth_certificate_blob_id": {
+                "birth_certificate_img_url": {
                     "type": "string"
                 },
                 "books_needs": {
@@ -9283,7 +9279,7 @@
                     "additionalProperties": true
                 },
                 "first_guardian": {
-                    "$ref": "#/definitions/request.ChildGuardianProfile"
+                    "$ref": "#/definitions/response.ChildGuardianProfile"
                 },
                 "first_name": {
                     "type": "string"
@@ -9328,7 +9324,7 @@
                     "type": "string"
                 },
                 "second_guardian": {
-                    "$ref": "#/definitions/request.ChildGuardianProfile"
+                    "$ref": "#/definitions/response.ChildGuardianProfile"
                 },
                 "special_need_campaigns": {
                     "type": "array",
@@ -9871,7 +9867,7 @@
                 "id": {
                     "type": "string"
                 },
-                "identity_card_blob_id": {
+                "identity_card_img_url": {
                     "type": "string"
                 },
                 "identity_code": {

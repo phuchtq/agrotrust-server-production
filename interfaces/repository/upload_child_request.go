@@ -8,6 +8,7 @@ import (
 
 type IUploadChildRequestRepository interface {
 	GetUploadChildRequest(id string, ctx context.Context) (*entities.UploadChildRequest, error)
+	GetUploadChildRequestByOnchainId(id string, ctx context.Context) (*entities.UploadChildRequest, error)
 	GetUploadChildRequests(req request.GetUploadChildRequests, ctx context.Context) ([]entities.UploadChildRequest, int, error)
 	GetWalletUploadChildRequests(id string, page int, ctx context.Context) ([]entities.UploadChildRequest, int, error)
 	CreateUploadChildRequest(req entities.UploadChildRequest, ctx context.Context) error

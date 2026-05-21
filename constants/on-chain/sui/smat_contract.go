@@ -155,4 +155,6 @@ const (
 const (
 	TRANSACTION_RECORD_EVENT string = "TransactionRecordEvent"
 	WITHDRAW_PROPOSAL_EVENT  string = "WithdrawProposalCreated"
+	STAFF_CREATED_EVENT      string = "StaffCreated"
+	CHILD_CREATED_EVENT      string = "ChildCreated"
 )

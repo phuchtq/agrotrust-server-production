@@ -332,6 +332,7 @@ type IModuleChild interface {
 	GetFunctionUpdateChildMealNeed() string
 	GetFunctionUpdateChildBooksNeed() string
 	GetFunctionUpdateChildHealthInsuranceNeed() string
+	GetChildEventEmittedStruct() string
 }
 
 type moduleChild struct{}
@@ -343,6 +344,11 @@ func InitializeModuleChild() IModuleChild {
 // GetFunctionConfirmProvideBooksForChildV2 implements IModuleChild.
 func (m *moduleChild) GetFunctionConfirmProvideBooksForChildV2() string {
 	return sui.CONFIRM_PROVIDE_BOOKS_FOR_CHILD_FUNCTION_V2
+}
+
+// GetChildEventEmittedStruct implements IModuleChild.
+func (m *moduleChild) GetChildEventEmittedStruct() string {
+	return sui.CHILD_CREATED_EVENT
 }
 
 // GetFunctionConfirmProvideHealthInsuranceForChildV2 implements IModuleChild.
@@ -930,7 +936,6 @@ func (m *moduleChild) ToAddChildArguments(args AddChildArguments) []interface{} 
 		os.Getenv(env.MANAGE_OBJECT_ID),
 		args.Center,
 		args.IdentityCode,
-		args.BirthCertificateBlobID,
 		args.FirstName,
 		args.LastName,
 		args.Gender,
@@ -942,11 +947,9 @@ func (m *moduleChild) ToAddChildArguments(args AddChildArguments) []interface{} 
 		args.FirstGuardianFullName,
 		args.FirstGuardianPhone,
 		args.FirstGuardianRelation,
-		args.FirstGuardianIdentityCardBlobID,
 		args.SecondGuardianFullName,
 		args.SecondGuardianPhone,
 		args.SecondGuardianRelation,
-		args.SecondGuardianIdentityCardBlobID,
 		args.Sender,
 		sui.CLOCK_OBJECT_ID,
 	}

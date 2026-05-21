@@ -63,6 +63,7 @@ type IModuleStaff interface {
 	GetFunctionRegisterLeader() string
 	GetFunctionRegisterAdmin() string
 	GetStaffNftObjectStruct() string
+	GetStaffEventEmittedStruct() string
 }
 
 type moduleStaff struct{}
@@ -77,7 +78,6 @@ func (m *moduleStaff) ToRegisterAdminArguments(args RegisterAdminArguments) []in
 		os.Getenv(env.ADMIN_CAP_ID_1),
 		os.Getenv(env.MANAGE_OBJECT_ID),
 		args.IdentityCode,
-		args.IdentityCardBlobID,
 		args.AvatarBlobID,
 		args.FirstName,
 		args.LastName,
@@ -136,7 +136,6 @@ func (m *moduleStaff) ToRegisterNormalStaffArguments(args RegisterNormalStaffArg
 			os.Getenv(env.ADMIN_CAP_ID_1),
 			os.Getenv(env.MANAGE_OBJECT_ID),
 			args.IdentityCode,
-			args.IdentityCardBlobID,
 			args.AvatarBlobID,
 			args.Region,
 			args.FirstName,
@@ -155,7 +154,6 @@ func (m *moduleStaff) ToRegisterNormalStaffArguments(args RegisterNormalStaffArg
 		os.Getenv(env.MANAGE_OBJECT_ID),
 		args.LocalPoolID,
 		args.IdentityCode,
-		args.IdentityCardBlobID,
 		args.AvatarBlobID,
 		args.Region,
 		args.FirstName,
@@ -216,4 +214,9 @@ func (m *moduleStaff) GetModule() string {
 // GetStaffNftObjectStruct implements IModuleStaff.
 func (m *moduleStaff) GetStaffNftObjectStruct() string {
 	return sui.STAFF_NFT_STRUCT
+}
+
+// GetStaffEventEmittedStruct implements IModuleStaff.
+func (m *moduleStaff) GetStaffEventEmittedStruct() string {
+	return sui.STAFF_CREATED_EVENT
 }

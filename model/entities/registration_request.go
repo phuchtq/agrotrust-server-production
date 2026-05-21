@@ -54,13 +54,29 @@ type RegistrationRequest struct {
 	Approvers          []string  `json:"approvers"`
 	Refusers           []string  `json:"refusers"`
 	RefuseReasons      []string  `json:"refuse_reasons"`
-	Status             string    `json:"status"` // e.g. "Pending", "Approved", "Refused"
-	AIEvaluation       string    `json:"ai_evaluation"`
+	Status             string    `json:"status"`              // e.g. "Pending", "Approved", "Refused"
 	IsConfirmRegister  bool      `json:"is_confirm_register"` // Default as false, when status aprroved, user clicks to update to true, call smart contract to register role
 	CreatedBy          string    `json:"created_by"`
+	OnchainID          *string   `json:"on_chain_id"`
 	CreatedAt          time.Time `json:"created_at"`
 	UpdatedAt          time.Time `json:"updated_at"`
 	ClosedAt           time.Time `json:"closed_at"`
+}
+
+type GetRegistrationRequestWithDetail struct {
+	RegisterRole      string
+	IdentityCode      string
+	AvatarBlobID      string
+	Region            string
+	FirstName         string
+	LastName          string
+	Gender            string
+	DateOfBirth       string
+	PhoneNumber       string
+	Email             string
+	Status            string
+	IsConfirmRegister bool
+	CreatedBy         string
 }
 
 type RegistrationForm struct {

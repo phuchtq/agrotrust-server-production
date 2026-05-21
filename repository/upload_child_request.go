@@ -76,8 +76,44 @@ func (u *uploadChildRepo) GetUploadChildRequest(id string, ctx context.Context) 
 		&res.Region, &res.FirstName, &res.LastName, &res.Gender, &res.DateOfBirth, &res.HomeAddress,
 		&res.FirstGuardianProfile.FullName, &res.FirstGuardianProfile.PhoneNumber, &res.FirstGuardianProfile.Relation, &res.FirstGuardianProfile.IdentityCardBlobID,
 		&secondGuardianName, &secondGuardianPhone, &secondGuardianRelation, &secondGuardianIdentityBlob,
-		&res.Status, &res.IsConfirmUpload,
-		&res.CreatedBy, &res.ReviewedBy, &res.CreatedAt, &res.UpdatedAt, &res.BirthCertificateBlobID); err != nil {
+		&res.Status, &res.IsConfirmUpload, &res.CreatedBy, &res.ReviewedBy, &res.OnchainID,
+		&res.CreatedAt, &res.UpdatedAt, &res.BirthCertificateBlobID); err != nil {
+
+		if err == sql.ErrNoRows {
+			return nil, nil
+		}
+
+		u.errLogger.Println(errLogMsg + err.Error())
+		return nil, errors.New(noti.INTERNALL_ERR_MSG)
+	}
+
+	if secondGuardianName != nil {
+		res.SecondGuardianProfile = &entities.ChildGuardianProfile{
+			FullName:           *secondGuardianName,
+			PhoneNumber:        *secondGuardianPhone,
+			Relation:           *secondGuardianRelation,
+			IdentityCardBlobID: *secondGuardianIdentityBlob,
+		}
+	}
+
+	return &res, nil
+}
+
+// GetUploadChildRequestByOnchainId implements repository.IUploadChildRequestRepository.
+func (u *uploadChildRepo) GetUploadChildRequestByOnchainId(id string, ctx context.Context) (*entities.UploadChildRequest, error) {
+	var query string = "SELECT * FROM " + upload_child_request_table + " WHERE on_chain_id = $1"
+	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.UPLOAD_CHILD_REQUEST_REPOSITORY) + "GetUploadChildRequestByOnchainId - "
+
+	var res entities.UploadChildRequest
+	var secondGuardianName, secondGuardianPhone, secondGuardianRelation, secondGuardianIdentityBlob *string
+
+	if err := u.db.QueryRowContext(ctx, query, id).Scan(
+		&res.ID, &res.ProfileID, &res.IdentityCode, &res.AvatarBlobId, &res.HomeBlobID,
+		&res.Region, &res.FirstName, &res.LastName, &res.Gender, &res.DateOfBirth, &res.HomeAddress,
+		&res.FirstGuardianProfile.FullName, &res.FirstGuardianProfile.PhoneNumber, &res.FirstGuardianProfile.Relation, &res.FirstGuardianProfile.IdentityCardBlobID,
+		&secondGuardianName, &secondGuardianPhone, &secondGuardianRelation, &secondGuardianIdentityBlob,
+		&res.Status, &res.IsConfirmUpload, &res.CreatedBy, &res.ReviewedBy, &res.OnchainID,
+		&res.CreatedAt, &res.UpdatedAt, &res.BirthCertificateBlobID); err != nil {
 
 		if err == sql.ErrNoRows {
 			return nil, nil
@@ -174,8 +210,8 @@ func (u *uploadChildRepo) GetUploadChildRequests(req request.GetUploadChildReque
 			&x.Region, &x.FirstName, &x.LastName, &x.Gender, &x.DateOfBirth, &x.HomeAddress,
 			&x.FirstGuardianProfile.FullName, &x.FirstGuardianProfile.PhoneNumber, &x.FirstGuardianProfile.Relation, &x.FirstGuardianProfile.IdentityCardBlobID,
 			&secondGuardianName, &secondGuardianPhone, &secondGuardianRelation, &secondGuardianIdentityBlob,
-			&x.Status, &x.IsConfirmUpload,
-			&x.CreatedBy, &x.ReviewedBy, &x.CreatedAt, &x.UpdatedAt, &x.BirthCertificateBlobID); err != nil {
+			&x.Status, &x.IsConfirmUpload, &x.CreatedBy, &x.ReviewedBy, &x.OnchainID,
+			&x.CreatedAt, &x.UpdatedAt, &x.BirthCertificateBlobID); err != nil {
 
 			u.errLogger.Println(errLogMsg + err.Error())
 			return nil, 0, internalErr
@@ -230,8 +266,8 @@ func (u *uploadChildRepo) GetWalletUploadChildRequests(id string, page int, ctx 
 			&x.Region, &x.FirstName, &x.LastName, &x.Gender, &x.DateOfBirth, &x.HomeAddress,
 			&x.FirstGuardianProfile.FullName, &x.FirstGuardianProfile.PhoneNumber, &x.FirstGuardianProfile.Relation, &x.FirstGuardianProfile.IdentityCardBlobID,
 			&secondGuardianName, &secondGuardianPhone, &secondGuardianRelation, &secondGuardianIdentityBlob,
-			&x.Status, &x.IsConfirmUpload,
-			&x.CreatedBy, &x.ReviewedBy, &x.CreatedAt, &x.UpdatedAt, &x.BirthCertificateBlobID); err != nil {
+			&x.Status, &x.IsConfirmUpload, &x.CreatedBy, &x.ReviewedBy, &x.OnchainID,
+			&x.CreatedAt, &x.UpdatedAt, &x.BirthCertificateBlobID); err != nil {
 
 			u.errLogger.Println(errLogMsg + err.Error())
 			return nil, 0, internalErr
@@ -275,14 +311,14 @@ func (u *uploadChildRepo) IsChildRequested(identityCode string, ctx context.Cont
 // UpdateUploadChildRequest implements repository.IUploadChildRequestRepository.
 func (u *uploadChildRepo) UpdateUploadChildRequest(req entities.UploadChildRequest, ctx context.Context) error {
 	var query string = "UPDATE " + upload_child_request_table + " SET " +
-		"region = $1, first_name = $2, last_name = $3, gender = $4, " +
-		"date_of_birth = $5, status = $6, is_confirm_upload = $7, updated_at = $8 WHERE id = $9"
+		"region = $1, first_name = $2, last_name = $3, gender = $4, date_of_birth = $5, " +
+		"status = $6, is_confirm_upload = $7, on_chain_id = $8, updated_at = $9 WHERE id = $10"
 
 	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.UPLOAD_CHILD_REQUEST_REPOSITORY) + "UpdateUploadChildRequest - "
 	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
 
 	res, err := u.db.ExecContext(ctx, query, req.Region, req.FirstName, req.LastName, req.Gender,
-		req.DateOfBirth, req.Status, req.IsConfirmUpload, req.UpdatedAt, req.ID)
+		req.DateOfBirth, req.Status, req.IsConfirmUpload, req.OnchainID, req.UpdatedAt, req.ID)
 	if err != nil {
 		u.errLogger.Println(errLogMsg + err.Error())
 		return internalErr
