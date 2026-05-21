@@ -85,7 +85,7 @@ func GetStringPlatformConfigs(ctx *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        id   path      string  true  "Platform Config ID"
-// @Success      200      {object}  response.PaginationDataResponse
+// @Success      200      {object}  entities.PlatformConfig
 // @Failure      400      {object}  response.MessageAPIResponse "Invalid data. Please try again."
 // @Failure      500      {object}  response.MessageAPIResponse "There is something wrong in the system during the process. Please try again later."
 // @Router       /platform-configs/numeric/{id} [get]
@@ -113,7 +113,7 @@ func GetNumericPlatformConfig(ctx *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        id   path      string  true  "Platform Config ID"
-// @Success      200      {object}  response.PaginationDataResponse
+// @Success      200      {object}  entities.PlatformConfig
 // @Failure      400      {object}  response.MessageAPIResponse "Invalid data. Please try again."
 // @Failure      500      {object}  response.MessageAPIResponse "There is something wrong in the system during the process. Please try again later."
 // @Router       /platform-configs/string/{id} [get]
@@ -162,9 +162,8 @@ func UpdateNumericPlatformConfig(ctx *gin.Context) {
 	}
 
 	util.ProcessResponse(response.APIResponse{
-		ErrMsg:   service.UpdateConfig(ctx.Param("id"), request, true, ctx),
-		Context:  ctx,
-		PostType: action_type.NON_POST,
+		ErrMsg:  service.UpdateConfig(ctx.Param("id"), request, true, ctx),
+		Context: ctx,
 	})
 }
 

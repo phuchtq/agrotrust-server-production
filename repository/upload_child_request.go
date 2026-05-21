@@ -37,9 +37,9 @@ func (u *uploadChildRepo) CreateUploadChildRequest(req entities.UploadChildReque
 		"region, first_name, last_name, gender, date_of_birth, home_address, " +
 		"first_guardian_name, first_guardian_phone, first_guardian_relation, first_guardian_identity_card_blob_id, " +
 		"second_guardian_name, second_guardian_phone, second_guardian_relation, second_guardian_identity_card_blob_id, " +
-		"ai_evaluation, ai_reason, status, created_by, created_at, updated_at, birth_certificate_blob_id) " +
+		"status, created_by, created_at, updated_at, birth_certificate_blob_id) " +
 		"values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, " +
-		"$13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24, $25, $26)"
+		"$13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24"
 
 	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.UPLOAD_CHILD_REQUEST_REPOSITORY) + "CreateUploadChildRequest - "
 	var secondGuardianName, secondGuardianPhone, secondGuardianRelation, secondGuardianIdentityBlob *string
@@ -54,7 +54,7 @@ func (u *uploadChildRepo) CreateUploadChildRequest(req entities.UploadChildReque
 		req.Region, req.FirstName, req.LastName, req.Gender, req.DateOfBirth, req.HomeAddress,
 		req.FirstGuardianProfile.FullName, req.FirstGuardianProfile.PhoneNumber, req.FirstGuardianProfile.Relation, req.FirstGuardianProfile.IdentityCardBlobID,
 		secondGuardianName, secondGuardianPhone, secondGuardianRelation, secondGuardianIdentityBlob,
-		req.AIEvaluation, req.AIReason, req.Status, req.CreatedBy, req.CreatedAt, req.UpdatedAt, req.BirthCertificateBlobID); err != nil {
+		req.Status, req.CreatedBy, req.CreatedAt, req.UpdatedAt, req.BirthCertificateBlobID); err != nil {
 
 		u.errLogger.Println(errLogMsg + err.Error())
 		return errors.New(noti.INTERNALL_ERR_MSG)
@@ -76,7 +76,7 @@ func (u *uploadChildRepo) GetUploadChildRequest(id string, ctx context.Context) 
 		&res.Region, &res.FirstName, &res.LastName, &res.Gender, &res.DateOfBirth, &res.HomeAddress,
 		&res.FirstGuardianProfile.FullName, &res.FirstGuardianProfile.PhoneNumber, &res.FirstGuardianProfile.Relation, &res.FirstGuardianProfile.IdentityCardBlobID,
 		&secondGuardianName, &secondGuardianPhone, &secondGuardianRelation, &secondGuardianIdentityBlob,
-		&res.AIEvaluation, &res.AIReason, &res.Status, &res.IsConfirmUpload,
+		&res.Status, &res.IsConfirmUpload,
 		&res.CreatedBy, &res.ReviewedBy, &res.CreatedAt, &res.UpdatedAt, &res.BirthCertificateBlobID); err != nil {
 
 		if err == sql.ErrNoRows {
@@ -186,7 +186,7 @@ func (u *uploadChildRepo) GetUploadChildRequests(req request.GetUploadChildReque
 			&x.Region, &x.FirstName, &x.LastName, &x.Gender, &x.DateOfBirth, &x.HomeAddress,
 			&x.FirstGuardianProfile.FullName, &x.FirstGuardianProfile.PhoneNumber, &x.FirstGuardianProfile.Relation, &x.FirstGuardianProfile.IdentityCardBlobID,
 			&secondGuardianName, &secondGuardianPhone, &secondGuardianRelation, &secondGuardianIdentityBlob,
-			&x.AIEvaluation, &x.AIReason, &x.Status, &x.IsConfirmUpload,
+			&x.Status, &x.IsConfirmUpload,
 			&x.CreatedBy, &x.ReviewedBy, &x.CreatedAt, &x.UpdatedAt, &x.BirthCertificateBlobID); err != nil {
 
 			u.errLogger.Println(errLogMsg + err.Error())
@@ -242,7 +242,7 @@ func (u *uploadChildRepo) GetWalletUploadChildRequests(id string, page int, ctx 
 			&x.Region, &x.FirstName, &x.LastName, &x.Gender, &x.DateOfBirth, &x.HomeAddress,
 			&x.FirstGuardianProfile.FullName, &x.FirstGuardianProfile.PhoneNumber, &x.FirstGuardianProfile.Relation, &x.FirstGuardianProfile.IdentityCardBlobID,
 			&secondGuardianName, &secondGuardianPhone, &secondGuardianRelation, &secondGuardianIdentityBlob,
-			&x.AIEvaluation, &x.AIReason, &x.Status, &x.IsConfirmUpload,
+			&x.Status, &x.IsConfirmUpload,
 			&x.CreatedBy, &x.ReviewedBy, &x.CreatedAt, &x.UpdatedAt, &x.BirthCertificateBlobID); err != nil {
 
 			u.errLogger.Println(errLogMsg + err.Error())

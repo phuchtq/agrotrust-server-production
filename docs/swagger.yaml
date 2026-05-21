@@ -219,6 +219,24 @@ definitions:
         format: int64
         type: integer
     type: object
+  entities.PlatformConfig:
+    properties:
+      actor_address:
+        type: string
+      actor_profile_id:
+        type: string
+      created_at:
+        type: string
+      description:
+        type: string
+      id:
+        type: string
+      key:
+        type: string
+      updated_at:
+        type: string
+      value: {}
+    type: object
   entities.Profile:
     properties:
       created_at:
