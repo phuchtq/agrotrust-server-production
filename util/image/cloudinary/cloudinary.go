@@ -31,9 +31,9 @@ func GenerateSignature(timestamp int64, folder string) string {
 	return signature
 }
 
-func GetUploadUrl(cloudName string) string {
-	uploadUrlFormat := os.Getenv("CLOUDINARY_UPLOAD_URL")
-	uploadUrl := uploadUrlFormat + fmt.Sprintf("/%s/image/upload", cloudName)
+func GetUploadUrl() string {
+	cloudinaryUrl := os.Getenv("CLOUDINARY_UPLOAD_URL")
+	uploadUrl := cloudinaryUrl + fmt.Sprintf("/%s/image/upload", cloudName)
 	return uploadUrl
 }
 

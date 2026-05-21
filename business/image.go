@@ -33,16 +33,14 @@ func (i *imageService) GetPresignedUrl(ctx context.Context) (response.PresignedU
 	timestamp := time.Now().Add(time.Hour).Unix()
 	folder := os.Getenv(env.CLOUDINARY_STORAGE_FOLDER)
 	signature := cloudinary.GenerateSignature(timestamp, folder)
-	cloudName := os.Getenv(env.CLOUDINARY_CLOUD_NAME)
 	apiKey := os.Getenv(env.CLOUDINARY_API_KEY)
-	uploadUrl := cloudinary.GetUploadUrl(cloudName)
+	uploadUrl := cloudinary.GetUploadUrl()
 
 	return response.PresignedUrlResponse{
 		Timestamp: timestamp,
 		Folder:    folder,
 		Signature: signature,
 		ApiKey:    apiKey,
-		CloudName: cloudName,
 		UploadUrl: uploadUrl,
 	}, nil
 }
