@@ -9,7 +9,7 @@ import (
 	"raise-child/interfaces/business"
 	"raise-child/model/dtos/response"
 	"raise-child/util"
-	cloudinary_provider "raise-child/util/image/cloudinary"
+	"raise-child/util/image/cloudinary"
 	"time"
 )
 
@@ -29,15 +29,20 @@ func GenerateImageService() business.IImageService {
 }
 
 // PresignedUrl implements business.IImageService.
-func (i *imageService) PresignedUrl(ctx context.Context) (response.PresignedUrlResponse, error) {
-	var timestamp int64 = time.Now().Add(time.Hour).Unix()
-	var folder string = os.Getenv(env.CLOUDINARY_STORAGE_FOLDER)
+func (i *imageService) GetPresignedUrl(ctx context.Context) (response.PresignedUrlResponse, error) {
+	timestamp := time.Now().Add(time.Hour).Unix()
+	folder := os.Getenv(env.CLOUDINARY_STORAGE_FOLDER)
+	signature := cloudinary.GenerateSignature(timestamp, folder)
+	cloudName := os.Getenv(env.CLOUDINARY_CLOUD_NAME)
+	apiKey := os.Getenv(env.CLOUDINARY_API_KEY)
+	uploadUrl := cloudinary.GetUploadUrl(cloudName)
 
 	return response.PresignedUrlResponse{
-		UploadUrl: os.Getenv(env.CLOUDINARY_UPLOAD_URL),
-		APIKey:    os.Getenv(env.CLOUDINARY_API_KEY),
 		Timestamp: timestamp,
-		Signature: cloudinary_provider.GenerateSignature(timestamp, folder),
 		Folder:    folder,
+		Signature: signature,
+		ApiKey:    apiKey,
+		CloudName: cloudName,
+		UploadUrl: uploadUrl,
 	}, nil
 }

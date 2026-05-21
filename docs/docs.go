@@ -3181,8 +3181,8 @@ const docTemplate = `{
                 }
             }
         },
-        "/images/presign": {
-            "post": {
+        "/images/presigned-url": {
+            "get": {
                 "security": [
                     {
                         "BearerAuth": []
@@ -9915,6 +9915,9 @@ const docTemplate = `{
                 "api_key": {
                     "type": "string"
                 },
+                "cloud_name": {
+                    "type": "string"
+                },
                 "folder": {
                     "type": "string"
                 },
@@ -10130,7 +10133,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "agrotrust-server-production.onrender.com",
+	Host:             "localhost:8080",
 	BasePath:         "/",
 	Schemes:          []string{"https"},
 	Title:            "AgroTrust Server API",

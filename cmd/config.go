@@ -20,7 +20,7 @@ import (
 )
 
 // Load .env file
-func loadEnv(logger *log.Logger) {
+func loadEnv() {
 	godotenv.Load(".env")
 }
 

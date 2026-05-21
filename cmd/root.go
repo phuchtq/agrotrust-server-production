@@ -21,7 +21,7 @@ func Execute() {
 	var errLogger = util.GetLogConfig(shared.ERROR_LEVEL)
 
 	// Load env
-	loadEnv(errLogger)
+	loadEnv()
 
 	// Initialize context for backgroun goroutines management
 	ctx, cancel := context.WithCancel(context.Background())

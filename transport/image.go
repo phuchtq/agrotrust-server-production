@@ -9,7 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// PresignedUrl godoc
+// GetPresignedUrl godoc
 // @Summary      Presign before upload image to Cloudinary
 // @Description  Presign before upload image to Cloudinary
 // @Tags         image
@@ -20,10 +20,11 @@ import (
 // @Failure      400  {object}  response.MessageAPIResponse "Invalid data. Please try again."
 // @Failure      403  {object}  response.MessageAPIResponse "You have no rights to access this action."
 // @Failure      500  {object}  response.MessageAPIResponse "There is something wrong in the system during the process. Please try again later."
-// @Router       /images/presign [post]
-func PresignedUrl(ctx *gin.Context) {
+// @Router       /images/presigned-url [get]
+func GetPresignedUrl(ctx *gin.Context) {
 	var service = business.GenerateImageService()
-	res, err := service.PresignedUrl(ctx)
+
+	res, err := service.GetPresignedUrl(ctx)
 
 	util.ProcessResponse(response.APIResponse{
 		Data1:    res,

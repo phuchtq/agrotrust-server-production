@@ -9,7 +9,7 @@
         "contact": {},
         "version": "1.0"
     },
-    "host": "agrotrust-server-production.onrender.com",
+    "host": "localhost:8080",
     "basePath": "/",
     "paths": {
         "/admins": {
@@ -3178,8 +3178,8 @@
                 }
             }
         },
-        "/images/presign": {
-            "post": {
+        "/images/presigned-url": {
+            "get": {
                 "security": [
                     {
                         "BearerAuth": []
@@ -9910,6 +9910,9 @@
             "type": "object",
             "properties": {
                 "api_key": {
+                    "type": "string"
+                },
+                "cloud_name": {
                     "type": "string"
                 },
                 "folder": {

@@ -128,7 +128,7 @@ func (s *staffService) GetStaffByOwnerWallet(id string, ctx context.Context) (re
 
 	var res response.StaffNftResponse = staff.ToStaffNftResponse()
 	if req, _ := s.registrationRequestRepo.GetRegistrationRequestByOnchainId(staffId, ctx); req != nil {
-		res.IdentityCardImgUrl = cloudinary.GeneratePresignedUrl(req.IdentityCardBlobID)
+		res.IdentityCardImgUrl = cloudinary.GetImageUrl(req.IdentityCardBlobID)
 	} else {
 		orgReq, _ := s.registrationRequestRepo.GetRegistrationRequestWithDetail(entities.GetRegistrationRequestWithDetail{
 			RegisterRole:      staff.Role,
@@ -149,7 +149,7 @@ func (s *staffService) GetStaffByOwnerWallet(id string, ctx context.Context) (re
 			orgReq.OnchainID = &staffId
 			orgReq.UpdatedAt = time.Now()
 			s.registrationRequestRepo.UpdateRegistrationRequest(*orgReq, ctx)
-			res.IdentityCardImgUrl = cloudinary.GeneratePresignedUrl(orgReq.IdentityCardBlobID)
+			res.IdentityCardImgUrl = cloudinary.GetImageUrl(orgReq.IdentityCardBlobID)
 		}
 	}
 
@@ -170,7 +170,7 @@ func (s *staffService) GetStaff(id string, ctx context.Context) (response.StaffN
 
 	var res response.StaffNftResponse = staff.ToStaffNftResponse()
 	if req, _ := s.registrationRequestRepo.GetRegistrationRequestByOnchainId(id, ctx); req != nil {
-		res.IdentityCardImgUrl = cloudinary.GeneratePresignedUrl(req.IdentityCardBlobID)
+		res.IdentityCardImgUrl = cloudinary.GetImageUrl(req.IdentityCardBlobID)
 	} else {
 		orgReq, _ := s.registrationRequestRepo.GetRegistrationRequestWithDetail(entities.GetRegistrationRequestWithDetail{
 			RegisterRole:      staff.Role,
@@ -191,7 +191,7 @@ func (s *staffService) GetStaff(id string, ctx context.Context) (response.StaffN
 			orgReq.OnchainID = &id
 			orgReq.UpdatedAt = time.Now()
 			s.registrationRequestRepo.UpdateRegistrationRequest(*orgReq, ctx)
-			res.IdentityCardImgUrl = cloudinary.GeneratePresignedUrl(orgReq.IdentityCardBlobID)
+			res.IdentityCardImgUrl = cloudinary.GetImageUrl(orgReq.IdentityCardBlobID)
 		}
 	}
 

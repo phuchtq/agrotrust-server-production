@@ -8,7 +8,7 @@ import (
 // @title AgroTrust Server API
 // @version 1.0
 // @description API for AgroTrust Server
-// @host agrotrust-server-production.onrender.com
+// @host localhost:8080
 // @BasePath /
 // @schemes https
 // @securityDefinitions.apikey BearerAuth

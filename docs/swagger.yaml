@@ -1414,6 +1414,8 @@ definitions:
     properties:
       api_key:
         type: string
+      cloud_name:
+        type: string
       folder:
         type: string
       signature:
@@ -1547,7 +1549,7 @@ definitions:
       year:
         type: integer
     type: object
-host: agrotrust-server-production.onrender.com
+host: localhost:8080
 info:
   contact: {}
   description: API for AgroTrust Server
@@ -3658,8 +3660,8 @@ paths:
       summary: List gifts of a child
       tags:
       - gift
-  /images/presign:
-    post:
+  /images/presigned-url:
+    get:
       consumes:
       - application/json
       description: Presign before upload image to Cloudinary

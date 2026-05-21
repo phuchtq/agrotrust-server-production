@@ -1,9 +1,10 @@
 package response
 
 type PresignedUrlResponse struct {
-	UploadUrl string `json:"upload_url"`
-	APIKey    string `json:"api_key"`
-	Timestamp int64  `json:"timestamp"`
 	Signature string `json:"signature"`
+	Timestamp int64  `json:"timestamp"`
+	CloudName string `json:"cloud_name"`
+	ApiKey    string `json:"api_key"`
 	Folder    string `json:"folder"`
+	UploadUrl string `json:"upload_url"`
 }
