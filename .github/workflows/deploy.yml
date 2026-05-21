@@ -3,17 +3,17 @@ name: Build & Deploy to Azure
 on:
   push:
     branches:
-      - dev/ai        # trigger on every push to dev/ai
-    paths:            # only run when relevant files change → saves minutes
-      - '**.go'
-      - 'go.mod'
-      - 'go.sum'
-      - 'Dockerfile'
-      - '.github/workflows/deploy.yml'
-  workflow_dispatch:  # allow manual runs from the GitHub UI
+      - dev/ai # trigger on every push to dev/ai
+    paths: # only run when relevant files change → saves minutes
+      - "**.go"
+      - "go.mod"
+      - "go.sum"
+      - "Dockerfile"
+      - ".github/workflows/deploy.yml"
+  workflow_dispatch: # allow manual runs from the GitHub UI
 
 env:
-  IMAGE_NAME: agrotrust  # ACR repository name (lowercase)
+  IMAGE_NAME: agrotrust # ACR repository name (lowercase)
 
 # Cancel in-progress runs when a new push arrives → avoids wasting minutes
 concurrency:
@@ -27,7 +27,7 @@ jobs:
   build-and-push:
     name: Build & Push to ACR
     runs-on: ubuntu-latest
-    timeout-minutes: 15   # kill if build hangs — prevents runaway billing
+    timeout-minutes: 15 # kill if build hangs — prevents runaway billing
     outputs:
       image-tag: ${{ steps.meta.outputs.sha-tag }}
 
@@ -74,7 +74,7 @@ jobs:
             ${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ steps.meta.outputs.sha-tag }}
           # Layer cache from the ACR registry — speeds up rebuilds when go.sum hasn't changed
           cache-from: type=registry,ref=${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:buildcache
-          cache-to:   type=registry,ref=${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
+          cache-to: type=registry,ref=${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:buildcache,mode=max
 
   # ─────────────────────────────────────────────────────────────
   # Job 2: Deploy to Azure App Service
@@ -82,19 +82,19 @@ jobs:
   deploy:
     name: Deploy to App Service
     runs-on: ubuntu-latest
-    timeout-minutes: 10   # deployment should never exceed 10 min
-    needs: build-and-push   # deploy only starts AFTER build-and-push succeeds
+    timeout-minutes: 10 # deployment should never exceed 10 min
+    needs: build-and-push # deploy only starts AFTER build-and-push succeeds
     environment: production # enables manual approval gate in GitHub Environments
 
     steps:
       - name: Login to Azure
-        uses: azure/login@v2
+        uses: Azure/login@v3.0.0
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       # Deploy the SHA-tagged image so each deployment is traceable
       - name: Deploy to Azure App Service
-        uses: azure/webapps-deploy@v3
+        uses: Azure/webapps-deploy@v2.2.19
         with:
           app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
           images: ${{ secrets.REGISTRY_LOGIN_SERVER }}/${{ env.IMAGE_NAME }}:${{ needs.build-and-push.outputs.image-tag }}
