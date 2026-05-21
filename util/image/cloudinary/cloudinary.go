@@ -33,7 +33,7 @@ func GenerateSignature(timestamp int64, folder string) string {
 
 func GetUploadUrl(cloudName string) string {
 	uploadUrlFormat := os.Getenv("CLOUDINARY_UPLOAD_URL")
-	uploadUrl := uploadUrlFormat + fmt.Sprintf("%s/image/upload", cloudName)
+	uploadUrl := uploadUrlFormat + fmt.Sprintf("/%s/image/upload", cloudName)
 	return uploadUrl
 }
 
