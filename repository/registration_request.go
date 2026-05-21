@@ -162,8 +162,8 @@ func (r *registratioRequestRepo) GetRegistrationRequest(id string, ctx context.C
 
 // GetRegistrationRequestByOnchainId implements repository.IRegistrationRequestRepository.
 func (r *registratioRequestRepo) GetRegistrationRequestByOnchainId(id string, ctx context.Context) (*entities.RegistrationRequest, error) {
-	var query string = "SELECT * FROM " + registraion_request_table + " WHERE on_chain_id = $1"
-	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRAION_REQUEST_REPOSITORY) + "GetRegistrationRequestByOnchainId - "
+	var query string = "SELECT * FROM " + registration_request_table + " WHERE on_chain_id = $1"
+	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRATION_REQUEST_REPOSITORY) + "GetRegistrationRequestByOnchainId - "
 
 	var res entities.RegistrationRequest
 	if err := r.db.QueryRowContext(ctx, query, id).Scan(
@@ -186,13 +186,13 @@ func (r *registratioRequestRepo) GetRegistrationRequestByOnchainId(id string, ct
 
 // GetRegistrationRequestWithDetail implements repository.IRegistrationRequestRepository.
 func (r *registratioRequestRepo) GetRegistrationRequestWithDetail(detail entities.GetRegistrationRequestWithDetail, ctx context.Context) (*entities.RegistrationRequest, error) {
-	var query string = "SELECT * FROM " + registraion_request_table + " WHERE " +
+	var query string = "SELECT * FROM " + registration_request_table + " WHERE " +
 		"register_role = $1 AND identity_code = $2 AND avatar_blob_id = $3 " +
 		"AND region = $4 AND first_name = $5 AND last_name = $6 " +
 		"AND gender = $7 AND date_of_birth = $8 AND phone_number = $9 " +
 		"AND email = $10 AND status = $11 AND is_confirm_register = $12 AND created_by = $13"
 
-	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRAION_REQUEST_REPOSITORY) + "GetRegistrationRequestWithDetail - "
+	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRATION_REQUEST_REPOSITORY) + "GetRegistrationRequestWithDetail - "
 
 	var res entities.RegistrationRequest
 	if err := r.db.QueryRowContext(ctx, query, detail.RegisterRole, detail.IdentityCode, detail.AvatarBlobID, detail.Region,
