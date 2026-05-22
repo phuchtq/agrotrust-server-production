@@ -309,7 +309,7 @@ func (t *taskProofService) ApproveTaskProof(id string, ctx context.Context) erro
 			ChildID:     detail.ChildID,
 			NeedID:      detail.Target,
 			StaffNft:    leaderNft.ID.ID,
-			ImageBlobID: proof.ImageBlobID,
+			ImageBlobID: proof.ImageWalrusBlobID,
 			ProvideDate: proof.RawSubmitDate,
 			Actor:       proof.ActorAddress,
 			Sender:      sender,
@@ -328,7 +328,7 @@ func (t *taskProofService) ApproveTaskProof(id string, ctx context.Context) erro
 			Center:      centerId,
 			StaffNft:    leaderNft.ID.ID,
 			Description: task.Description,
-			ImageBlobID: proof.ImageBlobID,
+			ImageBlobID: proof.ImageWalrusBlobID,
 			Actor:       proof.ActorAddress,
 		})
 	}
@@ -564,53 +564,55 @@ func (t *taskProofService) SubmitTaskProof(id string, req request.SubmitTaskProo
 		return errors.New(noti.TASK_PROOF_SUBMITTED_MESSAGE)
 	}
 
-	var aiEvaluation string
-	// proofBytes, _ := t.walrusProvider.FetchBytesImage(req.ImageBlobID)
-	// if proofBytes == nil {
-	// 	t.errLogger.Println("Proof bytes nil")
-	// 	return genericErr
+	// var aiEvaluation string
+	// // proofBytes, _ := t.walrusProvider.FetchBytesImage(req.ImageBlobID)
+	// // if proofBytes == nil {
+	// // 	t.errLogger.Println("Proof bytes nil")
+	// // 	return genericErr
+	// // }
+
+	// if task.IsChildTask {
+	// 	if childTaskDetail, err := t.childTaskDetailRepo.GetChildTaskDetail(*task.ChildTaskDetailID, ctx); err == nil {
+	// 		child, _ := on_chain.GetOnChainObject[entities.Child](on_chain.GetOnChainObjectRequest{
+	// 			Client:    t.clients[constant.SuiTestnet],
+	// 			ObjectId:  childTaskDetail.ChildID,
+	// 			ErrLogger: t.errLogger,
+	// 		}, ctx)
+
+	// 		if child != nil {
+	// 			avatarBytes, _ := t.walrusProvider.FetchBytesImage(child.AvatarBlobId)
+	// 			aiEvaluation = t.aiProvider.ValidateProvideNeedForChildTaskProof(ai.ValidateProvideNeedForChildTaskProof{
+	// 				ChildAvatarBytesImage: avatarBytes,
+	// 				ValidateTaskProof: ai.ValidateTaskProof{
+	// 					TaskDescription: task.Description,
+	// 					ProofBase64:     req.ImageBase64,
+	// 					CreatedAt:       curTime,
+	// 				},
+	// 			}, ctx)
+	// 		}
+	// 	}
+	// } else {
+	// 	aiEvaluation = t.aiProvider.ValidateTaskProof(ai.ValidateTaskProof{
+	// 		TaskDescription: task.Description,
+	// 		ProofBase64:     req.ImageBase64,
+	// 		CreatedAt:       curTime,
+	// 	}, ctx)
 	// }
-
-	if task.IsChildTask {
-		if childTaskDetail, err := t.childTaskDetailRepo.GetChildTaskDetail(*task.ChildTaskDetailID, ctx); err == nil {
-			child, _ := on_chain.GetOnChainObject[entities.Child](on_chain.GetOnChainObjectRequest{
-				Client:    t.clients[constant.SuiTestnet],
-				ObjectId:  childTaskDetail.ChildID,
-				ErrLogger: t.errLogger,
-			}, ctx)
-
-			if child != nil {
-				avatarBytes, _ := t.walrusProvider.FetchBytesImage(child.AvatarBlobId)
-				aiEvaluation = t.aiProvider.ValidateProvideNeedForChildTaskProof(ai.ValidateProvideNeedForChildTaskProof{
-					ChildAvatarBytesImage: avatarBytes,
-					ValidateTaskProof: ai.ValidateTaskProof{
-						TaskDescription: task.Description,
-						ProofBase64:     req.ImageBase64,
-						CreatedAt:       curTime,
-					},
-				}, ctx)
-			}
-		}
-	} else {
-		aiEvaluation = t.aiProvider.ValidateTaskProof(ai.ValidateTaskProof{
-			TaskDescription: task.Description,
-			ProofBase64:     req.ImageBase64,
-			CreatedAt:       curTime,
-		}, ctx)
-	}
 
 	// todo: AI validation
 	return t.taskProofRepo.CreateTaskProof(entities.TaskProof{
-		ID:             util.GenerateId(),
-		TaskID:         id,
-		Description:    task.Description,
-		ActorProfileID: ctx.Value("sub").(string),
-		ActorAddress:   sender,
-		ImageBlobID:    req.ImageBlobID,
-		AIEvaluation:   aiEvaluation,
-		RawSubmitDate:  rawSubmitDate,
-		CreatedAt:      curTime,
-		UpdatedAt:      curTime,
+		ID:                    util.GenerateId(),
+		TaskID:                id,
+		Description:           task.Description,
+		ActorProfileID:        ctx.Value("sub").(string),
+		ActorAddress:          sender,
+		ImageWalrusBlobID:     req.ImageWalrusBlobID,
+		ImageCloudinaryBlobID: req.ImageCloudinaryBlobID,
+		AIEvaluation:          "",
+		AIReason:              "",
+		RawSubmitDate:         rawSubmitDate,
+		CreatedAt:             curTime,
+		UpdatedAt:             curTime,
 	}, ctx)
 }
 
@@ -637,54 +639,4 @@ func (t *taskProofService) getGetTaskProofsRedisKey(req request.GetTaskProofsReq
 
 	return fmt.Sprintf("task:kw:%s:status:%s:actor:%s:reviewed:%s:o:%s:s:%d:p:%d",
 		keyword, status, actorAddress, reviewedBy, req.SortOrder, req.PageSize, req.Page)
-}
-
-var mockTaskProofs = getMockTaskProofs()
-
-func getMockTaskProofs() []entities.TaskProof {
-	proofs := make([]entities.TaskProof, 20)
-	now := time.Now()
-
-	// Dữ liệu mẫu để xoay vòng
-	evaluations := []string{"High Confidence", "Low Confidence", "Manual Review Required", "Verified by AI"}
-	admins := []string{"Admin_01", "Admin_02", "Moderator_X"}
-	var ptrStr = func(s string) *string {
-		return &s
-	}
-
-	for i := 0; i < 20; i++ {
-		id := fmt.Sprintf("%d", i+1)
-
-		var status string
-		var reviewedBy *string
-
-		// Logic phân bổ trạng thái: 0=Pending, 1=Approved, 2=Refused
-		switch i % 3 {
-		case 0:
-			status = "Pending"
-			reviewedBy = nil
-		case 1:
-			status = "Approved"
-			reviewedBy = ptrStr(admins[i%3])
-		case 2:
-			status = "Refused"
-			reviewedBy = ptrStr(admins[i%3])
-		}
-
-		proofs[i] = entities.TaskProof{
-			ID:             id,
-			TaskID:         fmt.Sprintf("TASK-%03d", (i/2)+1),
-			Description:    fmt.Sprintf("Báo cáo hoàn thành công việc đợt %d", i+1),
-			ActorProfileID: fmt.Sprintf("ACT-%03d", i+100),
-			ActorAddress:   fmt.Sprintf("0x%x...%x", 123456+i, 789+i),
-			ImageBlobID:    fmt.Sprintf("img-proof-blob-%d", i+1),
-			ReviewedBy:     reviewedBy,
-			AIEvaluation:   evaluations[i%4],
-			ReviewStatus:   status,
-			RawSubmitDate:  now.Format("2006-01-02"),
-			CreatedAt:      now.Add(time.Duration(-i) * time.Hour),
-			UpdatedAt:      now,
-		}
-	}
-	return proofs
 }

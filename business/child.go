@@ -144,11 +144,11 @@ func (c *childService) GetChild(id string, ctx context.Context) (response.ChildR
 
 	req, _ := c.uploadChildReqRepo.GetUploadChildRequestByOnchainId(id, ctx)
 	if req != nil {
-		res.BirthCertificateImgUrl = cloudinary.GeneratePresignedUrl(req.BirthCertificateBlobID)
-		res.FirstGuardian.IdentityCardImgUrl = cloudinary.GeneratePresignedUrl(req.FirstGuardianProfile.IdentityCardBlobID)
+		res.BirthCertificateImgUrl = cloudinary.GetImageUrl(req.BirthCertificateBlobID)
+		res.FirstGuardian.IdentityCardImgUrl = cloudinary.GetImageUrl(req.FirstGuardianProfile.IdentityCardBlobID)
 
 		if req.SecondGuardianProfile != nil {
-			res.SecondGuardian.IdentityCardImgUrl = cloudinary.GeneratePresignedUrl(req.SecondGuardianProfile.IdentityCardBlobID)
+			res.SecondGuardian.IdentityCardImgUrl = cloudinary.GetImageUrl(req.SecondGuardianProfile.IdentityCardBlobID)
 		}
 	}
 

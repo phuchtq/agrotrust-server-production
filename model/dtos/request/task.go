@@ -33,6 +33,6 @@ type CreateTaskRequest struct {
 }
 
 type SubmitTaskProofRequest struct {
-	ImageBlobID string `json:"image_blob_id" validate:"required"`
-	ImageBase64 string `json:"image_base64" validate:"required"`
+	ImageWalrusBlobID     string `json:"image_walrus_blob_id" validate:"required"`
+	ImageCloudinaryBlobID string `json:"image_cloudinary_blob_id" validate:"required"`
 }

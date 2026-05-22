@@ -22,8 +22,8 @@ type registratioRequestRepo struct {
 }
 
 const (
-	registraion_request_table        string = "registration_requests"
-	registraion_request_limit_record int    = 10
+	registration_request_table        string = "registration_requests"
+	registration_request_limit_record int    = 10
 )
 
 func InitializeRegistrationRequestRepo(db *sql.DB, errLogger *log.Logger) repository.IRegistrationRequestRepository {
@@ -35,8 +35,8 @@ func InitializeRegistrationRequestRepo(db *sql.DB, errLogger *log.Logger) reposi
 
 // GetRoleRegistrationRequests implements repository.IRegistrationRequestRepository.
 func (r *registratioRequestRepo) GetRoleRegistrationRequests(role string, ctx context.Context) ([]entities.RegistrationRequest, error) {
-	var query string = "SELECT * FROM " + registraion_request_table + " WHERE register_role = $1"
-	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRAION_REQUEST_REPOSITORY) + "GetRoleRegistrationRequests - "
+	var query string = "SELECT * FROM " + registration_request_table + " WHERE register_role = $1"
+	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRATION_REQUEST_REPOSITORY) + "GetRoleRegistrationRequests - "
 	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
 
 	rows, err := r.db.QueryContext(ctx, query, role)
@@ -80,7 +80,7 @@ func (r *registratioRequestRepo) GetRoleRegistrationRequests(role string, ctx co
 
 // CreateRegistrationRequest implements repository.IRegistrationRequestRepository.
 func (r *registratioRequestRepo) CreateRegistrationRequest(req entities.RegistrationRequest, ctx context.Context) error {
-	var query string = "INSERT INTO " + registraion_request_table +
+	var query string = "INSERT INTO " + registration_request_table +
 		" (id, profile_id, register_role, identity_code, identity_card_blob_id, avatar_blob_id, " +
 		"region, first_name, last_name, gender, date_of_birth, phone_number, email, " +
 		"approvers, refusers, refuse_reasons, status, is_confirm_register, " +
@@ -88,7 +88,7 @@ func (r *registratioRequestRepo) CreateRegistrationRequest(req entities.Registra
 		"values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, " +
 		"$13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23)"
 
-	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRAION_REQUEST_REPOSITORY) + "CreateRegistrationRequest - "
+	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRATION_REQUEST_REPOSITORY) + "CreateRegistrationRequest - "
 
 	if _, err := r.db.ExecContext(ctx, query, req.ID, req.ProfileID, req.RegisterRole, req.IdentityCode, req.IdentityCardBlobID,
 		req.AvatarBlobID, req.Region, req.FirstName, req.LastName, req.Gender,
@@ -105,13 +105,13 @@ func (r *registratioRequestRepo) CreateRegistrationRequest(req entities.Registra
 
 // UpdateRegistrationRequest implements repository.IRegistrationRequestRepository.
 func (r *registratioRequestRepo) UpdateRegistrationRequest(req entities.RegistrationRequest, ctx context.Context) error {
-	var query string = "UPDATE " + registraion_request_table + " SET " +
+	var query string = "UPDATE " + registration_request_table + " SET " +
 		"region = $1, first_name = $2, last_name = $3, gender = $4, " +
 		"date_of_birth = $5, phone_number = $6, email = $7, " +
 		"approvers = $8, refusers = $9, refuse_reasons = $10, status = $11, " +
 		"is_confirm_register = $12, on_chain_id = $13, updated_at = $14 WHERE id = $15"
 
-	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRAION_REQUEST_REPOSITORY) + "UpdateRegistrationRequest - "
+	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRATION_REQUEST_REPOSITORY) + "UpdateRegistrationRequest - "
 	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
 
 	res, err := r.db.ExecContext(ctx, query, req.Region, req.FirstName, req.LastName, req.Gender,
@@ -130,7 +130,7 @@ func (r *registratioRequestRepo) UpdateRegistrationRequest(req entities.Registra
 	}
 
 	if rowsAffected == 0 {
-		return errors.New(fmt.Sprintf(noti.UNDEFINED_OBJECT_WARN_MSG, registraion_request_table))
+		return errors.New(fmt.Sprintf(noti.UNDEFINED_OBJECT_WARN_MSG, registration_request_table))
 	}
 
 	return nil
@@ -138,8 +138,8 @@ func (r *registratioRequestRepo) UpdateRegistrationRequest(req entities.Registra
 
 // GetRegistrationRequest implements repository.IRegistrationRequestRepository.
 func (r *registratioRequestRepo) GetRegistrationRequest(id string, ctx context.Context) (*entities.RegistrationRequest, error) {
-	var query string = "SELECT * FROM " + registraion_request_table + " WHERE id = $1"
-	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRAION_REQUEST_REPOSITORY) + "GetRegistrationRequest - "
+	var query string = "SELECT * FROM " + registration_request_table + " WHERE id = $1"
+	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRATION_REQUEST_REPOSITORY) + "GetRegistrationRequest - "
 
 	var res entities.RegistrationRequest
 	if err := r.db.QueryRowContext(ctx, query, id).Scan(
@@ -162,8 +162,8 @@ func (r *registratioRequestRepo) GetRegistrationRequest(id string, ctx context.C
 
 // GetRegistrationRequestByOnchainId implements repository.IRegistrationRequestRepository.
 func (r *registratioRequestRepo) GetRegistrationRequestByOnchainId(id string, ctx context.Context) (*entities.RegistrationRequest, error) {
-	var query string = "SELECT * FROM " + registraion_request_table + " WHERE on_chain_id = $1"
-	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRAION_REQUEST_REPOSITORY) + "GetRegistrationRequestByOnchainId - "
+	var query string = "SELECT * FROM " + registration_request_table + " WHERE on_chain_id = $1"
+	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRATION_REQUEST_REPOSITORY) + "GetRegistrationRequestByOnchainId - "
 
 	var res entities.RegistrationRequest
 	if err := r.db.QueryRowContext(ctx, query, id).Scan(
@@ -186,13 +186,13 @@ func (r *registratioRequestRepo) GetRegistrationRequestByOnchainId(id string, ct
 
 // GetRegistrationRequestWithDetail implements repository.IRegistrationRequestRepository.
 func (r *registratioRequestRepo) GetRegistrationRequestWithDetail(detail entities.GetRegistrationRequestWithDetail, ctx context.Context) (*entities.RegistrationRequest, error) {
-	var query string = "SELECT * FROM " + registraion_request_table + " WHERE " +
+	var query string = "SELECT * FROM " + registration_request_table + " WHERE " +
 		"register_role = $1 AND identity_code = $2 AND avatar_blob_id = $3 " +
 		"AND region = $4 AND first_name = $5 AND last_name = $6 " +
 		"AND gender = $7 AND date_of_birth = $8 AND phone_number = $9 " +
 		"AND email = $10 AND status = $11 AND is_confirm_register = $12 AND created_by = $13"
 
-	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRAION_REQUEST_REPOSITORY) + "GetRegistrationRequestWithDetail - "
+	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRATION_REQUEST_REPOSITORY) + "GetRegistrationRequestWithDetail - "
 
 	var res entities.RegistrationRequest
 	if err := r.db.QueryRowContext(ctx, query, detail.RegisterRole, detail.IdentityCode, detail.AvatarBlobID, detail.Region,
@@ -219,7 +219,7 @@ func (r *registratioRequestRepo) GetRegistrationRequestWithDetail(detail entitie
 
 // GetRegistrationRequests implements repository.IRegistrationRequestRepository.
 func (r *registratioRequestRepo) GetRegistrationRequests(req request.GetRegistrationRequests, ctx context.Context) ([]entities.RegistrationRequest, int, error) {
-	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRAION_REQUEST_REPOSITORY) + "GetRegistrationRequests - "
+	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRATION_REQUEST_REPOSITORY) + "GetRegistrationRequests - "
 	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
 
 	var queryCondition string
@@ -288,7 +288,7 @@ func (r *registratioRequestRepo) GetRegistrationRequests(req request.GetRegistra
 	}
 
 	var query string = generateRetrieveQuery(generateRetrieveQueryRequest{
-		table:       registraion_request_table,
+		table:       registration_request_table,
 		limitAmount: req.PageSize,
 		condition:   queryCondition,
 		order:       " ORDER BY created_at " + order,
@@ -333,15 +333,15 @@ func (r *registratioRequestRepo) GetRegistrationRequests(req request.GetRegistra
 	}
 
 	var totalRecords int
-	r.db.QueryRowContext(ctx, generateCountTotalRecordsQuery(registraion_request_table, queryCondition)).Scan(&totalRecords)
+	r.db.QueryRowContext(ctx, generateCountTotalRecordsQuery(registration_request_table, queryCondition)).Scan(&totalRecords)
 
 	return res, caculateTotalPages(totalRecords, req.PageSize), nil
 }
 
 // GetWalletRegistrationRequests implements repository.IRegistrationRequestRepository.
 func (r *registratioRequestRepo) GetWalletRegistrationRequests(id string, ctx context.Context) ([]entities.RegistrationRequest, error) {
-	var query string = "SELECT * FROM " + registraion_request_table + " WHERE created_by = $1 ORDER BY created_at DESC"
-	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRAION_REQUEST_REPOSITORY) + "GetWalletRegistrationRequests - "
+	var query string = "SELECT * FROM " + registration_request_table + " WHERE created_by = $1 ORDER BY created_at DESC"
+	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRATION_REQUEST_REPOSITORY) + "GetWalletRegistrationRequests - "
 	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
 
 	rows, err := r.db.QueryContext(ctx, query, id)
@@ -373,8 +373,8 @@ func (r *registratioRequestRepo) GetWalletRegistrationRequests(id string, ctx co
 
 // GetPendingRequestsV2 implements repository.IRegistrationRequestRepository.
 func (r *registratioRequestRepo) GetPendingRequestsV2(ctx context.Context) ([]entities.RegistrationRequest, error) {
-	var query string = "SELECT * FROM " + registraion_request_table + " WHERE closed_at <= NOW() AND status = 'Pending'"
-	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRAION_REQUEST_REPOSITORY) + "GetPendingRequestsV2 - "
+	var query string = "SELECT * FROM " + registration_request_table + " WHERE closed_at <= NOW() AND status = 'Pending'"
+	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRATION_REQUEST_REPOSITORY) + "GetPendingRequestsV2 - "
 	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
 
 	rows, err := r.db.QueryContext(ctx, query)
@@ -407,8 +407,8 @@ func (r *registratioRequestRepo) GetPendingRequestsV2(ctx context.Context) ([]en
 
 // GetPendingRequests implements repository.IRegistrationRequestRepository.
 func (r *registratioRequestRepo) GetPendingRequests(ctx context.Context) ([]entities.BackgroundRecord, []entities.BackgroundRecord, error) {
-	var query string = "SELECT id, approvers, refusers, register_role, created_by, status FROM " + registraion_request_table + " WHERE closed_at <= NOW() AND status = 'Pending'"
-	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRAION_REQUEST_REPOSITORY) + "GetPendingRequests - "
+	var query string = "SELECT id, approvers, refusers, register_role, created_by, status FROM " + registration_request_table + " WHERE closed_at <= NOW() AND status = 'Pending'"
+	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRATION_REQUEST_REPOSITORY) + "GetPendingRequests - "
 	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
 
 	rows, err := r.db.QueryContext(ctx, query)
@@ -446,7 +446,7 @@ func (r *registratioRequestRepo) SetApprovedStatuses(reqs []entities.BackgroundR
 		return nil
 	}
 
-	var query string = "UPDATE " + registraion_request_table + " SET status = 'Approved', updated_at = $1 WHERE "
+	var query string = "UPDATE " + registration_request_table + " SET status = 'Approved', updated_at = $1 WHERE "
 	for i, req := range reqs {
 		query += fmt.Sprintf("id = '%s'", req.ID)
 		if i < len(reqs)-1 {
@@ -455,7 +455,7 @@ func (r *registratioRequestRepo) SetApprovedStatuses(reqs []entities.BackgroundR
 	}
 
 	if _, err := r.db.ExecContext(ctx, query, time.Now()); err != nil {
-		r.errLogger.Println(fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRAION_REQUEST_REPOSITORY) + "SetApprovedStatuses - " + err.Error())
+		r.errLogger.Println(fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRATION_REQUEST_REPOSITORY) + "SetApprovedStatuses - " + err.Error())
 		return errors.New(noti.INTERNALL_ERR_MSG)
 	}
 
@@ -468,7 +468,7 @@ func (r *registratioRequestRepo) SetRefusedStatuses(reqs []entities.BackgroundRe
 		return nil
 	}
 
-	var query string = "UPDATE " + registraion_request_table + " SET status = 'Refused', updated_at = $1 WHERE "
+	var query string = "UPDATE " + registration_request_table + " SET status = 'Refused', updated_at = $1 WHERE "
 	for i, req := range reqs {
 		query += fmt.Sprintf("id = '%s'", req.ID)
 		if i < len(reqs)-1 {
@@ -477,7 +477,7 @@ func (r *registratioRequestRepo) SetRefusedStatuses(reqs []entities.BackgroundRe
 	}
 
 	if _, err := r.db.ExecContext(ctx, query, time.Now()); err != nil {
-		r.errLogger.Println(fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRAION_REQUEST_REPOSITORY) + "SetRefusedStatuses - " + err.Error())
+		r.errLogger.Println(fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRATION_REQUEST_REPOSITORY) + "SetRefusedStatuses - " + err.Error())
 		return errors.New(noti.INTERNALL_ERR_MSG)
 	}
 
@@ -490,7 +490,7 @@ func (r *registratioRequestRepo) SetApprovedStatusesV2(reqs []entities.Registrat
 		return nil
 	}
 
-	var query string = "UPDATE " + registraion_request_table + " SET status = 'Approved', is_confirm_register = TRUE, updated_at = $1 WHERE "
+	var query string = "UPDATE " + registration_request_table + " SET status = 'Approved', is_confirm_register = TRUE, updated_at = $1 WHERE "
 	for i, req := range reqs {
 		query += fmt.Sprintf("id = '%s'", req.ID)
 		if i < len(reqs)-1 {
@@ -499,7 +499,7 @@ func (r *registratioRequestRepo) SetApprovedStatusesV2(reqs []entities.Registrat
 	}
 
 	if _, err := r.db.ExecContext(ctx, query, time.Now()); err != nil {
-		r.errLogger.Println(fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRAION_REQUEST_REPOSITORY) + "SetApprovedStatusesV2 - " + err.Error())
+		r.errLogger.Println(fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRATION_REQUEST_REPOSITORY) + "SetApprovedStatusesV2 - " + err.Error())
 		return errors.New(noti.INTERNALL_ERR_MSG)
 	}
 
@@ -512,7 +512,7 @@ func (r *registratioRequestRepo) SetRefusedStatusesV2(reqs []entities.Registrati
 		return nil
 	}
 
-	var query string = "UPDATE " + registraion_request_table + " SET status = 'Refused', updated_at = $1 WHERE "
+	var query string = "UPDATE " + registration_request_table + " SET status = 'Refused', updated_at = $1 WHERE "
 	for i, req := range reqs {
 		query += fmt.Sprintf("id = '%s'", req.ID)
 		if i < len(reqs)-1 {
@@ -521,7 +521,7 @@ func (r *registratioRequestRepo) SetRefusedStatusesV2(reqs []entities.Registrati
 	}
 
 	if _, err := r.db.ExecContext(ctx, query, time.Now()); err != nil {
-		r.errLogger.Println(fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRAION_REQUEST_REPOSITORY) + "SetRefusedStatusesV2 - " + err.Error())
+		r.errLogger.Println(fmt.Sprintf(noti.REPO_ERR_MSG, shared.REGISTRATION_REQUEST_REPOSITORY) + "SetRefusedStatusesV2 - " + err.Error())
 		return errors.New(noti.INTERNALL_ERR_MSG)
 	}
 

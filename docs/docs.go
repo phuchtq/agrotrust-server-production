@@ -8832,14 +8832,14 @@ const docTemplate = `{
         "request.SubmitTaskProofRequest": {
             "type": "object",
             "required": [
-                "image_base64",
-                "image_blob_id"
+                "image_cloudinary_blob_id",
+                "image_walrus_blob_id"
             ],
             "properties": {
-                "image_base64": {
+                "image_cloudinary_blob_id": {
                     "type": "string"
                 },
-                "image_blob_id": {
+                "image_walrus_blob_id": {
                     "type": "string"
                 }
             }
