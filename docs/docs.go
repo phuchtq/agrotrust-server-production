@@ -3181,7 +3181,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/images/presign": {
+        "/images/presigned-url": {
             "post": {
                 "security": [
                     {
@@ -8833,13 +8833,13 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "image_cloudinary_blob_id",
-                "image_walrus_blob_id"
+                "image_url"
             ],
             "properties": {
                 "image_cloudinary_blob_id": {
                     "type": "string"
                 },
-                "image_walrus_blob_id": {
+                "image_url": {
                     "type": "string"
                 }
             }

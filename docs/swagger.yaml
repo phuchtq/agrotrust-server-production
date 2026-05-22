@@ -723,11 +723,11 @@ definitions:
     properties:
       image_cloudinary_blob_id:
         type: string
-      image_walrus_blob_id:
+      image_url:
         type: string
     required:
     - image_cloudinary_blob_id
-    - image_walrus_blob_id
+    - image_url
     type: object
   request.SupportCampaignRequest:
     properties:
@@ -3628,7 +3628,7 @@ paths:
       summary: List gifts of a child
       tags:
       - gift
-  /images/presign:
+  /images/presigned-url:
     post:
       consumes:
       - application/json

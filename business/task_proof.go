@@ -606,7 +606,7 @@ func (t *taskProofService) SubmitTaskProof(id string, req request.SubmitTaskProo
 		Description:           task.Description,
 		ActorProfileID:        ctx.Value("sub").(string),
 		ActorAddress:          sender,
-		ImageWalrusBlobID:     req.ImageWalrusBlobID,
+		ImageWalrusBlobID:     t.walrusProvider.UploadImageUrlToWalrus(req.ImageUrl),
 		ImageCloudinaryBlobID: req.ImageCloudinaryBlobID,
 		AIEvaluation:          "",
 		AIReason:              "",

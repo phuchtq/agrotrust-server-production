@@ -20,7 +20,7 @@ import (
 // @Failure      400  {object}  response.MessageAPIResponse "Invalid data. Please try again."
 // @Failure      403  {object}  response.MessageAPIResponse "You have no rights to access this action."
 // @Failure      500  {object}  response.MessageAPIResponse "There is something wrong in the system during the process. Please try again later."
-// @Router       /images/presign [post]
+// @Router       /images/presigned-url [post]
 func PresignUrl(ctx *gin.Context) {
 	var service = business.GenerateImageService()
 	res, err := service.PresignUrl(ctx)
