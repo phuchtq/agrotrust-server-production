@@ -7,9 +7,10 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func InitialORCRoute(server *gin.Engine) {
+func InitializeORCRoute(server *gin.Engine) {
 	var contextPath string = "ocr"
 
+	// Auth group
 	var authGroup = server.Group(contextPath, middleware.Authorize)
-	authGroup.POST("/upload-child-info", transport.GetExtractChildInfo)
+	authGroup.POST("/extract-child-info", transport.GetExtractChildInfo)
 }

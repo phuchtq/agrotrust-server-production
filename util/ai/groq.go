@@ -9,14 +9,12 @@ import (
 	"net/http"
 	"os"
 	"raise-child/constants/env"
+	"strings"
 )
 
 type GroqClient struct{}
 
-var (
-	groqAPIURL string = os.Getenv(env.GROQ_API_URL)
-	model      string = os.Getenv(env.GROQ_MODEL)
-)
+const defaultGroqAPIURL string = "https://api.groq.com/openai/v1/chat/completions"
 
 type AiResponse struct {
 	Result string `json:"result"`
@@ -78,6 +76,26 @@ type ChatResponse struct {
 // AskWithImages sends a prompt together with multiple image URLs to the Groq
 // vision model and returns the raw text content of the first choice.
 func (g *GroqClient) AskWithImages(ctx context.Context, apiKey, prompt string, imageURLs []string) (string, error) {
+	groqAPIURL := os.Getenv(env.GROQ_API_URL)
+	if groqAPIURL == "" {
+		groqAPIURL = defaultGroqAPIURL
+	}
+
+	model := os.Getenv(env.GROQ_MODEL)
+	if model == "" {
+		return "", fmt.Errorf("missing environment variable %s", env.GROQ_MODEL)
+	}
+
+	// Validate image URLs have proper schemes
+	for i, url := range imageURLs {
+		if url == "" {
+			return "", fmt.Errorf("image URL at index %d is empty", i)
+		}
+		if !strings.HasPrefix(url, "http://") && !strings.HasPrefix(url, "https://") {
+			return "", fmt.Errorf("image URL at index %d does not have http or https scheme: %s", i, url)
+		}
+	}
+
 	parts := []ContentPart{TextPart(prompt)}
 	for _, url := range imageURLs {
 		parts = append(parts, ImagePart(url))

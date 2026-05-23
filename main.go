@@ -8,7 +8,7 @@ import (
 // @title AgroTrust Server API
 // @version 1.0
 // @description API for AgroTrust Server
-// @host localhost:8080
+// @host https://agrotrust-fkhwgwh5ecgwhrbf.indonesiacentral-01.azurewebsites.net/
 // @BasePath /
 // @schemes https
 // @securityDefinitions.apikey BearerAuth

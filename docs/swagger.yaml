@@ -1414,8 +1414,6 @@ definitions:
     properties:
       api_key:
         type: string
-      cloud_name:
-        type: string
       folder:
         type: string
       signature:
@@ -1549,7 +1547,7 @@ definitions:
       year:
         type: integer
     type: object
-host: localhost:8080
+host: https://agrotrust-fkhwgwh5ecgwhrbf.indonesiacentral-01.azurewebsites.net/
 info:
   contact: {}
   description: API for AgroTrust Server

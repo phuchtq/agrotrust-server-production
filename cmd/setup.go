@@ -21,9 +21,6 @@ func setupApiRoutes(server *gin.Engine) {
 	// Auth API endpoints
 	api_route.InitializeAuthHandlerRoutes(server)
 
-	// OCR API endpoints
-	api_route.InitialORCRoute(server)
-
 	// On-chain API endpoints
 	api_route.InitializeOnChainRoutes(server)
 
@@ -107,6 +104,9 @@ func setupApiRoutes(server *gin.Engine) {
 
 	// Image API endpoints
 	api_route.InitializeImageRoute(server)
+
+	// OCR API endpoints
+	api_route.InitializeORCRoute(server)
 
 	// Default route to Swagger documentation
 	server.GET("/", func(ctx *gin.Context) {

@@ -9,7 +9,7 @@
         "contact": {},
         "version": "1.0"
     },
-    "host": "localhost:8080",
+    "host": "https://agrotrust-fkhwgwh5ecgwhrbf.indonesiacentral-01.azurewebsites.net/",
     "basePath": "/",
     "paths": {
         "/admins": {
@@ -9910,9 +9910,6 @@
             "type": "object",
             "properties": {
                 "api_key": {
-                    "type": "string"
-                },
-                "cloud_name": {
                     "type": "string"
                 },
                 "folder": {

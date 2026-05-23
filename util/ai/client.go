@@ -139,16 +139,26 @@ func extractJSONObject(s string) string {
 
 // ExtractChildInfo implements IAiClientProvider.
 func (a *aiClient) ExtractChildInfo(birthCertURL string, firstGuardianIDCardURL string, secondGuardianIDCardURL *string, ctx context.Context) (*response.ExtractChildUploadInfoResponse, error) {
-	guardianIdURLs := []string{firstGuardianIDCardURL}
-	if secondGuardianIDCardURL != nil {
-		guardianIdURLs = append(guardianIdURLs, *secondGuardianIDCardURL)
+	// Validate required URLs
+	if birthCertURL == "" {
+		return nil, fmt.Errorf("extract child info: missing birth certificate URL")
+	}
+	if firstGuardianIDCardURL == "" {
+		return nil, fmt.Errorf("extract child info: missing first guardian ID card URL")
+	}
+
+	// Build image URLs list
+	imageURLs := []string{birthCertURL, firstGuardianIDCardURL}
+	
+	if secondGuardianIDCardURL != nil && *secondGuardianIDCardURL != "" {
+		imageURLs = append(imageURLs, *secondGuardianIDCardURL)
 	}
 
 	raw, err := a.groqProvider.AskWithImages(
 		ctx,
 		os.Getenv("GROQ_API_KEY"),
 		prompts.ChildUploadInfoExtractionPrompt,
-		[]string{birthCertURL, guardianIdURLs[0], guardianIdURLs[1]},
+		imageURLs,
 	)
 	if err != nil {
 		a.errLogger.Printf("extract child info: %s", err)
