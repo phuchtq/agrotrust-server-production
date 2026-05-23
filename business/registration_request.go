@@ -574,7 +574,7 @@ func (r *registrationRequestService) CreateRegistrationRequest(req request.Creat
 		ProfileID:          ctx.Value("sub").(string),
 		RegisterRole:       role,
 		IdentityCode:       identityCode,
-		IdentityCardBlobID: strings.TrimSpace(req.IdentityCardBlobID),
+		IdentityCardBlobID: strings.TrimSpace(req.IdentityCardCloudinaryID),
 		AvatarBlobID:       strings.TrimSpace(req.AvatarBlobID),
 		Region:             req.Region,
 		FirstName:          firstName,

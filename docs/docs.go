@@ -3181,8 +3181,8 @@ const docTemplate = `{
                 }
             }
         },
-        "/images/presigned-url": {
-            "get": {
+        "/images/presign": {
+            "post": {
                 "security": [
                     {
                         "BearerAuth": []
@@ -8648,24 +8648,16 @@ const docTemplate = `{
         "request.CreateRegistrationRequest": {
             "type": "object",
             "required": [
-                "avatar_base_64",
                 "avatar_blob_id",
-                "identity_card_base64",
-                "identity_card_blob_id",
+                "identity_card_cloudinary_id",
                 "region",
                 "register_role"
             ],
             "properties": {
-                "avatar_base_64": {
-                    "type": "string"
-                },
                 "avatar_blob_id": {
                     "type": "string"
                 },
-                "identity_card_base64": {
-                    "type": "string"
-                },
-                "identity_card_blob_id": {
+                "identity_card_cloudinary_id": {
                     "type": "string"
                 },
                 "region": {
@@ -8897,11 +8889,11 @@ const docTemplate = `{
         "request.SubmitTaskProofRequest": {
             "type": "object",
             "required": [
-                "image_blob_id",
-                "image_url"
+                "image_base64",
+                "image_blob_id"
             ],
             "properties": {
-                "image_blob_id": {
+                "image_base64": {
                     "type": "string"
                 },
                 "image_url": {

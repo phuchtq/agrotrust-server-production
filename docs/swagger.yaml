@@ -564,23 +564,17 @@ definitions:
     type: object
   request.CreateRegistrationRequest:
     properties:
-      avatar_base_64:
-        type: string
       avatar_blob_id:
         type: string
-      identity_card_base64:
-        type: string
-      identity_card_blob_id:
+      identity_card_cloudinary_id:
         type: string
       region:
         type: string
       register_role:
         type: string
     required:
-    - avatar_base_64
     - avatar_blob_id
-    - identity_card_base64
-    - identity_card_blob_id
+    - identity_card_cloudinary_id
     - region
     - register_role
     type: object
@@ -734,13 +728,15 @@ definitions:
     type: object
   request.SubmitTaskProofRequest:
     properties:
-      image_blob_id:
+      image_cloudinary_blob_id:
+        type: string
+      image_url:
         type: string
       image_url:
         type: string
     required:
+    - image_base64
     - image_blob_id
-    - image_url
     type: object
   request.SupportCampaignRequest:
     properties:
@@ -3658,8 +3654,8 @@ paths:
       summary: List gifts of a child
       tags:
       - gift
-  /images/presigned-url:
-    get:
+  /images/presign:
+    post:
       consumes:
       - application/json
       description: Presign before upload image to Cloudinary

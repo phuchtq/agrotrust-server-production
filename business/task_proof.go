@@ -262,7 +262,7 @@ func (t *taskProofService) ApproveTaskProof(id string, ctx context.Context) erro
 			ChildID:     detail.ChildID,
 			NeedID:      detail.Target,
 			StaffNft:    leaderNft.ID.ID,
-			ImageBlobID: proof.ImageBlobID,
+			ImageBlobID: proof.ImageWalrusBlobID,
 			ProvideDate: proof.RawSubmitDate,
 			Actor:       proof.ActorAddress,
 			Sender:      sender,
@@ -281,7 +281,7 @@ func (t *taskProofService) ApproveTaskProof(id string, ctx context.Context) erro
 			Center:      centerId,
 			StaffNft:    leaderNft.ID.ID,
 			Description: task.Description,
-			ImageBlobID: proof.ImageBlobID,
+			ImageBlobID: proof.ImageWalrusBlobID,
 			Actor:       proof.ActorAddress,
 		})
 	}
@@ -439,13 +439,13 @@ func (t *taskProofService) SubmitTaskProof(id string, req request.SubmitTaskProo
 		AIReason:     "AI validation temporarily unavailable, please wait for human review",
 	}
 
-	if task.IsChildTask {
-		if childTaskDetail, err := t.childTaskDetailRepo.GetChildTaskDetail(*task.ChildTaskDetailID, ctx); err == nil {
-			child, _ := on_chain.GetOnChainObject[entities.Child](on_chain.GetOnChainObjectRequest{
-				Client:    t.clients[constant.SuiTestnet],
-				ObjectId:  childTaskDetail.ChildID,
-				ErrLogger: t.errLogger,
-			}, ctx)
+	// if task.IsChildTask {
+	// 	if childTaskDetail, err := t.childTaskDetailRepo.GetChildTaskDetail(*task.ChildTaskDetailID, ctx); err == nil {
+	// 		child, _ := on_chain.GetOnChainObject[entities.Child](on_chain.GetOnChainObjectRequest{
+	// 			Client:    t.clients[constant.SuiTestnet],
+	// 			ObjectId:  childTaskDetail.ChildID,
+	// 			ErrLogger: t.errLogger,
+	// 		}, ctx)
 
 			if child != nil {
 				aiResponse, err = t.aiProvider.ValidateTaskProof(taskProof, ctx)
