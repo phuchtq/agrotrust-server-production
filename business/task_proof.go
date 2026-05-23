@@ -430,7 +430,7 @@ func (t *taskProofService) SubmitTaskProof(id string, req request.SubmitTaskProo
 	// TODO: AI Evaluation
 	taskProof := ai.ValidateTaskProof{
 		TaskDescription: task.Description,
-		ProofImageURL:   req.ImageURL,
+		ProofImageURL:   req.ImageUrl,
 		CreatedAt:       curTime,
 	}
 
@@ -439,13 +439,13 @@ func (t *taskProofService) SubmitTaskProof(id string, req request.SubmitTaskProo
 		AIReason:     "AI validation temporarily unavailable, please wait for human review",
 	}
 
-	// if task.IsChildTask {
-	// 	if childTaskDetail, err := t.childTaskDetailRepo.GetChildTaskDetail(*task.ChildTaskDetailID, ctx); err == nil {
-	// 		child, _ := on_chain.GetOnChainObject[entities.Child](on_chain.GetOnChainObjectRequest{
-	// 			Client:    t.clients[constant.SuiTestnet],
-	// 			ObjectId:  childTaskDetail.ChildID,
-	// 			ErrLogger: t.errLogger,
-	// 		}, ctx)
+	if task.IsChildTask {
+		if childTaskDetail, err := t.childTaskDetailRepo.GetChildTaskDetail(*task.ChildTaskDetailID, ctx); err == nil {
+			child, _ := on_chain.GetOnChainObject[entities.Child](on_chain.GetOnChainObjectRequest{
+				Client:    t.clients[constant.SuiTestnet],
+				ObjectId:  childTaskDetail.ChildID,
+				ErrLogger: t.errLogger,
+			}, ctx)
 
 			if child != nil {
 				aiResponse, err = t.aiProvider.ValidateTaskProof(taskProof, ctx)
@@ -457,17 +457,17 @@ func (t *taskProofService) SubmitTaskProof(id string, req request.SubmitTaskProo
 	}
 
 	return t.taskProofRepo.CreateTaskProof(entities.TaskProof{
-		ID:             util.GenerateId(),
-		TaskID:         id,
-		Description:    task.Description,
-		ActorProfileID: ctx.Value("sub").(string),
-		ActorAddress:   sender,
-		ImageBlobID:    req.ImageBlobID,
-		AIEvaluation:   aiResponse.AIEvaluation,
-		AIReason:       aiResponse.AIReason,
-		RawSubmitDate:  rawSubmitDate,
-		CreatedAt:      curTime,
-		UpdatedAt:      curTime,
+		ID:                    util.GenerateId(),
+		TaskID:                id,
+		Description:           task.Description,
+		ActorProfileID:        ctx.Value("sub").(string),
+		ActorAddress:          sender,
+		ImageCloudinaryBlobID: req.ImageCloudinaryBlobID,
+		AIEvaluation:          aiResponse.AIEvaluation,
+		AIReason:              aiResponse.AIReason,
+		RawSubmitDate:         rawSubmitDate,
+		CreatedAt:             curTime,
+		UpdatedAt:             curTime,
 	}, ctx)
 }
 

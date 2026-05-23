@@ -3181,8 +3181,8 @@ const docTemplate = `{
                 }
             }
         },
-        "/images/presign": {
-            "post": {
+        "/images/presigned-url": {
+            "get": {
                 "security": [
                     {
                         "BearerAuth": []
@@ -3301,7 +3301,7 @@ const docTemplate = `{
                 "summary": "Extract child information from OCR input",
                 "parameters": [
                     {
-                        "description": "OCR request payload",
+                        "description": "OCR request payload - second_guardian_id_card_url is optional",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -8844,10 +8844,6 @@ const docTemplate = `{
         },
         "request.ExtractChildUploadInfoRequest": {
             "type": "object",
-            "required": [
-                "child_birth_certificate_url",
-                "first_guardian_id_card_url"
-            ],
             "properties": {
                 "child_birth_certificate_url": {
                     "type": "string"
@@ -8889,11 +8885,11 @@ const docTemplate = `{
         "request.SubmitTaskProofRequest": {
             "type": "object",
             "required": [
-                "image_base64",
-                "image_blob_id"
+                "image_cloudinary_blob_id",
+                "image_url"
             ],
             "properties": {
-                "image_base64": {
+                "image_cloudinary_blob_id": {
                     "type": "string"
                 },
                 "image_url": {

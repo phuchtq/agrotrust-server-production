@@ -705,9 +705,6 @@ definitions:
         type: string
       second_guardian_id_card_url:
         type: string
-    required:
-    - child_birth_certificate_url
-    - first_guardian_id_card_url
     type: object
   request.LoginRequestV2:
     properties:
@@ -732,11 +729,9 @@ definitions:
         type: string
       image_url:
         type: string
-      image_url:
-        type: string
     required:
-    - image_base64
-    - image_blob_id
+    - image_cloudinary_blob_id
+    - image_url
     type: object
   request.SupportCampaignRequest:
     properties:
@@ -3654,8 +3649,8 @@ paths:
       summary: List gifts of a child
       tags:
       - gift
-  /images/presign:
-    post:
+  /images/presigned-url:
+    get:
       consumes:
       - application/json
       description: Presign before upload image to Cloudinary
@@ -3728,7 +3723,7 @@ paths:
       - application/json
       description: Extract child information from an uploaded OCR payload
       parameters:
-      - description: OCR request payload
+      - description: OCR request payload - second_guardian_id_card_url is optional
         in: body
         name: request
         required: true
