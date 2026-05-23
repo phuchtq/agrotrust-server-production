@@ -344,13 +344,21 @@ func (u *uploadChildRequestService) CreateUploadChildRequest(req request.UploadC
 		var numericTmp *entities.NumericConfig
 
 		if config, _ := u.platformConfigRepo.GetConfigByKey(numericTmp.GetTable(), tmp.GetChildAgeMaxLimitConfigKey(), ctx); config != nil {
-			maxAgeAccepted = config.Value.(int)
+			if v, ok := config.Value.(int64); ok {
+				maxAgeAccepted = int(v)
+			} else {
+				maxAgeAccepted = child_max_age_accepted
+			}
 		} else {
 			maxAgeAccepted = child_max_age_accepted
 		}
 
 		if config, _ := u.platformConfigRepo.GetConfigByKey(numericTmp.GetTable(), tmp.GetChildAgeMinLimitConfigKey(), ctx); config != nil {
-			minAgeAccepted = config.Value.(int)
+			if v, ok := config.Value.(int64); ok {
+				minAgeAccepted = int(v)
+			} else {
+				minAgeAccepted = child_min_age_accepted
+			}
 		} else {
 			minAgeAccepted = child_min_age_accepted
 		}
@@ -405,10 +413,10 @@ func (u *uploadChildRequestService) CreateUploadChildRequest(req request.UploadC
 		HomeAddress:            homeAddr,
 		FirstGuardianProfile:   firstGuardianProfile,
 		SecondGuardianProfile:  secondGuardianProfile,
-		Status:    request_pending_status,
-		CreatedBy: ctx.Value("address").(string),
-		CreatedAt: curTime,
-		UpdatedAt: curTime,
+		Status:                 request_pending_status,
+		CreatedBy:              ctx.Value("address").(string),
+		CreatedAt:              curTime,
+		UpdatedAt:              curTime,
 	}
 
 	return &request, u.uploadChildRequestRepo.CreateUploadChildRequest(request, ctx)
