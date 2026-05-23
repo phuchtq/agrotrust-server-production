@@ -339,18 +339,18 @@ func (u *uploadChildRequestService) CreateUploadChildRequest(req request.UploadC
 	if dob := util.RawDateToTime(dateOfBirth); dob.IsZero() {
 		return nil, errors.New(noti.INVALID_DATE_FORMAT_WARN_MSG)
 	} else {
-		var maxAgeAccepted, minAgeAccepted int
+		var maxAgeAccepted, minAgeAccepted int64
 		var tmp *entities.PlatformConfig
 		var numericTmp *entities.NumericConfig
 
 		if config, _ := u.platformConfigRepo.GetConfigByKey(numericTmp.GetTable(), tmp.GetChildAgeMaxLimitConfigKey(), ctx); config != nil {
-			maxAgeAccepted = config.Value.(int)
+			maxAgeAccepted = config.Value.(int64)
 		} else {
 			maxAgeAccepted = child_max_age_accepted
 		}
 
 		if config, _ := u.platformConfigRepo.GetConfigByKey(numericTmp.GetTable(), tmp.GetChildAgeMinLimitConfigKey(), ctx); config != nil {
-			minAgeAccepted = config.Value.(int)
+			minAgeAccepted = config.Value.(int64)
 		} else {
 			minAgeAccepted = child_min_age_accepted
 		}
@@ -405,10 +405,10 @@ func (u *uploadChildRequestService) CreateUploadChildRequest(req request.UploadC
 		HomeAddress:            homeAddr,
 		FirstGuardianProfile:   firstGuardianProfile,
 		SecondGuardianProfile:  secondGuardianProfile,
-		Status:    request_pending_status,
-		CreatedBy: ctx.Value("address").(string),
-		CreatedAt: curTime,
-		UpdatedAt: curTime,
+		Status:                 request_pending_status,
+		CreatedBy:              ctx.Value("address").(string),
+		CreatedAt:              curTime,
+		UpdatedAt:              curTime,
 	}
 
 	return &request, u.uploadChildRequestRepo.CreateUploadChildRequest(request, ctx)
