@@ -563,23 +563,17 @@ definitions:
     type: object
   request.CreateRegistrationRequest:
     properties:
-      avatar_base_64:
-        type: string
       avatar_blob_id:
         type: string
-      identity_card_base64:
-        type: string
-      identity_card_blob_id:
+      identity_card_cloudinary_id:
         type: string
       region:
         type: string
       register_role:
         type: string
     required:
-    - avatar_base_64
     - avatar_blob_id
-    - identity_card_base64
-    - identity_card_blob_id
+    - identity_card_cloudinary_id
     - region
     - register_role
     type: object
