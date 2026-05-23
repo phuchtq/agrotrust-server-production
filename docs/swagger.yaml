@@ -215,6 +215,7 @@ definitions:
       updatedAt:
         type: string
       withdrawAmount:
+        format: int64
         type: integer
     type: object
   entities.PlatformConfig:
@@ -696,6 +697,15 @@ definitions:
     - signature
     - tx_bytes
     type: object
+  request.ExtractChildUploadInfoRequest:
+    properties:
+      child_birth_certificate_url:
+        type: string
+      first_guardian_id_card_url:
+        type: string
+      second_guardian_id_card_url:
+        type: string
+    type: object
   request.LoginRequestV2:
     properties:
       address:
@@ -1102,6 +1112,23 @@ definitions:
       url:
         type: string
     type: object
+  response.ExtractChildUploadInfoResponse:
+    properties:
+      date_of_birth:
+        type: string
+      first_guardian_full_name:
+        type: string
+      first_name:
+        type: string
+      gender:
+        type: string
+      identity_code:
+        type: string
+      last_name:
+        type: string
+      second_guardian_full_name:
+        type: string
+    type: object
   response.GetTransactionRecordsResponse:
     properties:
       amount:
@@ -1374,7 +1401,7 @@ definitions:
       total_donation:
         type: integer
     type: object
-  response.PresignUrlResponse:
+  response.PresignedUrlResponse:
     properties:
       api_key:
         type: string
@@ -1567,7 +1594,7 @@ definitions:
       year:
         type: integer
     type: object
-host: agrotrust-server-production.onrender.com
+host: https://agrotrust-fkhwgwh5ecgwhrbf.indonesiacentral-01.azurewebsites.net/
 info:
   contact: {}
   description: API for AgroTrust Server
@@ -3679,7 +3706,7 @@ paths:
       tags:
       - gift
   /images/presigned-url:
-    post:
+    get:
       consumes:
       - application/json
       description: Presign before upload image to Cloudinary
@@ -3689,7 +3716,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/response.PresignUrlResponse'
+            $ref: '#/definitions/response.PresignedUrlResponse'
         "400":
           description: Invalid data. Please try again.
           schema:
@@ -3746,6 +3773,36 @@ paths:
       summary: List notifications of a user
       tags:
       - notification
+  /ocr/extract-child-info:
+    post:
+      consumes:
+      - application/json
+      description: Extract child information from an uploaded OCR payload
+      parameters:
+      - description: OCR request payload - second_guardian_id_card_url is optional
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/request.ExtractChildUploadInfoRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.ExtractChildUploadInfoResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+      summary: Extract child information from OCR input
+      tags:
+      - OCR
   /payments:
     get:
       consumes:

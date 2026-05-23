@@ -89,7 +89,7 @@ func (n *notiService) GetCurrentWalletNotis(wallet string, req request.GetNotisR
 
 	data, err := n.leaderNotiRepo.GetCurrentLeaderNotis(req, wallet, ctx)
 	var amount int
-	if data == nil || len(data) == 0 {
+	if len(data) == 0 {
 		amount = 0
 	} else {
 		amount = len(data)

@@ -225,7 +225,7 @@ func (t *taskRepo) UpdateTask(task entities.Task, ctx context.Context) error {
 	}
 
 	if rowsAffected == 0 {
-		return errors.New(fmt.Sprintf(noti.UNDEFINED_OBJECT_WARN_MSG, task_table))
+		return fmt.Errorf(noti.UNDEFINED_OBJECT_WARN_MSG, task_table)
 	}
 
 	return nil

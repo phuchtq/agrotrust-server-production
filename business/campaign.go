@@ -86,7 +86,7 @@ func GenerateCampaignService() (business.ICampaignService, error) {
 		repository.InitializePendingWithdrawProposalRepo(cnn, errLogger),
 		repository.InitializeOffChainDonationRepository(cnn, errLogger),
 		repository.InitializeOffChainWithdrawProposalRepository(cnn, errLogger),
-		ai.InitializeAiProvider(nil, errLogger),
+		ai.InitializeAiProvider(errLogger),
 		walrus_pkg.InitializeWalrusProvider(errLogger),
 		_networkAliases,
 		errLogger,
@@ -349,7 +349,7 @@ func (c *campaignService) GetCampaigns(req request.GetCampaignsRequest, ctx cont
 		}
 	}
 
-	if camapaigns == nil || len(camapaigns) == 0 {
+	if len(camapaigns) == 0 {
 		return response.PaginationDataResponse{
 			Page: req.Page,
 		}, nil

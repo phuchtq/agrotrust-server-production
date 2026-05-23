@@ -242,7 +242,7 @@ func (v *volunteerRequestRepo) UpdateRegistrationRequest(req entities.VolunteerR
 	}
 
 	if rowsAffected == 0 {
-		return errors.New(fmt.Sprintf(noti.UNDEFINED_OBJECT_WARN_MSG, volunteer_request_table))
+		return fmt.Errorf(noti.UNDEFINED_OBJECT_WARN_MSG, volunteer_request_table)
 	}
 
 	return nil

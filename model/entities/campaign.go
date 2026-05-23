@@ -55,8 +55,8 @@ type PendingCampaign struct {
 	Target         int64     `json:"target"`
 	Description    string    `json:"description"`
 	ProofBlobID    *string   `json:"proof_blob_id"`
-	AIEvaluation   string    `json:"ai_evaluation"`
 	ReviewStatus   string    `json:"review_status"`
+	AIEvaluation   string    `json:"ai_evaluation"`
 	ReviewedBy     *string   `json:"reviewed_by"`
 	CreatedAt      time.Time `json:"created_at"`
 	UpdatedAt      time.Time `json:"updated_at"`

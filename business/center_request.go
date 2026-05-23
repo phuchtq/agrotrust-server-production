@@ -247,12 +247,12 @@ func (c *centerRequestService) ConfirmRequest(id string, ctx context.Context) er
 		return errors.New(noti.STILL_PENDING_REQUEST_MESSAGE)
 	}
 
-	if req.Approvers == nil || len(req.Approvers) == 0 {
+	if len(req.Approvers) == 0 {
 		return errors.New(noti.NOT_ARRPOVED_REQUEST_WARN_MSG)
 	}
 
 	var refuseCounts int
-	if req.Refusers != nil && len(req.Refusers) > 0 {
+	if len(req.Refusers) > 0 {
 		refuseCounts = len(req.Refusers)
 	}
 
@@ -466,7 +466,7 @@ func (c *centerRequestService) GetRequests(req request.GetCenterRequests, ctx co
 
 	data, pages, err := c.centerRequestRepo.GetRegistrationRequests(req, ctx)
 	var amount int
-	if data == nil || len(data) == 0 {
+	if len(data) == 0 {
 		amount = 0
 	} else {
 		amount = len(data)
@@ -478,8 +478,6 @@ func (c *centerRequestService) GetRequests(req request.GetCenterRequests, ctx co
 		Page:       req.Page,
 		TotalPages: pages,
 	}
-
-	//c.redisCache.Set(redisKey, res, time.Minute*5, ctx)
 
 	return res, err
 }
@@ -501,8 +499,6 @@ func (c *centerRequestService) GetWalletRequests(id string, ctx context.Context)
 	if errRes != nil {
 		return nil, errRes
 	}
-
-	//c.redisCache.Set(redisKey, res, time.Minute*5, ctx)
 
 	return res, errRes
 }
@@ -622,7 +618,7 @@ func (c *centerRequestService) EditStaffNumbersToRequestCenter(req request.EditS
 		return err
 	}
 
-	if caps == nil || len(caps) == 0 {
+	if len(caps) == 0 {
 		return errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
 	}
 

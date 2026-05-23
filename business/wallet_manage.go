@@ -20,8 +20,11 @@ func init() {
 	_wallets = make(map[string]string)
 }
 
-func GetWallets() map[string]string {
-	return _wallets
+func IsWalletRegistered(sub string) bool {
+	_shareMu.RLock()
+	defer _shareMu.RUnlock()
+	_, exists := _wallets[sub]
+	return exists
 }
 
 func setLogin(sub, addr string) {

@@ -130,7 +130,7 @@ func (r *registratioRequestRepo) UpdateRegistrationRequest(req entities.Registra
 	}
 
 	if rowsAffected == 0 {
-		return errors.New(fmt.Sprintf(noti.UNDEFINED_OBJECT_WARN_MSG, registration_request_table))
+		return fmt.Errorf(noti.UNDEFINED_OBJECT_WARN_MSG, registration_request_table)
 	}
 
 	return nil
@@ -442,7 +442,7 @@ func (r *registratioRequestRepo) GetPendingRequests(ctx context.Context) ([]enti
 
 // SetApprovedStatuses implements repository.IRegistrationRequestRepository.
 func (r *registratioRequestRepo) SetApprovedStatuses(reqs []entities.BackgroundRecord, ctx context.Context) error {
-	if reqs == nil || len(reqs) == 0 {
+	if len(reqs) == 0 {
 		return nil
 	}
 
@@ -464,7 +464,7 @@ func (r *registratioRequestRepo) SetApprovedStatuses(reqs []entities.BackgroundR
 
 // SetRefusedStatuses implements repository.IRegistrationRequestRepository.
 func (r *registratioRequestRepo) SetRefusedStatuses(reqs []entities.BackgroundRecord, ctx context.Context) error {
-	if reqs == nil || len(reqs) == 0 {
+	if len(reqs) == 0 {
 		return nil
 	}
 
@@ -486,7 +486,7 @@ func (r *registratioRequestRepo) SetRefusedStatuses(reqs []entities.BackgroundRe
 
 // SetApprovedStatusesV2 implements repository.IRegistrationRequestRepository.
 func (r *registratioRequestRepo) SetApprovedStatusesV2(reqs []entities.RegistrationRequest, ctx context.Context) error {
-	if reqs == nil || len(reqs) == 0 {
+	if len(reqs) == 0 {
 		return nil
 	}
 
@@ -508,7 +508,7 @@ func (r *registratioRequestRepo) SetApprovedStatusesV2(reqs []entities.Registrat
 
 // SetRefusedStatusesV2 implements repository.IRegistrationRequestRepository.
 func (r *registratioRequestRepo) SetRefusedStatusesV2(reqs []entities.RegistrationRequest, ctx context.Context) error {
-	if reqs == nil || len(reqs) == 0 {
+	if len(reqs) == 0 {
 		return nil
 	}
 

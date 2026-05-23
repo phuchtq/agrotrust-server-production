@@ -356,7 +356,7 @@ func (t *taskService) GetTasks(req request.GetTasksRequest, ctx context.Context)
 	}
 
 	var amount int
-	if data == nil || len(data) == 0 {
+	if len(data) == 0 {
 		amount = 0
 	} else {
 		amount = len(data)
@@ -397,7 +397,7 @@ func (t *taskService) GetUserTasks(wallet string, req request.GetTasksRequest, c
 	}
 
 	var amount int
-	if data == nil || len(data) == 0 {
+	if len(data) == 0 {
 		amount = 0
 	} else {
 		amount = len(data)
@@ -498,7 +498,7 @@ func (t *taskService) GetTasksOfRegionOnUser(wallet string, req request.GetTasks
 	}
 
 	var amount int
-	if data == nil || len(data) == 0 {
+	if len(data) == 0 {
 		amount = 0
 	} else {
 		amount = len(data)

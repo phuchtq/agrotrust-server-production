@@ -124,7 +124,6 @@ func (c *centerService) GetCenters(req request.GetCentersRequest, ctx context.Co
 	}
 
 	var res response.PaginationDataResponse
-
 	var client = c.clients[constant.SuiTestnet]
 	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
 		Client:    client,
@@ -149,7 +148,7 @@ func (c *centerService) GetCenters(req request.GetCentersRequest, ctx context.Co
 		return response.PaginationDataResponse{}, err
 	}
 
-	if centers == nil || len(centers) == 0 {
+	if len(centers) == 0 {
 		return response.PaginationDataResponse{
 			Page:   req.Page,
 			Amount: 0,

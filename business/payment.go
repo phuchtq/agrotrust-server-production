@@ -306,7 +306,7 @@ func GeneratePaymentService() (business.IPaymentService, error) {
 
 // 				withdrawDate, err := on_chain.GetOnChainObject[entities.HealthInsuranceNeedWithdrawDate](on_chain.GetOnChainObjectRequest{
 // 					Client:    client,
-// 					ObjectId:  os.Getenv(env.HEALTH_INSURANCE_NEED_wITHDRAW_DATE_ID),
+// 					ObjectId:  os.Getenv(env.HEALTH_INSURANCE_NEED_WITHDRAW_DATE_ID),
 // 					ErrLogger: p.errLogger,
 // 				}, ctx)
 
@@ -932,7 +932,7 @@ func (p *paymentService) GetPayments(req request.GetPaymentsRequest, ctx context
 	}
 
 	var amount int
-	if data == nil || len(data) == 0 {
+	if len(data) == 0 {
 		amount = 0
 	} else {
 		amount = len(data)
@@ -1247,7 +1247,7 @@ func (p *paymentService) RefusePayment(id string, ctx context.Context) error {
 
 // 				withdrawDate, err := on_chain.GetOnChainObject[entities.HealthInsuranceNeedWithdrawDate](on_chain.GetOnChainObjectRequest{
 // 					Client:    client,
-// 					ObjectId:  os.Getenv(env.HEALTH_INSURANCE_NEED_wITHDRAW_DATE_ID),
+// 					ObjectId:  os.Getenv(env.HEALTH_INSURANCE_NEED_WITHDRAW_DATE_ID),
 // 					ErrLogger: p.errLogger,
 // 				}, ctx)
 
@@ -1881,7 +1881,7 @@ func (p *paymentService) CallbackV2(id string, ctx context.Context) error {
 
 				withdrawDate, err := on_chain.GetOnChainObject[entities.HealthInsuranceNeedWithdrawDate](on_chain.GetOnChainObjectRequest{
 					Client:    client,
-					ObjectId:  os.Getenv(env.HEALTH_INSURANCE_NEED_wITHDRAW_DATE_ID),
+					ObjectId:  os.Getenv(env.HEALTH_INSURANCE_NEED_WITHDRAW_DATE_ID),
 					ErrLogger: p.errLogger,
 				}, ctx)
 
@@ -2616,7 +2616,7 @@ func (p *paymentService) Callback(id string, ctx context.Context) (string, error
 			return "", err
 		}
 
-		if nfts != nil && len(nfts) > 0 {
+		if len(nfts) > 0 {
 			nftId = nfts[0].ID.ID
 		} else {
 			nftId = os.Getenv(env.PUB_DONOR_NFT_ID)
@@ -3038,7 +3038,7 @@ func (p *paymentService) Callback(id string, ctx context.Context) (string, error
 
 					withdrawDate, err := on_chain.GetOnChainObject[entities.HealthInsuranceNeedWithdrawDate](on_chain.GetOnChainObjectRequest{
 						Client:    client,
-						ObjectId:  os.Getenv(env.HEALTH_INSURANCE_NEED_wITHDRAW_DATE_ID),
+						ObjectId:  os.Getenv(env.HEALTH_INSURANCE_NEED_WITHDRAW_DATE_ID),
 						ErrLogger: p.errLogger,
 					}, ctx)
 

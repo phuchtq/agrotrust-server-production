@@ -105,6 +105,9 @@ func setupApiRoutes(server *gin.Engine) {
 	// Image API endpoints
 	api_route.InitializeImageRoute(server)
 
+	// OCR API endpoints
+	api_route.InitializeORCRoute(server)
+
 	// Default route to Swagger documentation
 	server.GET("/", func(ctx *gin.Context) {
 		ctx.Redirect(http.StatusMovedPermanently, "/swagger/index.html#")

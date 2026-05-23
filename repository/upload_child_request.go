@@ -143,8 +143,20 @@ func (u *uploadChildRepo) GetUploadChildRequests(req request.GetUploadChildReque
 	var queryCondition string
 	var isHavePreviosCondition bool = false
 	if req.Keyword != "" {
-		queryCondition += fmt.Sprintf("(identity_code LIKE '%s' OR LOWER(first_name) LIKE LOWER('%s') OR LOWER(last_name) LIKE LOWER('%s') OR date_of_birth LIKE '%s' OR LOWER(home_address) LIKE LOWER('%s') OR LOWER(first_guardian_name) LIKE LOWER('%s')  OR LOWER(first_guardian_phone) LIKE LOWER('%s') LOWER(second_guardian_name) LIKE LOWER('%s') OR LOWER(second_guardian_phone) LIKE LOWER('%s'))",
-			req.Keyword, req.Keyword, req.Keyword, req.Keyword, req.Keyword, req.Keyword, req.Keyword, req.Keyword)
+		queryCondition = fmt.Sprintf(`
+		(
+			LOWER(identity_code) LIKE LOWER('%s') 
+			OR LOWER(first_name) LIKE LOWER('%s') 
+			OR LOWER(last_name) LIKE LOWER('%s') 
+			OR date_of_birth LIKE '%s' 
+			OR LOWER(home_address) LIKE LOWER('%s') 
+			OR LOWER(first_guardian_name) LIKE LOWER('%s')  
+			OR LOWER(first_guardian_phone) LIKE LOWER('%s') 
+			OR LOWER(second_guardian_name) LIKE LOWER('%s') 
+			OR LOWER(second_guardian_phone) LIKE LOWER('%s')
+		)
+		`,
+			req.Keyword, req.Keyword, req.Keyword, req.Keyword, req.Keyword, req.Keyword, req.Keyword, req.Keyword, req.Keyword)
 		isHavePreviosCondition = true
 	}
 
@@ -331,111 +343,8 @@ func (u *uploadChildRepo) UpdateUploadChildRequest(req entities.UploadChildReque
 	}
 
 	if rowsAffected == 0 {
-		return errors.New(fmt.Sprintf(noti.UNDEFINED_OBJECT_WARN_MSG, upload_child_request_table))
+		return fmt.Errorf(noti.UNDEFINED_OBJECT_WARN_MSG, upload_child_request_table)
 	}
 
 	return nil
 }
-
-// // GetPendingRequests implements repository.IUploadChildRequestRepository.
-// func (u *uploadChildRepo) GetPendingRequests(ctx context.Context) ([]entities.BackgroundRecord, []entities.BackgroundRecord, error) {
-// 	var query string = "SELECT id, approvers, refusers, created_by, status FROM " + upload_child_request_table + " WHERE is_available_to_confirm = false AND closed_at <= NOW() AND (status = 'Pending' OR status = 'Approved')"
-// 	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.UPLOAD_CHILD_REQUEST_REPOSITORY) + "GetPendingRequests - "
-// 	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
-
-// 	rows, err := u.db.QueryContext(ctx, query)
-// 	if err != nil {
-// 		u.errLogger.Println(errLogMsg + err.Error())
-// 		return nil, nil, internalErr
-// 	}
-
-// 	var pendingRes, approvedRes []entities.BackgroundRecord
-// 	for rows.Next() {
-// 		var x entities.BackgroundRecord
-// 		var status string
-// 		if err := rows.Scan(
-// 			&x.ID, pq.Array(&x.Approvers), pq.Array(&x.Refusers), &x.Sender, &status); err != nil {
-
-// 			u.errLogger.Println(errLogMsg + err.Error())
-// 			return nil, nil, internalErr
-// 		}
-
-// 		if status == "Pending" {
-// 			pendingRes = append(pendingRes, x)
-// 		} else {
-// 			approvedRes = append(approvedRes, x)
-// 		}
-// 	}
-
-// 	return pendingRes, approvedRes, nil
-// }
-
-// // SetApprovedStatuses implements repository.IUploadChildRequestRepository.
-// func (u *uploadChildRepo) SetApprovedStatuses(reqs []entities.BackgroundRecord, ctx context.Context) error {
-// 	if reqs == nil || len(reqs) == 0 {
-// 		return nil
-// 	}
-
-// 	var query string = "UPDATE " + upload_child_request_table + " SET status = 'Approved', is_available_to_confirm = true, updated_at = $1 WHERE "
-// 	for i, req := range reqs {
-// 		query += fmt.Sprintf("id = '%s'", req.ID)
-// 		if i < len(reqs)-1 {
-// 			query += " OR "
-// 		}
-// 	}
-
-// 	if _, err := u.db.ExecContext(ctx, query, time.Now()); err != nil {
-// 		u.errLogger.Println(fmt.Sprintf(noti.REPO_ERR_MSG, shared.UPLOAD_CHILD_REQUEST_REPOSITORY) + "SetApprovedStatuses - " + err.Error())
-// 		return errors.New(noti.INTERNALL_ERR_MSG)
-// 	}
-
-// 	return nil
-// }
-
-// // SetRefusedStatuses implements repository.IUploadChildRequestRepository.
-// func (u *uploadChildRepo) SetRefusedStatuses(reqs []entities.BackgroundRecord, ctx context.Context) error {
-// 	if reqs == nil || len(reqs) == 0 {
-// 		return nil
-// 	}
-
-// 	var query string = "UPDATE " + upload_child_request_table + " SET status = 'Refused', updated_at = $1 WHERE "
-// 	for i, req := range reqs {
-// 		query += fmt.Sprintf("id = '%s'", req.ID)
-// 		if i < len(reqs)-1 {
-// 			query += " OR "
-// 		}
-// 	}
-
-// 	if _, err := u.db.ExecContext(ctx, query, time.Now()); err != nil {
-// 		u.errLogger.Println(fmt.Sprintf(noti.REPO_ERR_MSG, shared.UPLOAD_CHILD_REQUEST_REPOSITORY) + "SetRefusedStatuses - " + err.Error())
-// 		return errors.New(noti.INTERNALL_ERR_MSG)
-// 	}
-
-// 	return nil
-// }
-
-// // SetReviewStatus implements repository.IUploadChildRequestRepository.
-// func (u *uploadChildRepo) SetReviewStatus(id string, reviewStatus string, reviewer string, closedAt *time.Time, ctx context.Context) error {
-// 	var query string = "UPDATE " + upload_child_request_table + " SET review_status = $1, reviewed_by = $2, closed_at = $3 WHERE id = $4"
-
-// 	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.UPLOAD_CHILD_REQUEST_REPOSITORY) + "SetReviewStatus - "
-// 	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
-
-// 	res, err := u.db.ExecContext(ctx, query, reviewStatus, reviewer, closedAt, id)
-// 	if err != nil {
-// 		u.errLogger.Println(errLogMsg + err.Error())
-// 		return internalErr
-// 	}
-
-// 	rowsAffected, err := res.RowsAffected()
-// 	if err != nil {
-// 		u.errLogger.Println(errLogMsg + err.Error())
-// 		return internalErr
-// 	}
-
-// 	if rowsAffected == 0 {
-// 		return errors.New(fmt.Sprintf(noti.UNDEFINED_OBJECT_WARN_MSG, upload_child_request_table))
-// 	}
-
-// 	return nil
-// }

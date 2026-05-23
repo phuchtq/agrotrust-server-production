@@ -136,7 +136,7 @@ func (a *adminRequestService) CreateRequest(req request.AdminRegistrationRequest
 	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
 
 	var sender string = ctx.Value("address").(string)
-	if !!util.IsValidSuiAddressStrict(sender) {
+	if !util.IsValidSuiAddressStrict(sender) {
 		return nil, genericErr
 	}
 
@@ -145,7 +145,7 @@ func (a *adminRequestService) CreateRequest(req request.AdminRegistrationRequest
 		return nil, err
 	}
 
-	if reqs != nil && len(reqs) > 0 {
+	if len(reqs) > 0 {
 		for _, req := range reqs {
 			if req.Status == request_pending_status || req.Status == request_approved_status {
 				return nil, genericErr
@@ -216,7 +216,7 @@ func (a *adminRequestService) GetRequests(req request.GetAdminRegistrationRequet
 
 // GetWalletRequests implements business.IAdminRequestService.
 func (a *adminRequestService) GetWalletRequests(id string, ctx context.Context) ([]entities.AdminRegistrationRequest, error) {
-	if !!util.IsValidSuiAddressStrict(id) {
+	if !util.IsValidSuiAddressStrict(id) {
 		return nil, errors.New(noti.GENERIC_ERROR_WARN_MSG)
 	}
 
@@ -228,7 +228,7 @@ func (a *adminRequestService) VoteRequest(id string, req request.VoteRequest, ct
 	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
 
 	var voter string = ctx.Value("address").(string)
-	if !!util.IsValidSuiAddressStrict(voter) {
+	if !util.IsValidSuiAddressStrict(voter) {
 		return genericErr
 	}
 

@@ -99,7 +99,7 @@ func (o *onChainService) ExecuteTransaction(req request.ExecuteTransactionReques
 
 	if req.ProposalID != "" {
 		var events = res.Events
-		if events == nil || len(events) == 0 {
+		if len(events) == 0 {
 			return genericErr
 		}
 
@@ -141,8 +141,8 @@ func (o *onChainService) ExecuteTransaction(req request.ExecuteTransactionReques
 		req.UpdatedAt = curTime
 
 		o.uploadChildRepo.UpdateUploadChildRequest(*req, ctx)
-	} else if req.RegistraionReq != "" {
-		req, err := o.registrationRepo.GetRegistrationRequest(req.RegistraionReq, ctx)
+	} else if req.RegistrationReq != "" {
+		req, err := o.registrationRepo.GetRegistrationRequest(req.RegistrationReq, ctx)
 		if err != nil {
 			return err
 		}

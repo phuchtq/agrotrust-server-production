@@ -1,11 +1,10 @@
 package cmd
 
 import (
-	"fmt"
 	"log"
+	"net/http"
 	"os"
 	"raise-child/constants/env"
-	"raise-child/constants/noti"
 
 	"strings"
 	"time"
@@ -21,28 +20,55 @@ import (
 )
 
 // Load .env file
-func loadEnv(logger *log.Logger) {
-	if err := godotenv.Load(); err != nil {
-		logger.Println(fmt.Sprintf(noti.ENV_LOAD_ERR_MSG, "") + err.Error())
-	}
+func loadEnv() {
+	godotenv.Load(".env")
 }
 
 // Enable CORS
 func corsConfig(server *gin.Engine) {
 	server.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"*"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Content-Type", "Authorization"},
-		AllowCredentials: true,
-		MaxAge:           12 * time.Hour,
+		AllowAllOrigins: true,
+
+		AllowMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS", "HEAD"},
+
+		AllowHeaders: []string{
+			"Origin",
+			"Content-Type",
+			"Accept",
+			"Authorization",
+			"Cache-Control",
+			"X-Requested-With",
+		},
+
+		AllowCredentials: false,
+
+		MaxAge: 12 * time.Hour,
 	}))
+
+	server.Use(func(ctx *gin.Context) {
+		if ctx.Request.Method == http.MethodOptions {
+			log.Printf("[PREFLIGHT] Origin=%s Path=%s RequestedMethod=%s RequestedHeaders=%s",
+				ctx.GetHeader("Origin"),
+				ctx.Request.URL.Path,
+				ctx.GetHeader("Access-Control-Request-Method"),
+				ctx.GetHeader("Access-Control-Request-Headers"),
+			)
+		}
+		ctx.Next()
+		if ctx.Request.Method == http.MethodOptions {
+			log.Printf("[PREFLIGHT RESULT] Status=%d AllowOrigin=%s",
+				ctx.Writer.Status(),
+				ctx.Writer.Header().Get("Access-Control-Allow-Origin"),
+			)
+		}
+	})
 }
 
-func setupSwagger(server *gin.Engine, port string) {
+func setupSwagger(server *gin.Engine) {
 	// Configure swagger info
 	docs.SwaggerInfo.Title = "AgroTrust Server API"
 	docs.SwaggerInfo.Version = "1.0"
-	docs.SwaggerInfo.Schemes = []string{"https"}
+	docs.SwaggerInfo.Schemes = []string{"https", "http"}
 	docs.SwaggerInfo.Host = os.Getenv(env.SERVER_HOST)
 
 	// Add swagger route

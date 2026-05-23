@@ -21,7 +21,7 @@ func Execute() {
 	var errLogger = util.GetLogConfig(shared.ERROR_LEVEL)
 
 	// Load env
-	loadEnv(errLogger)
+	loadEnv()
 
 	// Initialize context for backgroun goroutines management
 	ctx, cancel := context.WithCancel(context.Background())
@@ -31,22 +31,22 @@ func Execute() {
 	setupBackgroundService(ctx, &wg)
 
 	// Initialize gin server for API
-	var server = gin.Default()
+	var server = gin.New()
+
+	// Recovery will catch panic, log and not crash the server.
+	server.Use(gin.Recovery())
+
+	// Logger will log all requests and response
+	server.Use(gin.Logger())
 
 	// Config CORS for requests
 	corsConfig(server)
-
-	// Get API port
-	var apiPort string = os.Getenv("HTTP_PLATFORM_PORT")
-	if apiPort == "" {
-		apiPort = os.Getenv(env.API_PORT)
-	}
 
 	// Set up API routes
 	setupApiRoutes(server)
 
 	// Set up swagger
-	setupSwagger(server, apiPort)
+	setupSwagger(server)
 
 	// Watcher http offline
 	watcherHttpOffConfig(errLogger)
@@ -55,10 +55,16 @@ func Execute() {
 	setupPayments(errLogger)
 
 	// Init AI provider
-	ai.InitializeAiProvider(ctx, errLogger)
+	ai.InitializeAiProvider(errLogger)
 
 	// Init walrus provider
 	walrus_pkg.InitializeWalrusProvider(errLogger)
+
+	// Get API port
+	var apiPort string = os.Getenv(env.API_PORT)
+	if apiPort == "" {
+		apiPort = "8080"
+	}
 
 	// Convert gin server to HTTP server
 	var httpServer = &http.Server{
@@ -69,7 +75,7 @@ func Execute() {
 	// Execute gin server in another goroutine
 	var infoLogger = util.GetLogConfig(shared.INFO_LEVEL)
 	go func() {
-		infoLogger.Println("Server starts on port ", apiPort)
+		infoLogger.Println("Server starts on port:", apiPort)
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 			errLogger.Fatalln("Error run server - " + err.Error())
 		}

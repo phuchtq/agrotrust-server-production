@@ -111,7 +111,7 @@ func (b *bankProfileRepo) UpdateBankProfile(bp entities.BankProfile, ctx context
 	}
 
 	if rowsAffected == 0 {
-		return errors.New(fmt.Sprintf(noti.UNDEFINED_OBJECT_WARN_MSG, bank_profile_table))
+		return fmt.Errorf(noti.UNDEFINED_OBJECT_WARN_MSG, bank_profile_table)
 	}
 
 	return nil

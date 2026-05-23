@@ -110,7 +110,7 @@ func GenerateChildService() (business.IChildService, error) {
 		repository.InitializeBankProfileRepository(cnn, errLogger),
 		repository.InitializeLeaderNotiRepository(cnn, errLogger),
 		repository.InitializeUploadChildRequestRepo(cnn, errLogger),
-		ai.InitializeAiProvider(nil, errLogger),
+		ai.InitializeAiProvider(errLogger),
 		walrus_pkg.InitializeWalrusProvider(errLogger),
 		_networkAliases,
 		errLogger,
@@ -204,7 +204,7 @@ func (c *childService) GetUserSupportedChildren(wallet string, req request.GetCh
 		return response.PaginationDataResponse{}, internalErr
 	}
 
-	if nft.SupportedChilds == nil || len(nft.SupportedChilds) == 0 {
+	if len(nft.SupportedChilds) == 0 {
 		return response.PaginationDataResponse{
 			Page:       1,
 			TotalPages: 1,
@@ -2073,7 +2073,7 @@ func (c *childService) CreateBooksNeedWithdrawProposalV2(req request.CreateNorma
 	}
 
 	var genericRightErr error = errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
-	if staffNfts == nil || len(staffNfts) == 0 {
+	if len(staffNfts) == 0 {
 		return nil, genericRightErr
 	}
 
@@ -2158,20 +2158,19 @@ func (c *childService) CreateBooksNeedWithdrawProposalV2(req request.CreateNorma
 		}
 	}
 
-	var aiEvaluation string
-	if req.ProofBlobID != nil {
-		proofBytes, _ := c.walrusProvider.FetchBytesImage(*req.ProofBlobID)
-		if proofBytes != nil {
-			aiEvaluation = c.aiProvider.ValidateWithdrawProposal(ai.ValidateWithdrawProposal{
-				Purpose:         purpose,
-				WithdrawAmount:  withdrawAmount,
-				Description:     description,
-				ProofBytesImage: proofBytes,
-			}, ctx)
-		}
-	}
+	// var aiEvaluation string
+	// if req.ProofBlobID != nil {
+	// 	proofBytes, _ := c.walrusProvider.FetchBytesImage(*req.ProofBlobID)
+	// 	if proofBytes != nil {
+	// 		aiEvaluation = c.aiProvider.ValidateWithdrawProposal(ai.ValidateWithdrawProposal{
+	// 			Purpose:         purpose,
+	// 			WithdrawAmount:  withdrawAmount,
+	// 			Description:     description,
+	// 			ProofBytesImage: proofBytes,
+	// 		}, ctx)
+	// 	}
+	// }
 
-	// todo: AI validation
 	var res = entities.PendingWithdrawProposal{
 		ID:             util.GenerateId(),
 		ProfileID:      ctx.Value("sub").(string),
@@ -2184,9 +2183,9 @@ func (c *childService) CreateBooksNeedWithdrawProposalV2(req request.CreateNorma
 		ProofBlobID:    req.ProofBlobID,
 		Description:    description,
 		Status:         request_pending_status,
-		AIEvaluation:   aiEvaluation,
-		CreatedAt:      curTime,
-		UpdatedAt:      curTime,
+		// AIEvaluation:   aiEvaluation,
+		CreatedAt: curTime,
+		UpdatedAt: curTime,
 	}
 
 	return &res, c.pendingWithdrawProposalRepo.CreatePendingWithdrawProposal(res, ctx)
@@ -2244,7 +2243,7 @@ func (c *childService) CreateHealthInsuranceNeedWithdrawProposalV2(req request.C
 	}
 
 	var genericRightErr error = errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
-	if staffNfts == nil || len(staffNfts) == 0 {
+	if len(staffNfts) == 0 {
 		return nil, genericRightErr
 	}
 
@@ -2312,20 +2311,19 @@ func (c *childService) CreateHealthInsuranceNeedWithdrawProposalV2(req request.C
 		}
 	}
 
-	var aiEvaluation string
-	if req.ProofBlobID != nil {
-		proofBytes, _ := c.walrusProvider.FetchBytesImage(*req.ProofBlobID)
-		if proofBytes != nil {
-			aiEvaluation = c.aiProvider.ValidateWithdrawProposal(ai.ValidateWithdrawProposal{
-				Purpose:         purpose,
-				WithdrawAmount:  withdrawAmount,
-				Description:     description,
-				ProofBytesImage: proofBytes,
-			}, ctx)
-		}
-	}
+	// var aiEvaluation string
+	// if req.ProofBlobID != nil {
+	// 	proofBytes, _ := c.walrusProvider.FetchBytesImage(*req.ProofBlobID)
+	// 	if proofBytes != nil {
+	// 		aiEvaluation = c.aiProvider.ValidateWithdrawProposal(ai.ValidateWithdrawProposal{
+	// 			Purpose:         purpose,
+	// 			WithdrawAmount:  withdrawAmount,
+	// 			Description:     description,
+	// 			ProofBytesImage: proofBytes,
+	// 		}, ctx)
+	// 	}
+	// }
 
-	// todo: AI validation
 	var res = entities.PendingWithdrawProposal{
 		ID:             util.GenerateId(),
 		ProfileID:      ctx.Value("sub").(string),
@@ -2338,9 +2336,9 @@ func (c *childService) CreateHealthInsuranceNeedWithdrawProposalV2(req request.C
 		ProofBlobID:    req.ProofBlobID,
 		Description:    description,
 		Status:         request_pending_status,
-		AIEvaluation:   aiEvaluation,
-		CreatedAt:      curTime,
-		UpdatedAt:      curTime,
+		// AIEvaluation:   aiEvaluation,
+		CreatedAt: curTime,
+		UpdatedAt: curTime,
 	}
 
 	return &res, c.pendingWithdrawProposalRepo.CreatePendingWithdrawProposal(res, ctx)
@@ -2524,7 +2522,7 @@ func (c *childService) CreateMealNeedWithdrawProposalV2(req request.CreateNormal
 	}
 
 	var genericRightErr error = errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
-	if staffNfts == nil || len(staffNfts) == 0 {
+	if len(staffNfts) == 0 {
 		return nil, genericRightErr
 	}
 
@@ -2600,18 +2598,18 @@ func (c *childService) CreateMealNeedWithdrawProposalV2(req request.CreateNormal
 		}
 	}
 
-	var aiEvaluation string
-	if req.ProofBlobID != nil {
-		proofBytes, _ := c.walrusProvider.FetchBytesImage(*req.ProofBlobID)
-		if proofBytes != nil {
-			aiEvaluation = c.aiProvider.ValidateWithdrawProposal(ai.ValidateWithdrawProposal{
-				Purpose:         purpose,
-				WithdrawAmount:  withdrawAmount,
-				Description:     description,
-				ProofBytesImage: proofBytes,
-			}, ctx)
-		}
-	}
+	// var aiEvaluation string
+	// if req.ProofBlobID != nil {
+	// 	proofBytes, _ := c.walrusProvider.FetchBytesImage(*req.ProofBlobID)
+	// 	if proofBytes != nil {
+	// 		aiEvaluation = c.aiProvider.ValidateWithdrawProposal(ai.ValidateWithdrawProposal{
+	// 			Purpose:         purpose,
+	// 			WithdrawAmount:  withdrawAmount,
+	// 			Description:     description,
+	// 			ProofBytesImage: proofBytes,
+	// 		}, ctx)
+	// 	}
+	// }
 
 	// todo: AI validation
 	var res = entities.PendingWithdrawProposal{
@@ -2626,9 +2624,9 @@ func (c *childService) CreateMealNeedWithdrawProposalV2(req request.CreateNormal
 		ProofBlobID:    req.ProofBlobID,
 		Description:    description,
 		Status:         request_pending_status,
-		AIEvaluation:   aiEvaluation,
-		CreatedAt:      curTime,
-		UpdatedAt:      curTime,
+		// AIEvaluation:   aiEvaluation,
+		CreatedAt: curTime,
+		UpdatedAt: curTime,
 	}
 
 	return &res, c.pendingWithdrawProposalRepo.CreatePendingWithdrawProposal(res, ctx)
@@ -2704,18 +2702,19 @@ func (c *childService) CreateSpecialNeedWithdrawProposalV2(req request.CreateSpe
 
 	var description string = strings.TrimSpace(req.Description)
 	var purpose string = string(entities.SPECIAL_NEED_PURPOSE)
-	var aiEvaluation string
-	if req.ProofBlobID != nil {
-		proofBytes, _ := c.walrusProvider.FetchBytesImage(*req.ProofBlobID)
-		if proofBytes != nil {
-			aiEvaluation = c.aiProvider.ValidateWithdrawProposal(ai.ValidateWithdrawProposal{
-				Purpose:         purpose,
-				WithdrawAmount:  req.Amount,
-				Description:     description,
-				ProofBytesImage: proofBytes,
-			}, ctx)
-		}
-	}
+
+	// var aiEvaluation string
+	// if req.ProofBlobID != nil {
+	// 	proofBytes, _ := c.walrusProvider.FetchBytesImage(*req.ProofBlobID)
+	// 	if proofBytes != nil {
+	// 		aiEvaluation = c.aiProvider.ValidateWithdrawProposal(ai.ValidateWithdrawProposal{
+	// 			Purpose:         purpose,
+	// 			WithdrawAmount:  req.Amount,
+	// 			Description:     description,
+	// 			ProofBytesImage: proofBytes,
+	// 		}, ctx)
+	// 	}
+	// }
 
 	var curTime time.Time = time.Now()
 	var res = entities.PendingWithdrawProposal{
@@ -2730,9 +2729,9 @@ func (c *childService) CreateSpecialNeedWithdrawProposalV2(req request.CreateSpe
 		ProofBlobID:    req.ProofBlobID,
 		Description:    description,
 		Status:         request_pending_status,
-		AIEvaluation:   aiEvaluation,
-		CreatedAt:      curTime,
-		UpdatedAt:      curTime,
+		// AIEvaluation:   aiEvaluation,
+		CreatedAt: curTime,
+		UpdatedAt: curTime,
 	}
 
 	return &res, c.pendingWithdrawProposalRepo.CreatePendingWithdrawProposal(res, ctx)
@@ -2982,20 +2981,21 @@ func (c *childService) CreateSpecialNeedProposalV2(req request.CreateSpecialNeed
 		return nil, errors.New(noti.LEADER_NOT_UPLOAD_BANK_PROFILE_MESSAGE)
 	}
 
-	var description string = strings.TrimSpace(req.Description)
+	// FIX: AI will be implemented later
+	// var description string = strings.TrimSpace(req.Description)
 	var aiEvaluation string
 	if req.ProofBlobID != nil {
-		proofBytes, _ := c.walrusProvider.FetchBytesImage(*req.ProofBlobID)
-		if proofBytes != nil {
-			aiEvaluation = c.aiProvider.ValidateChildSpecialNeedProposal(ai.ValidateChildSpecialNeedProposal{
-				CamapaignTarget: req.Target,
-				Description:     description,
-				ProofBytesImage: proofBytes,
-			}, ctx)
-		}
+		// proofBytes, _ := c.walrusProvider.FetchBytesImage(*req.ProofBlobID)
+		// if proofBytes != nil {
+		// 	aiEvaluation = c.aiProvider.ValidateChildSpecialNeedProposal(ai.ValidateChildSpecialNeedProposal{
+		// 		CampaignTarget: req.Target,
+		// 		Description:     description,
+		// 		ProofBytesImage: proofBytes,
+		// 	}, ctx)
+		// }
 	}
 
-	// todo: AI validation
+	// TODO: AI validation
 	var curTime time.Time = time.Now()
 	var proposal = entities.PendingChildSpecialNeedProposal{
 		ID:             util.GenerateId(),
@@ -3147,7 +3147,7 @@ func (c *childService) ConfirmProvideMealForChild(id string, req request.Confirm
 	}
 
 	var genericRightErr error = errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
-	if staffNfts == nil || len(staffNfts) == 0 {
+	if len(staffNfts) == 0 {
 		return response.BuildTransactionResponse{}, genericRightErr
 	}
 
@@ -3419,7 +3419,7 @@ func (c *childService) SupportMealNeed(id string, req request.SupportMealNeadReq
 
 	var curTime time.Time = time.Now()
 	var endPeriod time.Time
-	if need.Durations != nil && len(need.Durations) > 0 {
+	if len(need.Durations) > 0 {
 		var lastDuration = need.Durations[len(need.Durations)-1]
 		endPeriod = util.RawDateToTime(lastDuration.Fields.EndPeriod)
 	} else {

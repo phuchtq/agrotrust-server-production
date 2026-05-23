@@ -51,7 +51,7 @@ func (l *leaderNotiRepo) AssignLeader(leader string, region string, ctx context.
 	}
 
 	if rowsAffected == 0 {
-		return errors.New(fmt.Sprintf(noti.UNDEFINED_OBJECT_WARN_MSG, leader_noti_table))
+		return fmt.Errorf(noti.UNDEFINED_OBJECT_WARN_MSG, leader_noti_table)
 	}
 
 	return nil
@@ -196,7 +196,7 @@ func (l *leaderNotiRepo) UpdateNoti(notification entities.LeaderNoti, ctx contex
 	}
 
 	if rowsAffected == 0 {
-		return errors.New(fmt.Sprintf(noti.UNDEFINED_OBJECT_WARN_MSG, leader_noti_table))
+		return fmt.Errorf(noti.UNDEFINED_OBJECT_WARN_MSG, leader_noti_table)
 	}
 
 	return nil

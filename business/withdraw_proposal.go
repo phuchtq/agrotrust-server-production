@@ -567,7 +567,7 @@ func (w *withdrawProposalService) CreateWithdrawProposal(req request.CreateWithd
 			ObjectIds: mainPool.LocalPools,
 			ErrLogger: w.errLogger,
 		}, ctx)
-		if localPools == nil || len(localPools) == 0 {
+		if len(localPools) == 0 {
 			return internalErr
 		}
 
@@ -1158,7 +1158,7 @@ func (w *withdrawProposalService) GetWithdrawProposals(req request.GetWithdrawPr
 		ObjectIds: pool.AllWithdrawProposals,
 		ErrLogger: w.errLogger,
 	}, ctx)
-	if proposals == nil || len(proposals) == 0 {
+	if len(proposals) == 0 {
 		return response.PaginationDataResponse{}, nil
 	}
 
@@ -1218,7 +1218,8 @@ func (w *withdrawProposalService) GetWithdrawProposals(req request.GetWithdrawPr
 	}
 
 	sort.Slice(filteredProposals, func(i, j int) bool {
-		if req.SortCriteria == "withdraw_amount" {
+		switch req.SortCriteria {
+		case "withdraw_amount":
 			withdrawAmount1, _ := strconv.ParseInt(filteredProposals[i].WithdrawAmount, 10, 64)
 			withdrawAmount2, _ := strconv.ParseInt(filteredProposals[j].WithdrawAmount, 10, 64)
 			if req.SortOrder == "DESC" {
@@ -1226,7 +1227,7 @@ func (w *withdrawProposalService) GetWithdrawProposals(req request.GetWithdrawPr
 			}
 
 			return withdrawAmount2 < withdrawAmount1
-		} else if req.SortCriteria == "closed_at" {
+		case "closed_at":
 			closedAt1, _ := strconv.ParseInt(filteredProposals[i].ClosedAt, 10, 64)
 			closedAt2, _ := strconv.ParseInt(filteredProposals[j].ClosedAt, 10, 64)
 			var closedPeriod1 = util.MilliSecToTime(closedAt1)
@@ -1317,7 +1318,7 @@ func (w *withdrawProposalService) GetPendingWithdrawProposals(req request.GetOnc
 		ObjectIds: pool.PendingWithdrawProposals,
 		ErrLogger: w.errLogger,
 	}, ctx)
-	if proposals == nil || len(proposals) == 0 {
+	if len(proposals) == 0 {
 		return response.PaginationDataResponse{}, nil
 	}
 
@@ -1355,7 +1356,8 @@ func (w *withdrawProposalService) GetPendingWithdrawProposals(req request.GetOnc
 	}
 
 	sort.Slice(filteredProposals, func(i, j int) bool {
-		if req.SortCriteria == "withdraw_amount" {
+		switch req.SortCriteria {
+		case "withdraw_amount":
 			withdrawAmount1, _ := strconv.ParseInt(filteredProposals[i].WithdrawAmount, 10, 64)
 			withdrawAmount2, _ := strconv.ParseInt(filteredProposals[j].WithdrawAmount, 10, 64)
 			if req.SortOrder == "DESC" {
@@ -1363,7 +1365,7 @@ func (w *withdrawProposalService) GetPendingWithdrawProposals(req request.GetOnc
 			}
 
 			return withdrawAmount2 < withdrawAmount1
-		} else if req.SortCriteria == "closed_at" {
+		case "closed_at":
 			closedAt1, _ := strconv.ParseInt(filteredProposals[i].ClosedAt, 10, 64)
 			closedAt2, _ := strconv.ParseInt(filteredProposals[j].ClosedAt, 10, 64)
 			var closedPeriod1 = util.MilliSecToTime(closedAt1)

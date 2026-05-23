@@ -104,7 +104,7 @@ func (o *offChainWithdrawProposalRepo) SetOnChainProposalIdAfterExecuteTx(id str
 	}
 
 	if rowsAffected == 0 {
-		return errors.New(fmt.Sprintf(noti.UNDEFINED_OBJECT_WARN_MSG, offchain_withdraw_proposal_table))
+		return fmt.Errorf(noti.UNDEFINED_OBJECT_WARN_MSG, offchain_withdraw_proposal_table)
 	}
 
 	return nil

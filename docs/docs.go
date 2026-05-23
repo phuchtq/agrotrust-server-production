@@ -3182,7 +3182,7 @@ const docTemplate = `{
             }
         },
         "/images/presigned-url": {
-            "post": {
+            "get": {
                 "security": [
                     {
                         "BearerAuth": []
@@ -3203,7 +3203,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.PresignUrlResponse"
+                            "$ref": "#/definitions/response.PresignedUrlResponse"
                         }
                     },
                     "400": {
@@ -3279,6 +3279,52 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "There is something wrong in the system during the process. Please try again later.",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/ocr/extract-child-info": {
+            "post": {
+                "description": "Extract child information from an uploaded OCR payload",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "OCR"
+                ],
+                "summary": "Extract child information from OCR input",
+                "parameters": [
+                    {
+                        "description": "OCR request payload - second_guardian_id_card_url is optional",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/request.ExtractChildUploadInfoRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/response.ExtractChildUploadInfoResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/response.MessageAPIResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
                         "schema": {
                             "$ref": "#/definitions/response.MessageAPIResponse"
                         }
@@ -8089,7 +8135,8 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "withdrawAmount": {
-                    "type": "integer"
+                    "type": "integer",
+                    "format": "int64"
                 }
             }
         },
@@ -8795,6 +8842,20 @@ const docTemplate = `{
                 }
             }
         },
+        "request.ExtractChildUploadInfoRequest": {
+            "type": "object",
+            "properties": {
+                "child_birth_certificate_url": {
+                    "type": "string"
+                },
+                "first_guardian_id_card_url": {
+                    "type": "string"
+                },
+                "second_guardian_id_card_url": {
+                    "type": "string"
+                }
+            }
+        },
         "request.LoginRequestV2": {
             "type": "object",
             "required": [
@@ -9397,6 +9458,32 @@ const docTemplate = `{
                 }
             }
         },
+        "response.ExtractChildUploadInfoResponse": {
+            "type": "object",
+            "properties": {
+                "date_of_birth": {
+                    "type": "string"
+                },
+                "first_guardian_full_name": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "gender": {
+                    "type": "string"
+                },
+                "identity_code": {
+                    "type": "string"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "second_guardian_full_name": {
+                    "type": "string"
+                }
+            }
+        },
         "response.GetTransactionRecordsResponse": {
             "type": "object",
             "properties": {
@@ -9810,7 +9897,7 @@ const docTemplate = `{
                 }
             }
         },
-        "response.PresignUrlResponse": {
+        "response.PresignedUrlResponse": {
             "type": "object",
             "properties": {
                 "api_key": {
@@ -10113,7 +10200,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "agrotrust-server-production.onrender.com",
+	Host:             "https://agrotrust-fkhwgwh5ecgwhrbf.indonesiacentral-01.azurewebsites.net/",
 	BasePath:         "/",
 	Schemes:          []string{"https"},
 	Title:            "AgroTrust Server API",

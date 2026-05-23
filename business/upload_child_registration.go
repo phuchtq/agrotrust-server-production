@@ -65,7 +65,16 @@ func GenerateUploadChildRequestService() (business.IUploadChildRequestService, e
 		return nil, err
 	}
 
-	return initializeUploadChildRequestService(repository.InitializePlatformConfigRepository(cnn, errLogger), repository.InitializeUploadChildRequestRepo(cnn, errLogger), ai.InitializeAiProvider(nil, errLogger), walrus_pkg.InitializeWalrusProvider(errLogger), _networkAliases, errLogger), nil
+	var uploadChildRequestService = initializeUploadChildRequestService(
+		repository.InitializePlatformConfigRepository(cnn, errLogger),
+		repository.InitializeUploadChildRequestRepo(cnn, errLogger),
+		ai.InitializeAiProvider(errLogger),
+		walrus_pkg.InitializeWalrusProvider(errLogger),
+		_networkAliases,
+		errLogger,
+	)
+
+	return uploadChildRequestService, nil
 }
 
 // ReviewUploadChildRequest implements business.IUploadChildRequestService.
@@ -380,8 +389,6 @@ func (u *uploadChildRequestService) CreateUploadChildRequest(req request.UploadC
 	var firstNasme string = strings.TrimSpace(req.FirstName)
 	var lastName string = strings.TrimSpace(req.LastName)
 	var homeAddr string = strings.TrimSpace(req.HomeAddress)
-
-	// todo: AI validation
 	var curTime time.Time = time.Now()
 	var request = entities.UploadChildRequest{
 		ID:                     util.GenerateId(),
@@ -398,10 +405,10 @@ func (u *uploadChildRequestService) CreateUploadChildRequest(req request.UploadC
 		HomeAddress:            homeAddr,
 		FirstGuardianProfile:   firstGuardianProfile,
 		SecondGuardianProfile:  secondGuardianProfile,
-		Status:                 request_pending_status,
-		CreatedBy:              ctx.Value("address").(string),
-		CreatedAt:              curTime,
-		UpdatedAt:              curTime,
+		Status:    request_pending_status,
+		CreatedBy: ctx.Value("address").(string),
+		CreatedAt: curTime,
+		UpdatedAt: curTime,
 	}
 
 	return &request, u.uploadChildRequestRepo.CreateUploadChildRequest(request, ctx)
@@ -435,7 +442,7 @@ func (u *uploadChildRequestService) GetUploadChildRequests(req request.GetUpload
 	}
 
 	var amount int
-	if data == nil || len(data) == 0 {
+	if len(data) == 0 {
 		amount = 0
 	} else {
 		amount = len(data)
@@ -504,7 +511,7 @@ func (u *uploadChildRequestService) GetWalletUploadChildRequests(id string, page
 	}
 
 	var amount int
-	if data == nil || len(data) == 0 {
+	if len(data) == 0 {
 		amount = 0
 	} else {
 		amount = len(data)

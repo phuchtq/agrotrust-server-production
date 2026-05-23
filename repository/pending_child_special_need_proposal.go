@@ -210,7 +210,7 @@ func (p *pendingChildSpecialNeedProposalRepo) UpdatePendingChildSpecialNeedPropo
 	}
 
 	if rowsAffected == 0 {
-		return errors.New(fmt.Sprintf(noti.UNDEFINED_OBJECT_WARN_MSG, pending_child_special_need_proposal_table))
+		return fmt.Errorf(noti.UNDEFINED_OBJECT_WARN_MSG, pending_child_special_need_proposal_table)
 	}
 
 	return nil

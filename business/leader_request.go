@@ -74,7 +74,7 @@ func (l *leaderRequestService) CreateRequest(req request.CreateRegistrationReque
 		return nil, err
 	}
 
-	if reqs != nil && len(reqs) > 0 {
+	if len(reqs) > 0 {
 		for _, req := range reqs {
 			if req.Status == request_pending_status || req.Status == request_approved_status {
 				return nil, genericErr

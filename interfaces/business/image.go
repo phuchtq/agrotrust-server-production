@@ -6,5 +6,5 @@ import (
 )
 
 type IImageService interface {
-	PresignUrl(ctx context.Context) (response.PresignUrlResponse, error)
+	GetPresignedUrl(ctx context.Context) (response.PresignedUrlResponse, error)
 }

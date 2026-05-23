@@ -100,7 +100,7 @@ func (p *profileRepo) UploadProfile(pfl entities.Profile, ctx context.Context) e
 	}
 
 	if rowsAffected == 0 {
-		return errors.New(fmt.Sprintf(noti.UNDEFINED_OBJECT_WARN_MSG, profile_table))
+		return fmt.Errorf(noti.UNDEFINED_OBJECT_WARN_MSG, profile_table)
 	}
 
 	return nil
@@ -125,7 +125,7 @@ func (p *profileRepo) Login(id string, token string, walletAddress string, ctx c
 	}
 
 	if rowsAffected == 0 {
-		return errors.New(fmt.Sprintf(noti.UNDEFINED_OBJECT_WARN_MSG, profile_table))
+		return fmt.Errorf(noti.UNDEFINED_OBJECT_WARN_MSG, profile_table)
 	}
 
 	return nil
@@ -150,7 +150,7 @@ func (p *profileRepo) Logout(id string, ctx context.Context) error {
 	}
 
 	if rowsAffected == 0 {
-		return errors.New(fmt.Sprintf(noti.UNDEFINED_OBJECT_WARN_MSG, profile_table))
+		return fmt.Errorf(noti.UNDEFINED_OBJECT_WARN_MSG, profile_table)
 	}
 
 	return nil
