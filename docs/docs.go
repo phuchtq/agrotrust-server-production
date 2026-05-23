@@ -6198,7 +6198,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.PaginationDataResponse"
+                            "$ref": "#/definitions/response.RegistrationRequestResponse"
                         }
                     },
                     "400": {
@@ -8135,8 +8135,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "withdrawAmount": {
-                    "type": "integer",
-                    "format": "int64"
+                    "type": "integer"
                 }
             }
         },
@@ -9925,6 +9924,88 @@ const docTemplate = `{
                     "items": {
                         "type": "string"
                     }
+                }
+            }
+        },
+        "response.RegistrationRequestResponse": {
+            "type": "object",
+            "properties": {
+                "approvers": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "avatar_walrus_blob_id": {
+                    "type": "string"
+                },
+                "closed_at": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "created_by": {
+                    "type": "string"
+                },
+                "date_of_birth": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "gender": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "identity_card_img_url": {
+                    "type": "string"
+                },
+                "identity_code": {
+                    "type": "string"
+                },
+                "is_confirm_register": {
+                    "description": "Default as false, when status aprroved, user clicks to update to true, call smart contract to register role",
+                    "type": "boolean"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "phone_number": {
+                    "type": "string"
+                },
+                "profile_id": {
+                    "type": "string"
+                },
+                "refuse_reasons": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "refusers": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "region": {
+                    "type": "string"
+                },
+                "register_role": {
+                    "type": "string"
+                },
+                "status": {
+                    "description": "e.g. \"Pending\", \"Approved\", \"Refused\"",
+                    "type": "string"
+                },
+                "updated_at": {
+                    "type": "string"
                 }
             }
         },
