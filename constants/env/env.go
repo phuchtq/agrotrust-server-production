@@ -1,19 +1,20 @@
 package env
 
 const (
-	SECRET_KEY                string = "SECRET_KEY"
-	API_PORT                  string = "API_PORT"
-	ENCRYPT_SECRET_KEY        string = "ENCRYPT_SECRET_KEY"
-	SERVER_HOST               string = "SERVER_HOST"
-	REDIS_URL                 string = "REDIS_URL"
-	GEMINI_API_KEY            string = "GEMINI_API_KEY"
+	SECRET_KEY         string = "SECRET_KEY"
+	API_PORT           string = "API_PORT"
+	ENCRYPT_SECRET_KEY string = "ENCRYPT_SECRET_KEY"
+	SERVER_HOST        string = "SERVER_HOST"
+	REDIS_URL          string = "REDIS_URL"
+	GEMINI_API_KEY     string = "GEMINI_API_KEY"
 
 	CLOUDINARY_CLOUD_NAME     string = "CLOUDINARY_CLOUD_NAME"
 	CLOUDINARY_API_KEY        string = "CLOUDINARY_API_KEY"
 	CLOUDINARY_API_SECRET     string = "CLOUDINARY_API_SECRET"
 	CLOUDINARY_STORAGE_FOLDER string = "CLOUDINARY_STORAGE_FOLDER"
-	
-	GROQ_API_KEY              string = "GROQ_API_KEY"
-	GROQ_API_URL              string = "GROQ_API_URL"
-	GROQ_MODEL                string = "GROQ_MODEL"
+	CLOUDINARY_UPLOAD_URL     string = "CLOUDINARY_UPLOAD_URL"
+
+	GROQ_API_KEY string = "GROQ_API_KEY"
+	GROQ_API_URL string = "GROQ_API_URL"
+	GROQ_MODEL   string = "GROQ_MODEL"
 )

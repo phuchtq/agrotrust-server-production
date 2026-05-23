@@ -215,7 +215,6 @@ definitions:
       updatedAt:
         type: string
       withdrawAmount:
-        format: int64
         type: integer
     type: object
   entities.PlatformConfig:

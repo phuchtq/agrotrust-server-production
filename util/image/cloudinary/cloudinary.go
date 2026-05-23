@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/url"
 	"os"
+	"raise-child/constants/env"
 	"strconv"
 
 	"github.com/cloudinary/cloudinary-go/v2"
@@ -17,7 +18,7 @@ var (
 )
 
 func GenerateSignature(timestamp int64, folder string) string {
-	apiSecret := os.Getenv("CLOUDINARY_API_SECRET")
+	apiSecret := os.Getenv(env.CLOUDINARY_API_SECRET)
 
 	paramsToSign := url.Values{
 		"timestamp": {strconv.FormatInt(timestamp, 10)},
@@ -32,7 +33,7 @@ func GenerateSignature(timestamp int64, folder string) string {
 }
 
 func GetUploadUrl() string {
-	cloudinaryUrl := os.Getenv("CLOUDINARY_UPLOAD_URL")
+	cloudinaryUrl := os.Getenv(env.CLOUDINARY_UPLOAD_URL)
 	uploadUrl := cloudinaryUrl + fmt.Sprintf("/%s/image/upload", cloudName)
 	return uploadUrl
 }
