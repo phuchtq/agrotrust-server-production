@@ -31,8 +31,9 @@ type aiClient struct {
 var _aiClient *aiClient
 
 type IAiClientProvider interface {
-	ExtractChildInfo(birthCertURL string, firstGuardianIDCardURL string, secondGuardianIDCardURL *string, ctx context.Context) (*response.ExtractChildUploadInfoResponse, error)
+	ExtractChildInfo(birthCertURL, firstGuardianIDCardURL, secondGuardianIDCardURL *string, ctx context.Context) (*response.ExtractChildUploadInfoResponse, error)
 	ValidateTaskProof(proof ValidateTaskProof, ctx context.Context) (*ValidateTaskProofResponse, error)
+	AskWithDescribedImages(ctx context.Context, apiKey, prompt string, labeledImages []LabeledImage) (string, error)
 }
 
 func InitializeAiProvider(errLogger *log.Logger) IAiClientProvider {
@@ -47,6 +48,11 @@ func InitializeAiProvider(errLogger *log.Logger) IAiClientProvider {
 
 func GetAiProvider() IAiClientProvider {
 	return _aiClient
+}
+
+// AskWithDescribedImages delegates to groqProvider.
+func (a *aiClient) AskWithDescribedImages(ctx context.Context, apiKey, prompt string, labeledImages []LabeledImage) (string, error) {
+	return a.groqProvider.AskWithDescribedImages(ctx, apiKey, prompt, labeledImages)
 }
 
 // ValidateTaskProof implements IAiClientProvider.
@@ -138,27 +144,39 @@ func extractJSONObject(s string) string {
 }
 
 // ExtractChildInfo implements IAiClientProvider.
-func (a *aiClient) ExtractChildInfo(birthCertURL string, firstGuardianIDCardURL string, secondGuardianIDCardURL *string, ctx context.Context) (*response.ExtractChildUploadInfoResponse, error) {
-	// Validate required URLs
-	if birthCertURL == "" {
-		return nil, fmt.Errorf("extract child info: missing birth certificate URL")
-	}
-	if firstGuardianIDCardURL == "" {
-		return nil, fmt.Errorf("extract child info: missing first guardian ID card URL")
-	}
+func (a *aiClient) ExtractChildInfo(birthCertURL *string, firstGuardianIDCardURL *string, secondGuardianIDCardURL *string, ctx context.Context) (*response.ExtractChildUploadInfoResponse, error) {
+	// Build labeled images list - track what each image is
+	var labeledImages []LabeledImage
 
-	// Build image URLs list
-	imageURLs := []string{birthCertURL, firstGuardianIDCardURL}
-	
+	if birthCertURL != nil && *birthCertURL != "" {
+		labeledImages = append(labeledImages, LabeledImage{
+			URL:   *birthCertURL,
+			Label: "This is the child's birth certificate (Giấy khai sinh):",
+		})
+	}
+	if firstGuardianIDCardURL != nil && *firstGuardianIDCardURL != "" {
+		labeledImages = append(labeledImages, LabeledImage{
+			URL:   *firstGuardianIDCardURL,
+			Label: "This is the first guardian's Vietnamese identity document (Căn cước công dân or CMND):",
+		})
+	}
 	if secondGuardianIDCardURL != nil && *secondGuardianIDCardURL != "" {
-		imageURLs = append(imageURLs, *secondGuardianIDCardURL)
+		labeledImages = append(labeledImages, LabeledImage{
+			URL:   *secondGuardianIDCardURL,
+			Label: "This is the second guardian's Vietnamese identity document (Căn cước công dân or CMND):",
+		})
 	}
 
-	raw, err := a.groqProvider.AskWithImages(
+	// Validate at least one image is provided
+	if len(labeledImages) == 0 {
+		return nil, fmt.Errorf("extract child info: at least one image URL is required")
+	}
+
+	raw, err := a.groqProvider.AskWithDescribedImages(
 		ctx,
 		os.Getenv("GROQ_API_KEY"),
 		prompts.ChildUploadInfoExtractionPrompt,
-		imageURLs,
+		labeledImages,
 	)
 	if err != nil {
 		a.errLogger.Printf("extract child info: %s", err)
@@ -166,9 +184,20 @@ func (a *aiClient) ExtractChildInfo(birthCertURL string, firstGuardianIDCardURL 
 	}
 
 	var result response.ExtractChildUploadInfoResponse
+
+	// Try direct unmarshal first
 	if err := json.Unmarshal([]byte(raw), &result); err != nil {
-		a.errLogger.Printf("parse AI response: %s", err)
-		return nil, fmt.Errorf("parse AI response: %w", err)
+		// Attempt to extract a JSON object from noisy model output (e.g., markdown-wrapped JSON)
+		jsonCandidate := extractJSONObject(raw)
+		if jsonCandidate == "" {
+			a.errLogger.Printf("parse AI response direct failed and no JSON found: %v", err)
+			return nil, fmt.Errorf("parse AI response: %w", err)
+		}
+
+		if err2 := json.Unmarshal([]byte(jsonCandidate), &result); err2 != nil {
+			a.errLogger.Printf("parse AI response from candidate failed: %v; candidate: %s", err2, jsonCandidate)
+			return nil, fmt.Errorf("parse AI response: %w", err2)
+		}
 	}
 
 	return &result, nil

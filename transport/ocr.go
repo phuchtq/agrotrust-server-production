@@ -16,13 +16,14 @@ import (
 // @Tags OCR
 // @Accept json
 // @Produce json
-// @Param request body request.ExtractChildUploadInfoRequest true "OCR request payload"
+// @Param request body request.ExtractChildUploadInfoRequest true "OCR request payload - second_guardian_id_card_url is optional"
 // @Success 200 {object} response.ExtractChildUploadInfoResponse
 // @Failure 400 {object} response.MessageAPIResponse
 // @Failure 500 {object} response.MessageAPIResponse
 // @Router /ocr/extract-child-info [post]
 func GetExtractChildInfo(ctx *gin.Context) {
 	var req request.ExtractChildUploadInfoRequest
+	
 	if err := ctx.ShouldBindJSON(&req); err != nil {
 		util.ProcessResponse(util.GenerateInvalidRequestAndSystemProblemModel(ctx, nil))
 		return
