@@ -20,6 +20,7 @@ import (
 	"raise-child/util/ai"
 	"raise-child/util/cache"
 	"raise-child/util/db"
+	"raise-child/util/image/cloudinary"
 	on_chain "raise-child/util/on_chain"
 	walrus_pkg "raise-child/util/walrus_pkg"
 	"slices"
@@ -596,12 +597,20 @@ func (r *registrationRequestService) CreateRegistrationRequest(req request.Creat
 }
 
 // GetRegistrationRequest implements business.IRegistrationRequestService.
-func (r *registrationRequestService) GetRegistrationRequest(id string, ctx context.Context) (*entities.RegistrationRequest, error) {
+func (r *registrationRequestService) GetRegistrationRequest(id string, ctx context.Context) (response.RegistrationRequestResponse, error) {
 	if id == "" {
-		return nil, errors.New(noti.GENERIC_ERROR_WARN_MSG)
+		return response.RegistrationRequestResponse{}, errors.New(noti.GENERIC_ERROR_WARN_MSG)
 	}
 
-	return r.registrationRequestRepo.GetRegistrationRequest(id, ctx)
+	req, err := r.registrationRequestRepo.GetRegistrationRequest(id, ctx)
+	if err != nil {
+		return response.RegistrationRequestResponse{}, err
+	}
+
+	var res response.RegistrationRequestResponse = req.ToRegistrationRequestResponse()
+	res.IdentityCardImgUrl = cloudinary.GetImageUrl(req.IdentityCardBlobID)
+
+	return res, nil
 }
 
 // GetRegistrationRequests implements business.IRegistrationRequestService.

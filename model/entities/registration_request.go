@@ -1,6 +1,9 @@
 package entities
 
-import "time"
+import (
+	"raise-child/model/dtos/response"
+	"time"
+)
 
 type AdminRegistrationRequest struct {
 	ID                   string    `json:"id"`
@@ -103,4 +106,34 @@ type RegistrationForm struct {
 	CreatedAt            time.Time `json:"created_at"`
 	UpdatedAt            time.Time `json:"updated_at"`
 	ClosedAt             time.Time `json:"closed_at"`
+}
+
+func (r *RegistrationRequest) ToRegistrationRequestResponse() response.RegistrationRequestResponse {
+	if r == nil {
+		return response.RegistrationRequestResponse{}
+	}
+
+	return response.RegistrationRequestResponse{
+		ID:                 r.ID,
+		ProfileID:          r.ProfileID,
+		RegisterRole:       r.RegisterRole,
+		IdentityCode:       r.IdentityCode,
+		AvatarWalrusBlobID: r.AvatarBlobID,
+		Region:             r.Region,
+		FirstName:          r.FirstName,
+		LastName:           r.LastName,
+		Gender:             r.Gender,
+		DateOfBirth:        r.DateOfBirth,
+		PhoneNumber:        r.PhoneNumber,
+		Email:              r.Email,
+		Approvers:          r.Approvers,
+		Refusers:           r.Refusers,
+		RefuseReasons:      r.RefuseReasons,
+		Status:             r.Status,            // e.g. "Pending", "Approved", "Refused"
+		IsConfirmRegister:  r.IsConfirmRegister, // Default as false, when status aprroved, user clicks to update to true, call smart contract to register role
+		CreatedBy:          r.CreatedBy,
+		CreatedAt:          r.CreatedAt,
+		UpdatedAt:          r.UpdatedAt,
+		ClosedAt:           r.ClosedAt,
+	}
 }

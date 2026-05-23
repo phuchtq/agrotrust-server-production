@@ -79,7 +79,7 @@ func GetWalletRegistrationRequests(ctx *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        id       path      string  true  "Registration Request ID (UUID)"
-// @Success      200      {object}  response.PaginationDataResponse
+// @Success      200      {object}  response.RegistrationRequestResponse
 // @Failure      400      {object}  response.MessageAPIResponse "Invalid data. Please try again."
 // @Failure      500      {object}  response.MessageAPIResponse "There is something wrong in the system during the process. Please try again later."
 // @Router       /registrations/{id} [get]
