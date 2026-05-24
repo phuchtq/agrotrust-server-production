@@ -61,7 +61,6 @@ func GenerateAuthService() (business.IAuthService, error) {
 func (a *authService) LoginV2(req request.LoginRequestV2, ctx context.Context) (response.LoginResponse, error) {
 	var address string = strings.TrimSpace(req.Address)
 	var client = a.clients[constant.SuiTestnet]
-	on_chain.FaucetTestnetBalance(client, address, a.errLogger, ctx)
 
 	var sub string = strings.TrimSpace(req.Sub)
 	manageObj, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
