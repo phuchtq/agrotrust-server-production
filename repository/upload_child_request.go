@@ -39,7 +39,7 @@ func (u *uploadChildRepo) CreateUploadChildRequest(req entities.UploadChildReque
 		"second_guardian_name, second_guardian_phone, second_guardian_relation, second_guardian_identity_card_blob_id, " +
 		"status, created_by, created_at, updated_at, birth_certificate_blob_id) " +
 		"values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, " +
-		"$13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24"
+		"$13, $14, $15, $16, $17, $18, $19, $20, $21, $22, $23, $24)"
 
 	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.UPLOAD_CHILD_REQUEST_REPOSITORY) + "CreateUploadChildRequest - "
 	var secondGuardianName, secondGuardianPhone, secondGuardianRelation, secondGuardianIdentityBlob *string
