@@ -339,7 +339,7 @@ func (u *uploadChildRequestService) CreateUploadChildRequest(req request.UploadC
 	if dob := util.RawDateToTime(dateOfBirth); dob.IsZero() {
 		return nil, errors.New(noti.INVALID_DATE_FORMAT_WARN_MSG)
 	} else {
-		var maxAgeAccepted, minAgeAccepted int
+		var maxAgeAccepted, minAgeAccepted int64
 		var tmp *entities.PlatformConfig
 		var numericTmp *entities.NumericConfig
 

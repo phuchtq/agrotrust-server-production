@@ -146,9 +146,9 @@ func (p *platformConfigService) UpdateConfig(id string, req request.UpdatePlatfo
 
 					switch res.Key {
 					case ageMaxLimitConfig:
-						child_max_age_accepted = req.Value.(int)
+						child_max_age_accepted = req.Value.(int64)
 					case ageMinLimitConfig:
-						child_min_age_accepted = req.Value.(int)
+						child_min_age_accepted = req.Value.(int64)
 					case minRegionStaffsConfig:
 						min_region_staffs = req.Value.(int)
 					}
