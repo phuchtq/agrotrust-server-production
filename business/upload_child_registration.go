@@ -345,7 +345,7 @@ func (u *uploadChildRequestService) CreateUploadChildRequest(req request.UploadC
 
 		if config, _ := u.platformConfigRepo.GetConfigByKey(numericTmp.GetTable(), tmp.GetChildAgeMaxLimitConfigKey(), ctx); config != nil {
 			if v, ok := config.Value.(int64); ok {
-				maxAgeAccepted = int(v)
+				maxAgeAccepted = v
 			} else {
 				maxAgeAccepted = child_max_age_accepted
 			}
@@ -355,7 +355,7 @@ func (u *uploadChildRequestService) CreateUploadChildRequest(req request.UploadC
 
 		if config, _ := u.platformConfigRepo.GetConfigByKey(numericTmp.GetTable(), tmp.GetChildAgeMinLimitConfigKey(), ctx); config != nil {
 			if v, ok := config.Value.(int64); ok {
-				minAgeAccepted = int(v)
+				minAgeAccepted = v
 			} else {
 				minAgeAccepted = child_min_age_accepted
 			}
