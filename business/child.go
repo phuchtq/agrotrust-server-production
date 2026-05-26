@@ -286,7 +286,18 @@ func (c *childService) GetUserSupportedChildren(wallet string, req request.GetCh
 
 	var data []response.ChildResponse
 	for i := skippedRecords; i < len(filteredChildren); i++ {
-		data = append(data, filteredChildren[i].ToMinimumChildResponse())
+		var childRes = filteredChildren[i].ToMinimumChildResponse()
+		upChildReq, _ := c.uploadChildReqRepo.GetUploadChildRequestByOnchainId(childRes.ID, ctx)
+		if upChildReq != nil {
+			childRes.BirthCertificateImgUrl = cloudinary.GetImageUrl(upChildReq.BirthCertificateBlobID)
+			childRes.FirstGuardian.IdentityCardImgUrl = cloudinary.GetImageUrl(upChildReq.FirstGuardianProfile.IdentityCardBlobID)
+
+			if upChildReq.SecondGuardianProfile != nil {
+				childRes.SecondGuardian.IdentityCardImgUrl = cloudinary.GetImageUrl(upChildReq.SecondGuardianProfile.IdentityCardBlobID)
+			}
+		}
+
+		data = append(data, childRes)
 		if len(data) == req.PageSize {
 			break
 		}
@@ -397,7 +408,18 @@ func (c *childService) GetChildren(req request.GetChildrenRequest, ctx context.C
 
 	var data []response.ChildResponse
 	for i := skippedRecords; i < len(filteredChildren); i++ {
-		data = append(data, filteredChildren[i].ToMinimumChildResponse())
+		var childRes = filteredChildren[i].ToMinimumChildResponse()
+		upChildReq, _ := c.uploadChildReqRepo.GetUploadChildRequestByOnchainId(childRes.ID, ctx)
+		if upChildReq != nil {
+			childRes.BirthCertificateImgUrl = cloudinary.GetImageUrl(upChildReq.BirthCertificateBlobID)
+			childRes.FirstGuardian.IdentityCardImgUrl = cloudinary.GetImageUrl(upChildReq.FirstGuardianProfile.IdentityCardBlobID)
+
+			if upChildReq.SecondGuardianProfile != nil {
+				childRes.SecondGuardian.IdentityCardImgUrl = cloudinary.GetImageUrl(upChildReq.SecondGuardianProfile.IdentityCardBlobID)
+			}
+		}
+
+		data = append(data, childRes)
 		if len(data) == req.PageSize {
 			break
 		}

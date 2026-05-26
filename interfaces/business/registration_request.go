@@ -11,7 +11,7 @@ import (
 
 type IRegistrationRequestService interface {
 	GetRegistrationRequests(req request.GetRegistrationRequests, ctx context.Context) (response.PaginationDataResponse, error)
-	GetWalletRegistrationRequests(id string, ctx context.Context) ([]entities.RegistrationRequest, error)
+	GetWalletRegistrationRequests(id string, ctx context.Context) ([]response.RegistrationRequestResponse, error)
 	GetRegistrationRequest(id string, ctx context.Context) (response.RegistrationRequestResponse, error)
 	CreateRegistrationRequest(req request.CreateRegistrationRequest, ctx context.Context) (*entities.RegistrationRequest, error)
 	VoteRegistrationRequest(id string, req request.VoteRequest, ctx context.Context) error

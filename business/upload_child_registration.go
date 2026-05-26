@@ -19,6 +19,7 @@ import (
 	"raise-child/util/ai"
 	"raise-child/util/cache"
 	"raise-child/util/db"
+	"raise-child/util/image/cloudinary"
 	on_chain "raise-child/util/on_chain"
 	walrus_pkg "raise-child/util/walrus_pkg"
 	"strings"
@@ -423,8 +424,20 @@ func (u *uploadChildRequestService) CreateUploadChildRequest(req request.UploadC
 }
 
 // GetUploadChildRequest implements business.IUploadChildRequestService.
-func (u *uploadChildRequestService) GetUploadChildRequest(id string, ctx context.Context) (*entities.UploadChildRequest, error) {
-	return u.uploadChildRequestRepo.GetUploadChildRequest(id, ctx)
+func (u *uploadChildRequestService) GetUploadChildRequest(id string, ctx context.Context) (response.UploadChildRequestResponse, error) {
+	req, err := u.uploadChildRequestRepo.GetUploadChildRequest(id, ctx)
+	if err != nil {
+		return response.UploadChildRequestResponse{}, nil
+	}
+
+	var res = req.ToUploadChildRequestResponse()
+	res.BirthCertificateImgUrl = cloudinary.GetImageUrl(req.BirthCertificateBlobID)
+	res.FirstGuardianProfile.IdentityCardImgUrl = cloudinary.GetImageUrl(req.FirstGuardianProfile.IdentityCardBlobID)
+	if req.SecondGuardianProfile != nil {
+		res.SecondGuardianProfile.IdentityCardImgUrl = cloudinary.GetImageUrl(req.SecondGuardianProfile.IdentityCardBlobID)
+	}
+
+	return res, nil
 }
 
 // GetUploadChildRequests implements business.IUploadChildRequestService.
@@ -439,11 +452,6 @@ func (u *uploadChildRequestService) GetUploadChildRequests(req request.GetUpload
 	}
 
 	var res response.PaginationDataResponse
-	// var redisKey string = u.getGetUploadChildRequestsRedisKey(req)
-	// if u.redisCache.Get(redisKey, &res, ctx) {
-	// 	return res, nil
-	// }
-
 	data, pages, err := u.uploadChildRequestRepo.GetUploadChildRequests(req, ctx)
 	if err != nil {
 		return response.PaginationDataResponse{}, err
@@ -456,45 +464,28 @@ func (u *uploadChildRequestService) GetUploadChildRequests(req request.GetUpload
 		amount = len(data)
 	}
 
+	var resData []response.UploadChildRequestResponse
+	if amount > 0 {
+		for _, req := range data {
+			var reqRes = req.ToUploadChildRequestResponse()
+			reqRes.BirthCertificateImgUrl = cloudinary.GetImageUrl(req.BirthCertificateBlobID)
+			reqRes.FirstGuardianProfile.IdentityCardImgUrl = cloudinary.GetImageUrl(req.FirstGuardianProfile.IdentityCardBlobID)
+			if req.SecondGuardianProfile != nil {
+				reqRes.SecondGuardianProfile.IdentityCardImgUrl = cloudinary.GetImageUrl(req.SecondGuardianProfile.IdentityCardBlobID)
+			}
+
+			resData = append(resData, reqRes)
+		}
+	}
+
 	res = response.PaginationDataResponse{
-		Data:       data,
+		Data:       resData,
 		Amount:     amount,
 		Page:       req.Page,
 		TotalPages: pages,
 	}
 
-	// u.redisCache.Set(redisKey, res, time.Minute*5, ctx)
-
 	return res, nil
-
-	// /////////////////////
-	// // MOCK DATA
-	// req.SortOrder = util.StandardizeSortOrder(req.SortOrder)
-	// if req.Page < 1 {
-	// 	req.Page = 1
-	// }
-
-	// if req.PageSize < 1 {
-	// 	req.PageSize = default_page_size
-	// }
-
-	// var res response.PaginationDataResponse
-	// var redisKey string = u.getGetUploadChildRequestsRedisKey(req)
-	// if u.redisCache.Get(redisKey, &res, ctx) {
-	// 	return res, nil
-	// }
-
-	// var data []entities.UploadChildRequest = mockUploadChildReqs[(req.Page-1)*req.PageSize : req.Page*req.PageSize]
-	// res = response.PaginationDataResponse{
-	// 	Data:       data,
-	// 	Amount:     len(data),
-	// 	Page:       req.Page,
-	// 	TotalPages: int(math.Ceil(float64(len(mockUploadChildReqs)) / float64(req.PageSize))),
-	// }
-
-	// u.redisCache.Set(redisKey, res, time.Minute*5, ctx)
-
-	// return res, nil
 }
 
 // GetWalletUploadChildRequests implements business.IUploadChildRequestService.
@@ -508,11 +499,6 @@ func (u *uploadChildRequestService) GetWalletUploadChildRequests(id string, page
 	}
 
 	var res response.PaginationDataResponse
-	// var redisKey string = u.getGetUploadChildRequestsOfWalletRedisKey(id, page)
-	// if u.redisCache.Get(redisKey, &res, ctx) {
-	// 	return res, nil
-	// }
-
 	data, pages, err := u.uploadChildRequestRepo.GetWalletUploadChildRequests(id, page, ctx)
 	if err != nil {
 		return response.PaginationDataResponse{}, err
@@ -525,40 +511,28 @@ func (u *uploadChildRequestService) GetWalletUploadChildRequests(id string, page
 		amount = len(data)
 	}
 
+	var resData []response.UploadChildRequestResponse
+	if amount > 0 {
+		for _, req := range data {
+			var reqRes = req.ToUploadChildRequestResponse()
+			reqRes.BirthCertificateImgUrl = cloudinary.GetImageUrl(req.BirthCertificateBlobID)
+			reqRes.FirstGuardianProfile.IdentityCardImgUrl = cloudinary.GetImageUrl(req.FirstGuardianProfile.IdentityCardBlobID)
+			if req.SecondGuardianProfile != nil {
+				reqRes.SecondGuardianProfile.IdentityCardImgUrl = cloudinary.GetImageUrl(req.SecondGuardianProfile.IdentityCardBlobID)
+			}
+
+			resData = append(resData, reqRes)
+		}
+	}
+
 	res = response.PaginationDataResponse{
-		Data:       data,
+		Data:       resData,
 		Amount:     amount,
 		Page:       page,
 		TotalPages: pages,
 	}
 
-	// u.redisCache.Set(redisKey, res, time.Minute*5, ctx)
-
 	return res, nil
-
-	// ///////////////////
-	// // MOCK DATA
-	// if page < 1 {
-	// 	page = 1
-	// }
-
-	// var res response.PaginationDataResponse
-	// var redisKey string = u.getGetUploadChildRequestsOfWalletRedisKey(id, page)
-	// if u.redisCache.Get(redisKey, &res, ctx) {
-	// 	return res, nil
-	// }
-
-	// var data []entities.CenterRequest = mockCenterRequests[(page-1)*10 : page*10]
-	// res = response.PaginationDataResponse{
-	// 	Data:       data,
-	// 	Amount:     len(data),
-	// 	Page:       page,
-	// 	TotalPages: int(math.Ceil(float64(len(mockCenterRequests)) / 10)),
-	// }
-
-	// u.redisCache.Set(redisKey, res, time.Minute*5, ctx)
-
-	// return res, nil
 }
 
 // // VoteUploadChildRequest implements business.IUploadChildRequestService.
