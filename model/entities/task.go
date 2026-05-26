@@ -65,7 +65,7 @@ type TaskProof struct {
 	Description           string    `json:"description"`
 	ActorProfileID        string    `json:"actor_profile_id"`
 	ActorAddress          string    `json:"actor_address"`
-	ImageWalrusBlobID     string    `json:"image_walrus_blob_id"`
+	ImageWalrusBlobID     string    `json:"image_blob_id"`
 	ImageCloudinaryBlobID string    `json:"image_cloudinary_blob_id"`
 	ReviewedBy            *string   `json:"reviewed_by"`
 	AIEvaluation          string    `json:"ai_evaluation"`

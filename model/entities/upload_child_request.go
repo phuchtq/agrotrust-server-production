@@ -1,6 +1,9 @@
 package entities
 
-import "time"
+import (
+	"raise-child/model/dtos/response"
+	"time"
+)
 
 type UploadChildRequest struct {
 	ID                     string                `json:"id"`
@@ -31,4 +34,46 @@ type ChildGuardianProfile struct {
 	PhoneNumber        string `json:"phone_number"`
 	Relation           string `json:"relation"`
 	IdentityCardBlobID string `json:"identity_card_blob_id"`
+}
+
+func (u *UploadChildRequest) ToUploadChildRequestResponse() response.UploadChildRequestResponse {
+	if u == nil {
+		return response.UploadChildRequestResponse{}
+	}
+
+	var secondGuardianProfile *response.ChildGuardianProfile
+	if u.SecondGuardianProfile != nil {
+		secondGuardianProfile = &response.ChildGuardianProfile{
+			FullName:    u.SecondGuardianProfile.FullName,
+			PhoneNumber: u.SecondGuardianProfile.PhoneNumber,
+			Relation:    u.SecondGuardianProfile.Relation,
+		}
+	}
+
+	return response.UploadChildRequestResponse{
+		ID:                 u.ID,
+		ProfileID:          u.ProfileID,
+		IdentityCode:       u.IdentityCode,
+		AvatarWalrusBlobID: u.AvatarBlobId,
+		HomeWalrusBlobID:   u.HomeBlobID,
+		Region:             u.Region,
+		FirstName:          u.FirstName,
+		LastName:           u.LastName,
+		Gender:             u.Gender,
+		DateOfBirth:        u.DateOfBirth,
+		HomeAddress:        u.HomeAddress,
+		FirstGuardianProfile: response.ChildGuardianProfile{
+			FullName:    u.FirstGuardianProfile.FullName,
+			PhoneNumber: u.FirstGuardianProfile.PhoneNumber,
+			Relation:    u.FirstGuardianProfile.Relation,
+		},
+		SecondGuardianProfile: secondGuardianProfile,
+		Status:                u.Status,
+		IsConfirmUpload:       u.IsConfirmUpload,
+		CreatedBy:             u.CreatedBy,
+		ReviewedBy:            u.ReviewedBy,
+		OnchainID:             u.OnchainID,
+		CreatedAt:             u.CreatedAt,
+		UpdatedAt:             u.UpdatedAt,
+	}
 }

@@ -69,7 +69,6 @@ func (c Child) ToMinimumChildResponse() response.ChildResponse {
 		HomeAddress:  c.HomeAddress,
 		Region:       c.Region,
 		AvatarBlobId: c.AvatarBlobId,
-		HomeBlobID:   c.HomeBlobID,
 		FirstGuardian: response.ChildGuardianProfile{
 			FullName:    c.GuardianProfiles[0].Fields.FullName,
 			PhoneNumber: c.GuardianProfiles[0].Fields.PhoneNumber,
@@ -122,7 +121,6 @@ func (c Child) ToChildResponse() response.ChildResponse {
 		HomeAddress:  c.HomeAddress,
 		Region:       c.Region,
 		AvatarBlobId: c.AvatarBlobId,
-		HomeBlobID:   c.HomeBlobID,
 		FirstGuardian: response.ChildGuardianProfile{
 			FullName:    c.GuardianProfiles[0].Fields.FullName,
 			PhoneNumber: c.GuardianProfiles[0].Fields.PhoneNumber,

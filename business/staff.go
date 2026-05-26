@@ -294,7 +294,34 @@ func (s *staffService) GetStaffs(req request.GetStaffsRequest, ctx context.Conte
 
 	var data []response.StaffNftResponse
 	for i := skippedRecords; i < len(filteredStaffs); i++ {
-		data = append(data, filteredStaffs[i].ToStaffNftResponse())
+		var staff = filteredStaffs[i].ToStaffNftResponse()
+		if req, _ := s.registrationRequestRepo.GetRegistrationRequestByOnchainId(staff.ID, ctx); req != nil {
+			staff.IdentityCardImgUrl = cloudinary.GetImageUrl(req.IdentityCardBlobID)
+		} else {
+			orgReq, _ := s.registrationRequestRepo.GetRegistrationRequestWithDetail(entities.GetRegistrationRequestWithDetail{
+				RegisterRole:      staff.Role,
+				IdentityCode:      staff.IdentityCode,
+				AvatarBlobID:      staff.AvatarBlobID,
+				Region:            staff.Region,
+				FirstName:         staff.FirstName,
+				LastName:          staff.LastName,
+				Gender:            staff.Gender,
+				DateOfBirth:       filteredStaffs[i].DateOfBirth,
+				PhoneNumber:       staff.PhoneNumber,
+				Email:             staff.Email,
+				Status:            request_approved_status,
+				IsConfirmRegister: true,
+				CreatedBy:         staff.Owner,
+			}, ctx)
+			if orgReq != nil {
+				orgReq.OnchainID = &staff.ID
+				orgReq.UpdatedAt = time.Now()
+				s.registrationRequestRepo.UpdateRegistrationRequest(*orgReq, ctx)
+				staff.IdentityCardImgUrl = cloudinary.GetImageUrl(orgReq.IdentityCardBlobID)
+			}
+		}
+
+		data = append(data, staff)
 		if len(data) == req.PageSize {
 			break
 		}
