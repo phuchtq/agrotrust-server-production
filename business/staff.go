@@ -222,9 +222,11 @@ func (s *staffService) GetStaffs(req request.GetStaffsRequest, ctx context.Conte
 		return response.PaginationDataResponse{}, err
 	}
 
+	var staffIds []string = manageObj.LocalLeaderIds
+	staffIds = append(staffIds, manageObj.VolunteerIds...)
 	staffs, err := on_chain.GetOnChainObjects[entities.StaffNft](on_chain.GetOnChainObjectsRequest{
 		Client:    client,
-		ObjectIds: manageObj.ChildIds,
+		ObjectIds: staffIds,
 		ErrLogger: s.errLogger,
 	}, ctx)
 
