@@ -83,7 +83,7 @@ func GetWalletUploadChildRequests(ctx *gin.Context) {
 // @Accept       json
 // @Produce      json
 // @Param        id       path      string  true  "Upload-child Request ID (UUID)"
-// @Success      200      {object}  response.PaginationDataResponse
+// @Success      200      {object}  response.UploadChildRequestResponse
 // @Failure      400      {object}  response.MessageAPIResponse "Invalid data. Please try again."
 // @Failure      500      {object}  response.MessageAPIResponse "There is something wrong in the system during the process. Please try again later."
 // @Router       /child-upload-reqs/{id} [get]

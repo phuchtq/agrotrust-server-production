@@ -17,8 +17,8 @@ type UploadChildRequestResponse struct {
 	ProfileID              string                `json:"profile_id"`
 	IdentityCode           string                `json:"identity_code"`
 	BirthCertificateImgUrl string                `json:"birth_certificate_img_url"`
-	AvatarWalrusBlobID     string                `json:"avatar_walrus_blob_id"`
-	HomeWalrusBlobID       string                `json:"home_walrus_blob_id"`
+	AvatarWalrusBlobID     string                `json:"avatar_blob_id"`
+	HomeWalrusBlobID       string                `json:"home_blob_id"`
 	Region                 string                `json:"region" validate:"required"`
 	FirstName              string                `json:"first_name" validate:"required"`
 	LastName               string                `json:"last_name" validate:"required"`
