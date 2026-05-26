@@ -9936,7 +9936,7 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
-                "avatar_walrus_blob_id": {
+                "avatar_blob_id": {
                     "type": "string"
                 },
                 "closed_at": {

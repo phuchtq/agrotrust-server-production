@@ -1426,7 +1426,7 @@ definitions:
         items:
           type: string
         type: array
-      avatar_walrus_blob_id:
+      avatar_blob_id:
         type: string
       closed_at:
         type: string
