@@ -38,6 +38,8 @@ func GetUploadUrl() string {
 	return uploadUrl
 }
 
+// agrotrust-uploads/pqbxghtmovrjfjgx0ait
+
 func GetImageUrl(publicId string) string {
 	cld, _ := cloudinary.NewFromParams(cloudName, apiKey, apiSecret)
 
