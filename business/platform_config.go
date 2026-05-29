@@ -150,7 +150,7 @@ func (p *platformConfigService) UpdateConfig(id string, req request.UpdatePlatfo
 					case ageMinLimitConfig:
 						child_min_age_accepted = req.Value.(int64)
 					case minRegionStaffsConfig:
-						min_region_staffs = req.Value.(int)
+						min_region_staffs = req.Value.(int64)
 					}
 				}
 			default:
