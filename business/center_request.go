@@ -52,11 +52,12 @@ func initializeCenterRequestService(
 	errLogger *log.Logger,
 ) business.ICenterRequestService {
 	return &centerRequestService{
-		centerRequestRepo: centerRequestRepo,
-		profileRepo:       profileRepo,
-		redisCache:        cache.InitializeRedisCache(),
-		clients:           clients,
-		errLogger:         errLogger,
+		platformConfigRepo: platformConfigRepo,
+		centerRequestRepo:  centerRequestRepo,
+		profileRepo:        profileRepo,
+		redisCache:         cache.InitializeRedisCache(),
+		clients:            clients,
+		errLogger:          errLogger,
 	}
 }
 
