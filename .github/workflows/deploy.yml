@@ -3,7 +3,7 @@ name: Build & Deploy to Azure
 on:
   push:
     branches:
-      - dev/ai # trigger on every push to dev/ai
+      - main # trigger on every push to main
     paths: # only run when relevant files change → saves minutes
       - "**.go"
       - "go.mod"
