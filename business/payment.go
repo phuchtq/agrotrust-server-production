@@ -1538,8 +1538,6 @@ func (p *paymentService) RefusePayment(id string, ctx context.Context) error {
 
 // CallbackV2 implements business.IPaymentService.
 func (p *paymentService) CallbackV2(id string, ctx context.Context) error {
-	log.Println("Payment ID:", id)
-
 	var payment *entities.Payment
 	for i := 1; i <= 5; i++ {
 		res, _ := p.paymentRepo.GetPaymentById(id, ctx)
