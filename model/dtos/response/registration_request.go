@@ -8,7 +8,7 @@ type RegistrationRequestResponse struct {
 	RegisterRole       string    `json:"register_role"`
 	IdentityCode       string    `json:"identity_code"`
 	IdentityCardImgUrl string    `json:"identity_card_img_url"`
-	AvatarWalrusBlobID string    `json:"avatar_walrus_blob_id"`
+	AvatarWalrusBlobID string    `json:"avatar_blob_id"`
 	Region             string    `json:"region"`
 	FirstName          string    `json:"first_name"`
 	LastName           string    `json:"last_name"`

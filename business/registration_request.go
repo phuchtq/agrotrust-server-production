@@ -563,7 +563,7 @@ func (r *registrationRequestService) CreateRegistrationRequest(req request.Creat
 
 	if role == volunteer_role {
 		if !slices.Contains(manage.LocalRegions, req.Region) {
-			return nil, errors.New(noti.REGION_NOT_ADDED_WARN_MSG)
+			return nil, errors.New(noti.REGION_NOT_HAVE_LEADER_MESSAGE)
 		}
 	}
 
@@ -623,11 +623,6 @@ func (r *registrationRequestService) GetRegistrationRequests(req request.GetRegi
 	}
 
 	var res response.PaginationDataResponse
-	// var redisKey string = r.getGetRegistrationRequestsRedisKey(req)
-	// if r.redisCache.Get(redisKey, &res, ctx) {
-	// 	return res, nil
-	// }
-
 	data, pages, err := r.registrationRequestRepo.GetRegistrationRequests(req, ctx)
 	var amount int
 	if len(data) == 0 {
@@ -636,25 +631,46 @@ func (r *registrationRequestService) GetRegistrationRequests(req request.GetRegi
 		amount = len(data)
 	}
 
+	var resData []response.RegistrationRequestResponse
+	if amount > 0 {
+		for _, req := range data {
+			var reqRes = req.ToRegistrationRequestResponse()
+			reqRes.IdentityCardImgUrl = cloudinary.GetImageUrl(req.IdentityCardBlobID)
+			resData = append(resData, reqRes)
+		}
+	}
+
 	res = response.PaginationDataResponse{
-		Data:       data,
+		Data:       resData,
 		Amount:     amount,
 		Page:       req.Page,
 		TotalPages: pages,
 	}
 
-	// r.redisCache.Set(redisKey, res, time.Minute*5, ctx)
-
 	return res, err
 }
 
 // GetWalletRegistrationRequests implements business.IRegistrationRequestService.
-func (r *registrationRequestService) GetWalletRegistrationRequests(id string, ctx context.Context) ([]entities.RegistrationRequest, error) {
+func (r *registrationRequestService) GetWalletRegistrationRequests(id string, ctx context.Context) ([]response.RegistrationRequestResponse, error) {
 	if !util.IsValidSuiAddressStrict(id) {
 		return nil, errors.New(noti.GENERIC_ERROR_WARN_MSG)
 	}
 
-	return r.registrationRequestRepo.GetWalletRegistrationRequests(id, ctx)
+	data, err := r.registrationRequestRepo.GetWalletRegistrationRequests(id, ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	var res []response.RegistrationRequestResponse
+	if len(data) > 0 {
+		for _, req := range data {
+			var reqRes = req.ToRegistrationRequestResponse()
+			reqRes.IdentityCardImgUrl = cloudinary.GetImageUrl(req.IdentityCardBlobID)
+			res = append(res, reqRes)
+		}
+	}
+
+	return res, nil
 }
 
 // VoteRegistrationRequest implements business.IRegistrationRequestService.

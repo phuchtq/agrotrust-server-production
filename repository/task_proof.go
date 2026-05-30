@@ -240,7 +240,7 @@ func (t *taskProofRepo) GetTaskProofsWithIsChildTask(req request.GetTaskProofsRe
 
 		if err := rows.Scan(
 			&x.ID, &x.TaskID, &x.Description, &x.ActorProfileID, &x.ActorAddress,
-			&x.ImageBlobID, &x.ReviewedBy, &x.AIEvaluation, &x.AIReason, &x.ReviewStatus,
+			&x.ImageBlobID, &x.ImageCloudinaryBlobID, &x.ReviewedBy, &x.AIEvaluation, &x.AIReason, &x.ReviewStatus,
 			&x.RawSubmitDate, &x.CreatedAt, &x.UpdatedAt, &x.IsChildTask); err != nil {
 
 			t.errLogger.Println(errLogMsg + err.Error())

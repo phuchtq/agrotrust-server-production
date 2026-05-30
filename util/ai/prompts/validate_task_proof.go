@@ -11,8 +11,12 @@ Based on the above criteria, please evaluate the provided task proof and return 
 Return ONLY a valid JSON object with exactly these keys:
 {
   "ai_evaluation": "valid" or "invalid" or "uncertain",
-  "ai_reason": "reason for the evaluation"
+  "ai_reason": "reason for the evaluation (MUST be written in Vietnamese)"
 }
 
-Do not include any additional text or markdown.
+Additional rules:
+- The "ai_reason" field MUST be written in Vietnamese. Keep it concise and specific.
+- The "ai_evaluation" field must be exactly one of: "valid", "invalid", or "uncertain" (lowercase English).
+
+Do not include any additional text or markdown outside the JSON object.
 `

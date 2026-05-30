@@ -152,7 +152,7 @@ func (p *platformConfigRepo) UpdateConfig(config entities.PlatformConfig, table 
 	}
 
 	if rowsAffected == 0 {
-		return errors.New(fmt.Sprintf(noti.UNDEFINED_OBJECT_WARN_MSG, table))
+		return fmt.Errorf(noti.UNDEFINED_OBJECT_WARN_MSG, table)
 	}
 
 	return nil

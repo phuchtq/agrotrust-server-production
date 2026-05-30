@@ -133,6 +133,8 @@ const (
 	NOT_CHILDREN_WITHDRAW_PROPOSED_DATE string = "This is not date to propose children withdraw proposal."
 
 	EMPTY_REMAIN_VOTE_POWER_MESSAGE string = "You have casted all vote powers."
+
+	REGION_NOT_HAVE_LEADER_MESSAGE string = "Region must have leader first to apply other roles."
 )
 
 const (

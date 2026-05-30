@@ -88,7 +88,8 @@ func (w *walrusProvider) UploadImageUrlToWalrus(imageUrl string) string {
 	}
 	defer uploadImgRes.Body.Close()
 
-	body, _ := io.ReadAll(resp.Body)
+	body, err := io.ReadAll(uploadImgRes.Body)
+	w.errLogger.Printf("Walrus raw response (status %d): %q", uploadImgRes.StatusCode, string(body))
 	var walrusResult WalrusResponse
 	if err := json.Unmarshal(body, &walrusResult); err != nil {
 		w.errLogger.Println("Error unmarshal Walrus response:", err.Error())

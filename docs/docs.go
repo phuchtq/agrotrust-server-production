@@ -1296,7 +1296,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/response.PaginationDataResponse"
+                            "$ref": "#/definitions/response.UploadChildRequestResponse"
                         }
                     },
                     "400": {
@@ -9936,7 +9936,7 @@ const docTemplate = `{
                         "type": "string"
                     }
                 },
-                "avatar_walrus_blob_id": {
+                "avatar_blob_id": {
                     "type": "string"
                 },
                 "closed_at": {
@@ -10089,6 +10089,81 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "pool_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "response.UploadChildRequestResponse": {
+            "type": "object",
+            "required": [
+                "date_of_birth",
+                "first_name",
+                "gender",
+                "last_name",
+                "region"
+            ],
+            "properties": {
+                "avatar_blob_id": {
+                    "type": "string"
+                },
+                "birth_certificate_img_url": {
+                    "type": "string"
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "created_by": {
+                    "type": "string"
+                },
+                "date_of_birth": {
+                    "type": "string"
+                },
+                "first_guardian_profile": {
+                    "$ref": "#/definitions/response.ChildGuardianProfile"
+                },
+                "first_name": {
+                    "type": "string"
+                },
+                "gender": {
+                    "type": "string"
+                },
+                "home_address": {
+                    "type": "string"
+                },
+                "home_blob_id": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "identity_code": {
+                    "type": "string"
+                },
+                "is_confirm_upload": {
+                    "type": "boolean"
+                },
+                "last_name": {
+                    "type": "string"
+                },
+                "on_chain_id": {
+                    "type": "string"
+                },
+                "profile_id": {
+                    "type": "string"
+                },
+                "region": {
+                    "type": "string"
+                },
+                "reviewed_by": {
+                    "type": "string"
+                },
+                "second_guardian_profile": {
+                    "$ref": "#/definitions/response.ChildGuardianProfile"
+                },
+                "status": {
+                    "type": "string"
+                },
+                "updated_at": {
                     "type": "string"
                 }
             }

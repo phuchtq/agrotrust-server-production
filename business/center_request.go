@@ -41,7 +41,7 @@ const (
 )
 
 var (
-	min_region_staffs int = 2
+	min_region_staffs int64 = 2
 )
 
 func initializeCenterRequestService(
@@ -52,11 +52,12 @@ func initializeCenterRequestService(
 	errLogger *log.Logger,
 ) business.ICenterRequestService {
 	return &centerRequestService{
-		centerRequestRepo: centerRequestRepo,
-		profileRepo:       profileRepo,
-		redisCache:        cache.InitializeRedisCache(),
-		clients:           clients,
-		errLogger:         errLogger,
+		platformConfigRepo: platformConfigRepo,
+		centerRequestRepo:  centerRequestRepo,
+		profileRepo:        profileRepo,
+		redisCache:         cache.InitializeRedisCache(),
+		clients:            clients,
+		errLogger:          errLogger,
 	}
 }
 
@@ -381,7 +382,7 @@ func (c *centerRequestService) CreateRequest(req request.CreateCenterRequest, ct
 
 	staffs, err := on_chain.GetOnChainObjects[entities.StaffNft](on_chain.GetOnChainObjectsRequest{
 		Client:    client,
-		ObjectIds: manage.VolunteerIds,
+		ObjectIds: manage.VolunteerNfts,
 		ErrLogger: c.errLogger,
 	}, ctx)
 	if err != nil {
@@ -396,7 +397,7 @@ func (c *centerRequestService) CreateRequest(req request.CreateCenterRequest, ct
 	for _, staff := range staffs {
 		if staff.Region == req.Region {
 			regionStaffCounts += 1
-			if regionStaffCounts == min_region_staffs {
+			if regionStaffCounts == int(min_region_staffs) {
 				break
 			}
 		}
@@ -404,16 +405,16 @@ func (c *centerRequestService) CreateRequest(req request.CreateCenterRequest, ct
 
 	regionStaffCounts += 1
 
-	var minRegionStaffsAccepted int
+	var minRegionStaffsAccepted int64
 	var tmp *entities.PlatformConfig
 	var numericTmp *entities.NumericConfig
 	if config, _ := c.platformConfigRepo.GetConfigByKey(numericTmp.GetTable(), tmp.GetMinRegionStaffsConfigKey(), ctx); config != nil {
-		minRegionStaffsAccepted = config.Value.(int)
+		minRegionStaffsAccepted = config.Value.(int64)
 	} else {
 		minRegionStaffsAccepted = min_region_staffs
 	}
 
-	if regionStaffCounts < minRegionStaffsAccepted {
+	if regionStaffCounts < int(minRegionStaffsAccepted) {
 		return nil, errors.New("Not enough staffs")
 	}
 
@@ -624,7 +625,7 @@ func (c *centerRequestService) EditStaffNumbersToRequestCenter(req request.EditS
 
 	if req.MinStaffNumber != nil {
 		if *req.MinStaffNumber > 0 {
-			min_region_staffs = *req.MinStaffNumber
+			//min_region_staffs = *req.MinStaffNumber
 		} else {
 
 		}
