@@ -239,7 +239,7 @@ func (c *centerRequestService) ConfirmRequest(id string, ctx context.Context) er
 	}
 
 	var sender string = ctx.Value("address").(string)
-	if !slices.Contains(manage.AdminIds, sender) {
+	if req.CreatedBy != sender {
 		return errors.New(noti.GENERIC_RIGHT_ACCESS_WARN_MSG)
 	}
 
