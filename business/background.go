@@ -340,13 +340,13 @@ func (b *backgroundService) ProcessRefundVotePower(ctx context.Context) {
 
 // ProcessBackgroundCenterRequests implements business.IBackgroundService.
 func (b *backgroundService) ProcessBackgroundCenterRequests(ctx context.Context) {
-	pendingRes, approvedRes, err := b.centerRequestRepo.GetPendingRequests(ctx)
+	pendingRes, err := b.centerRequestRepo.GetPendingRequests(ctx)
 	if err != nil {
 		return
 	}
 
 	if len(pendingRes) > 0 {
-		var refusedReqs []entities.BackgroundRecord
+		var refusedReqs, approvedRes []entities.CenterRequest
 		for _, req := range pendingRes {
 			var rate float32 = float32(len(req.Approvers)) / float32(len(req.Approvers)+len(req.Refusers))
 			if rate >= approve_rate_limit {
@@ -358,36 +358,74 @@ func (b *backgroundService) ProcessBackgroundCenterRequests(ctx context.Context)
 
 		b.centerRequestRepo.SetRefusedStatuses(refusedReqs, ctx)
 
-		var modules []string
-		var functions []string
-		var args [][]interface{}
-		var module = on_chain.InitializeModuleManage()
-		for _, req := range approvedRes {
-			// modules[i] = module.GetModule()
-			// functions[i] = module.GetFunctionMintUploadCenterCap()
-			// args = append(args, module.ToMintCapArguments(on_chain.MintCapArguments{
-			// 	Recipient: req.Sender,
-			// }))
+		if len(approvedRes) > 0 {
+			var client = b.clients[constant.SuiTestnet]
+			manage, _ := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+				Client:    client,
+				ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+				ErrLogger: b.errLogger,
+			}, ctx)
+			if manage == nil {
+				return
+			}
 
-			modules = append(modules, module.GetModule())
-			functions = append(functions, module.GetFunctionMintUploadCenterCap())
+			var modules []string
+			var functions []string
+			var args [][]interface{}
+			var module = on_chain.InitializeModuleChild()
+			for _, req := range approvedRes {
+				var startIdx int
+				for i, region := range manage.LocalRegions {
+					if region == req.Region {
+						startIdx = i
+						break
+					}
+				}
 
-			args = append(args, module.ToMintCapArguments(on_chain.MintCapArguments{
-				Recipient: req.Sender,
-			}))
+				leaders, _ := on_chain.GetOnChainObjects[entities.StaffNft](on_chain.GetOnChainObjectsRequest{
+					Client:    client,
+					ObjectIds: manage.LocalLeaderNfts[startIdx:],
+					ErrLogger: b.errLogger,
+				}, ctx)
+				if leaders == nil {
+					return
+				}
+
+				var regionLeaders []string
+				for _, leader := range leaders {
+					if leader.Region == req.Region {
+						regionLeaders = append(regionLeaders, leader.Owner)
+					}
+				}
+
+				modules = append(modules, module.GetModule())
+				functions = append(functions, module.GetFunctionUploadCenter())
+				args = append(args, module.ToCreateCenterArguments(on_chain.CreateCenterArguments{
+					Region:      req.Region,
+					Address:     req.Address,
+					PhoneNumber: req.PhoneNumber,
+					ImageBlobID: req.ImageBlobID,
+					Leaders:     regionLeaders,
+					Sender:      req.CreatedBy,
+				}))
+			}
+
+			if err := on_chain.BuildMultiBackgroundTransactions(on_chain.BuildMultiBackgroundTransactionsRequest{
+				Client:    client,
+				Modules:   modules,
+				Functions: functions,
+				Arguments: args,
+				ErrLogger: b.errLogger,
+			}, ctx); err != nil {
+				return
+			}
+
+			for i := 1; i <= 3; i++ {
+				if b.centerRequestRepo.SetApprovedStatuses(approvedRes, ctx) == nil {
+					return
+				}
+			}
 		}
-
-		if err := on_chain.BuildMultiBackgroundTransactions(on_chain.BuildMultiBackgroundTransactionsRequest{
-			Client:    b.clients[constant.SuiTestnet],
-			Modules:   modules,
-			Functions: functions,
-			Arguments: args,
-			ErrLogger: b.errLogger,
-		}, ctx); err != nil {
-			return
-		}
-
-		b.centerRequestRepo.SetApprovedStatuses(approvedRes, ctx)
 	}
 }
 

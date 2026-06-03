@@ -126,6 +126,7 @@ func setupBackgroundService(ctx context.Context, wg *sync.WaitGroup) {
 		processRefundVotePowerBackgroundService,
 		processCreateChildrenWithdrawsBackgroundService,
 		processRegistrationBackgroundService,
+		processCenterBackgroundService,
 	}
 
 	wg.Add(len(services))
@@ -134,8 +135,9 @@ func setupBackgroundService(ctx context.Context, wg *sync.WaitGroup) {
 	}
 }
 
-func processCenterBackgroundService(ctx context.Context, wg *sync.WaitGroup, duration time.Duration) {
+func processCenterBackgroundService(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
+	var duration time.Duration = time.Minute
 	var ticker = time.NewTicker(duration)
 	defer ticker.Stop()
 	for {

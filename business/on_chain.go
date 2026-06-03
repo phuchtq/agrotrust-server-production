@@ -119,11 +119,6 @@ func (o *onChainService) ExecuteTransaction(req request.ExecuteTransactionReques
 			return err
 		}
 
-		if req.IsConfirmRegister {
-			return genericErr
-		}
-
-		req.IsConfirmRegister = true
 		req.UpdatedAt = curTime
 
 		o.centerRepo.UpdateRegistrationRequest(*req, ctx)

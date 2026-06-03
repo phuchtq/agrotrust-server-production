@@ -262,7 +262,6 @@ func (c *centerRequestService) ConfirmRequest(id string, ctx context.Context) er
 		req.Status = request_refused_status
 	} else {
 		req.Status = request_approved_status
-		req.IsConfirmRegister = true
 	}
 
 	req.UpdatedAt = curTime

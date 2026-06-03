@@ -43,10 +43,6 @@ definitions:
         type: string
       image_blob_id:
         type: string
-      is_confirm_register:
-        description: Default as false, when status aprroved, user clicks to update
-          to true, call smart contract to register role
-        type: boolean
       phone_number:
         type: string
       profile_id:

@@ -55,7 +55,7 @@ func (c *centerRequestRepo) CreateRegistrationRequest(req entities.CenterRequest
 
 	if _, err := c.db.ExecContext(ctx, query, req.ID, req.ProfileID, req.Region, req.Address, req.PhoneNumber, req.ImageBlobID,
 		pq.Array(req.Approvers), pq.Array(req.Refusers), pq.Array(req.RefuseReasons), req.Status,
-		req.IsConfirmRegister, req.CreatedBy, req.CreatedAt, req.UpdatedAt, req.ClosedAt); err != nil {
+		req.CreatedBy, req.CreatedAt, req.UpdatedAt, req.ClosedAt); err != nil {
 
 		c.errLogger.Println(errLogMsg + err.Error())
 		return errors.New(noti.INTERNALL_ERR_MSG)
@@ -151,7 +151,7 @@ func (c *centerRequestRepo) GetRegistrationRequests(req request.GetCenterRequest
 		if err := rows.Scan(
 			&x.ID, &x.ProfileID, &x.Region, &x.Address, &x.PhoneNumber, &x.ImageBlobID,
 			pq.Array(&x.Approvers), pq.Array(&x.Refusers), pq.Array(&x.RefuseReasons), &x.Status,
-			&x.IsConfirmRegister, &x.CreatedBy, &x.CreatedAt, &x.UpdatedAt, &x.ClosedAt); err != nil {
+			&x.CreatedBy, &x.CreatedAt, &x.UpdatedAt, &x.ClosedAt); err != nil {
 
 			c.errLogger.Println(errLogMsg + err.Error())
 			return nil, 0, internalErr
@@ -175,7 +175,7 @@ func (c *centerRequestRepo) GetRequest(id string, ctx context.Context) (*entitie
 	if err := c.db.QueryRowContext(ctx, query, id).Scan(
 		&res.ID, &res.ProfileID, &res.Region, &res.Address, &res.PhoneNumber, &res.ImageBlobID,
 		pq.Array(&res.Approvers), pq.Array(&res.Refusers), pq.Array(&res.RefuseReasons), &res.Status,
-		&res.IsConfirmRegister, &res.CreatedBy, &res.CreatedAt, &res.UpdatedAt, &res.ClosedAt); err != nil {
+		&res.CreatedBy, &res.CreatedAt, &res.UpdatedAt, &res.ClosedAt); err != nil {
 
 		if err == sql.ErrNoRows {
 			return nil, nil
@@ -207,7 +207,7 @@ func (c *centerRequestRepo) GetWalletRegistrationRequests(id string, ctx context
 		if err := rows.Scan(
 			&x.ID, &x.ProfileID, &x.Region, &x.Address, &x.PhoneNumber, &x.ImageBlobID,
 			pq.Array(&x.Approvers), pq.Array(&x.Refusers), pq.Array(&x.RefuseReasons), &x.Status,
-			&x.IsConfirmRegister, &x.CreatedBy, &x.CreatedAt, &x.UpdatedAt, &x.ClosedAt); err != nil {
+			&x.CreatedBy, &x.CreatedAt, &x.UpdatedAt, &x.ClosedAt); err != nil {
 
 			c.errLogger.Println(errLogMsg + err.Error())
 			return nil, internalErr
@@ -246,7 +246,7 @@ func (c *centerRequestRepo) UpdateRegistrationRequest(req entities.CenterRequest
 
 	res, err := c.db.ExecContext(ctx, query, req.Address, req.PhoneNumber, req.ImageBlobID,
 		pq.Array(req.Approvers), pq.Array(req.Refusers), pq.Array(req.RefuseReasons),
-		req.Status, req.IsConfirmRegister, req.UpdatedAt, req.ID)
+		req.Status, req.UpdatedAt, req.ID)
 	if err != nil {
 		c.errLogger.Println(errLogMsg + err.Error())
 		return internalErr
@@ -266,41 +266,38 @@ func (c *centerRequestRepo) UpdateRegistrationRequest(req entities.CenterRequest
 }
 
 // GetPendingRequests implements repository.ICenterRequestRepository.
-func (c *centerRequestRepo) GetPendingRequests(ctx context.Context) ([]entities.BackgroundRecord, []entities.BackgroundRecord, error) {
-	var query string = "SELECT id, approvers, refusers, created_by, status FROM " + center_request_table + " WHERE closed_at <= NOW() AND (status = 'Pending' OR status = 'Approved')"
+func (c *centerRequestRepo) GetPendingRequests(ctx context.Context) ([]entities.CenterRequest, error) {
+	var query string = "SELECT * FROM " + center_request_table + " WHERE closed_at <= NOW() AND status = 'Pending'"
 	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.CENTER_REQUEST_REPOSITORY) + "GetPendingRequests - "
 	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
 
 	rows, err := c.db.QueryContext(ctx, query)
 	if err != nil {
 		c.errLogger.Println(errLogMsg + err.Error())
-		return nil, nil, internalErr
+		return nil, internalErr
 	}
 	defer rows.Close()
 
-	var pendingRes, approvedRes []entities.BackgroundRecord
+	var res []entities.CenterRequest
 	for rows.Next() {
-		var x entities.BackgroundRecord
-		var status string
+		var x entities.CenterRequest
 		if err := rows.Scan(
-			&x.ID, pq.Array(&x.Approvers), pq.Array(&x.Refusers), &x.Sender, &status); err != nil {
+			&x.ID, &x.ProfileID, &x.Region, &x.Address, &x.PhoneNumber, &x.ImageBlobID,
+			pq.Array(&x.Approvers), pq.Array(&x.Refusers), pq.Array(&x.RefuseReasons), &x.Status,
+			&x.CreatedBy, &x.CreatedAt, &x.UpdatedAt, &x.ClosedAt); err != nil {
 
 			c.errLogger.Println(errLogMsg + err.Error())
-			return nil, nil, internalErr
+			return nil, internalErr
 		}
 
-		if status == "Pending" {
-			pendingRes = append(pendingRes, x)
-		} else {
-			approvedRes = append(approvedRes, x)
-		}
+		res = append(res, x)
 	}
 
-	return pendingRes, approvedRes, nil
+	return res, nil
 }
 
 // SetApprovedStatuses implements repository.ICenterRequestRepository.
-func (c *centerRequestRepo) SetApprovedStatuses(reqs []entities.BackgroundRecord, ctx context.Context) error {
+func (c *centerRequestRepo) SetApprovedStatuses(reqs []entities.CenterRequest, ctx context.Context) error {
 	if len(reqs) == 0 {
 		return nil
 	}
@@ -322,7 +319,7 @@ func (c *centerRequestRepo) SetApprovedStatuses(reqs []entities.BackgroundRecord
 }
 
 // SetRefusedStatuses implements repository.ICenterRequestRepository.
-func (c *centerRequestRepo) SetRefusedStatuses(reqs []entities.BackgroundRecord, ctx context.Context) error {
+func (c *centerRequestRepo) SetRefusedStatuses(reqs []entities.CenterRequest, ctx context.Context) error {
 	if len(reqs) == 0 {
 		return nil
 	}
