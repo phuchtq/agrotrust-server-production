@@ -239,7 +239,7 @@ func (c *centerRequestRepo) UpdateRegistrationRequest(req entities.CenterRequest
 	var query string = "UPDATE " + center_request_table + " SET " +
 		"address = $1, phone_number = $2, image_blob_id = $3, " +
 		"approvers = $4, refusers = $5, refuse_reasons = $6, " +
-		"status = $7, is_confirm_register = $8, updated_at = $9 WHERE id = $10"
+		"status = $7, updated_at = $8 WHERE id = $9"
 
 	var errLogMsg string = fmt.Sprintf(noti.REPO_ERR_MSG, shared.CENTER_REQUEST_REPOSITORY) + "UpdateRegistrationRequest - "
 	var internalErr error = errors.New(noti.INTERNALL_ERR_MSG)
