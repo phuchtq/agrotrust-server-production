@@ -957,7 +957,7 @@ func (w *withdrawProposalService) ConfirmWithdrawProposal(id string, ctx context
 			// Set payos back to app default
 			defer payos.Key(os.Getenv(payment.PAYOS_CLIENT_ID), os.Getenv(payment.PAYOS_API_KEY), os.Getenv(payment.PAYOS_CHECKSUM_KEY))
 
-			var callbackUrl string = os.Getenv(payment.PAYMENT_CALLBACK_URL) + paymentId
+			var callbackUrl string = os.Getenv(payment.PAYMENT_REDIRECT_URL) + "?payment_id=" + paymentId
 			data, err := payos.CreatePaymentLink(payos.CheckoutRequestType{
 				OrderCode:   int64(orderCode),
 				Amount:      int(withdrawAmount),

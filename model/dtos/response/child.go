@@ -46,4 +46,5 @@ type ChildCardMinimumResponse struct {
 	FirstName    string `json:"first_name"`
 	LastName     string `json:"last_name"`
 	Gender       string `json:"gender"`
+	AvatarBlobID string `json:"avatar_blob_id"`
 }

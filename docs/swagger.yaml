@@ -988,6 +988,8 @@ definitions:
         type: string
       id:
         type: string
+      image_blob_id:
+        type: string
       region:
         type: string
       updated_at:

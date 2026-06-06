@@ -71,6 +71,7 @@ func (c Center) ToCenterCardMinimumResponse() response.CenterCardMinimumResponse
 		Region:            c.Region,
 		CenterAddress:     c.CenterAddress,
 		CenterPhoneNumber: c.CenterPhoneNumber,
+		ImageBlobID:       c.ImageBlobIDs[0],
 		UploadedAt:        util.MilliSecToTime(uploadedAt),
 		UpdatedAt:         util.MilliSecToTime(updatedAt),
 	}

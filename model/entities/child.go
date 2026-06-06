@@ -152,5 +152,6 @@ func (c Child) ToChildCardMinimumResponse() response.ChildCardMinimumResponse {
 		FirstName:    c.FirstName,
 		LastName:     c.LastName,
 		Gender:       c.Gender,
+		AvatarBlobID: c.AvatarBlobId,
 	}
 }

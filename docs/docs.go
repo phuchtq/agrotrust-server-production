@@ -9273,6 +9273,9 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
+                "image_blob_id": {
+                    "type": "string"
+                },
                 "region": {
                     "type": "string"
                 },
