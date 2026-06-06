@@ -66,12 +66,17 @@ func (c Center) ToCenterCardMinimumResponse() response.CenterCardMinimumResponse
 	uploadedAt, _ := strconv.ParseInt(c.UploadedAt, 10, 64)
 	updatedAt, _ := strconv.ParseInt(c.UpdatedAt, 10, 64)
 
+	var imageBlobId string
+	if c.ImageBlobIDs != nil && len(c.ImageBlobIDs) > 0 {
+		imageBlobId = c.ImageBlobIDs[0]
+	}
+
 	return response.CenterCardMinimumResponse{
 		ID:                c.ID.ID,
 		Region:            c.Region,
 		CenterAddress:     c.CenterAddress,
 		CenterPhoneNumber: c.CenterPhoneNumber,
-		ImageBlobID:       c.ImageBlobIDs[0],
+		ImageBlobID:       imageBlobId,
 		UploadedAt:        util.MilliSecToTime(uploadedAt),
 		UpdatedAt:         util.MilliSecToTime(updatedAt),
 	}
