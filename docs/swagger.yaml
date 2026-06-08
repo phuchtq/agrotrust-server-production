@@ -5420,6 +5420,9 @@ paths:
         name: page_size
         type: integer
       - in: query
+        name: region
+        type: string
+      - in: query
         name: sort_order
         type: string
       produces:
@@ -5544,6 +5547,52 @@ paths:
       summary: Review supported region proposal
       tags:
       - regions
+  /regions/supported-suggestionsv2:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of supported region proposals based on filter
+        criteria
+      parameters:
+      - in: query
+        name: created_by
+        type: string
+      - in: query
+        name: keyword
+        type: string
+      - in: query
+        name: page
+        type: integer
+      - in: query
+        name: page_size
+        type: integer
+      - in: query
+        name: region
+        type: string
+      - in: query
+        name: sort_order
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.PaginationDataResponse'
+        "400":
+          description: Invalid data. Please try again.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "500":
+          description: There is something wrong in the system during the process.
+            Please try again later.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+      security:
+      - BearerAuth: []
+      summary: Get list of supported region proposals V2
+      tags:
+      - regions
   /regions/user/{id}/supported-suggestions:
     get:
       consumes:
@@ -5568,6 +5617,9 @@ paths:
       - in: query
         name: page_size
         type: integer
+      - in: query
+        name: region
+        type: string
       - in: query
         name: sort_order
         type: string

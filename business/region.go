@@ -508,36 +508,86 @@ func (r *regionService) GetSupportedRegionSuggestions(req request.GetSupportedRe
 	// r.redisCache.Set(redisKey, res, time.Minute*5, ctx)
 
 	return res, err
+}
 
-	// //////////////////
-	// // MOCK DATA
-	// req.SortOrder = util.StandardizeSortOrder(req.SortOrder)
-	// req.Keyword = strings.TrimSpace(req.Keyword)
-	// if req.PageSize < 1 {
-	// 	req.PageSize = default_page_size
-	// }
+// GetSupportedRegionSuggestionsV2 implements business.IRegionService.
+func (r *regionService) GetSupportedRegionSuggestionsV2(req request.GetSupportedRegionSuggestionsRequest, ctx context.Context) (response.PaginationDataResponse, error) {
+	if req.CreatedBy != "" {
+		if !util.IsValidSuiAddressStrict(req.CreatedBy) {
+			return response.PaginationDataResponse{}, errors.New(noti.GENERIC_ERROR_WARN_MSG)
+		}
+	}
 
-	// if req.Page < 1 {
-	// 	req.Page = 1
-	// }
+	senderVal := ctx.Value("address")
+	sender, _ := senderVal.(string)
+	client := r.clients[constant.SuiTestnet]
 
-	// var res response.PaginationDataResponse
-	// var redisKey string = r.getGetSupportedRegionSuggestionsRedisKey(req)
-	// if r.redisCache.Get(redisKey, &res, ctx) {
-	// 	return res, nil
-	// }
+	manage, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: r.errLogger,
+	}, ctx)
+	if err != nil {
+		return response.PaginationDataResponse{}, err
+	}
 
-	// var data []entities.SupportedRegionSuggestion = mockSuggestions[(req.Page-1)*req.PageSize : req.Page*req.PageSize]
-	// res = response.PaginationDataResponse{
-	// 	Data:       data,
-	// 	Amount:     len(data),
-	// 	Page:       req.Page,
-	// 	TotalPages: int(math.Ceil(float64(len(mockSuggestions)) / float64(req.PageSize))),
-	// }
+	if !slices.Contains(manage.AdminIds, sender) {
+		var staffID string
+		var searchLength int
+		if len(manage.VolunteerNfts) > len(manage.LocalLeaderNfts) {
+			searchLength = len(manage.VolunteerNfts)
+		} else {
+			searchLength = len(manage.LocalLeaderNfts)
+		}
 
-	// r.redisCache.Set(redisKey, res, time.Minute*5, ctx)
+		for i := 0; i < searchLength; i++ {
+			if i < len(manage.VolunteerNfts) {
+				if sender == manage.VolunteerIds[i] {
+					staffID = manage.VolunteerNfts[i]
+					break
+				}
+			}
+			if i < len(manage.LocalLeaderIds) {
+				if sender == manage.LocalLeaderIds[i] {
+					staffID = manage.LocalLeaderNfts[i]
+					break
+				}
+			}
+		}
 
-	// return res, nil
+		staffNFT, err := on_chain.GetOnChainObject[entities.StaffNft](on_chain.GetOnChainObjectRequest{
+			Client:    client,
+			ObjectId:  staffID,
+			ErrLogger: r.errLogger,
+		}, ctx)
+		if err != nil {
+			return response.PaginationDataResponse{}, err
+		}
+
+		req.Region = staffNFT.Region
+	}
+
+	req.SortOrder = util.StandardizeSortOrder(req.SortOrder)
+	req.Keyword = strings.TrimSpace(req.Keyword)
+	if req.PageSize < 1 {
+		req.PageSize = default_page_size
+	}
+	if req.Page < 1 {
+		req.Page = 1
+	}
+
+	var res response.PaginationDataResponse
+	data, pages, err := r.regionRepo.GetSupportedRegionSuggestions(req, true, ctx)
+	amount := len(data)
+
+	res = response.PaginationDataResponse{
+		Data:       data,
+		Amount:     amount,
+		Page:       req.Page,
+		TotalPages: pages,
+	}
+
+	return res, err
 }
 
 // AdminGetSupportedRegionSuggestions implements business.IRegionService.

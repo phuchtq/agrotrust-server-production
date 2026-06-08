@@ -95,6 +95,15 @@ func (s *supportedRegionProposalRepo) GetSupportedRegionSuggestions(req request.
 		isHavePreviosCondition = true
 	}
 
+	if req.Region != "" {
+		if isHavePreviosCondition {
+			queryCondition += " AND "
+		}
+
+		queryCondition += fmt.Sprintf("region = '%s'", req.Region)
+		isHavePreviosCondition = true
+	}
+
 	var order string = "DESC"
 	if req.SortOrder != "" {
 		order = req.SortOrder

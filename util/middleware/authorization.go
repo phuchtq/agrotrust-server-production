@@ -13,12 +13,13 @@ import (
 )
 
 var (
-	Authorize              = skipOnPreflight(authorize)
-	AdminAuthorize         = skipOnPreflight(adminAuthorize)
-	LeaderAuthorize        = skipOnPreflight(leaderAuthorize)
-	ManagerRoleAuthorize   = skipOnPreflight(managerRoleAuthorize)
-	StaffRoleAuthorize     = skipOnPreflight(staffRoleAuthorize)
-	VolunteerRoleAuthorize = skipOnPreflight(volunteerRoleAuthorize)
+	Authorize                  = skipOnPreflight(authorize)
+	AdminAuthorize             = skipOnPreflight(adminAuthorize)
+	LeaderAuthorize            = skipOnPreflight(leaderAuthorize)
+	ManagerRoleAuthorize       = skipOnPreflight(managerRoleAuthorize)
+	StaffRoleAuthorize         = skipOnPreflight(staffRoleAuthorize)
+	VolunteerRoleAuthorize     = skipOnPreflight(volunteerRoleAuthorize)
+	GotRolesAuthorizeAuthorize = skipOnPreflight(gotRolesAuthorize)
 )
 
 func skipOnPreflight(handler gin.HandlerFunc) gin.HandlerFunc {
@@ -192,6 +193,30 @@ func volunteerRoleAuthorize(ctx *gin.Context) {
 	}
 
 	if !slices.Contains(roles, "Volunteer") {
+		util.ProcessResponse(util.GetUnAuthBodyResponse(ctx))
+		ctx.Abort()
+		return
+	}
+
+	ctx.Next()
+}
+
+func gotRolesAuthorize(ctx *gin.Context) {
+	val, exists := ctx.Get("roles")
+	if !exists {
+		util.ProcessResponse(util.GetUnAuthBodyResponse(ctx))
+		ctx.Abort()
+		return
+	}
+
+	roles, ok := val.([]string)
+	if !ok {
+		util.ProcessResponse(util.GetUnAuthBodyResponse(ctx))
+		ctx.Abort()
+		return
+	}
+
+	if !slices.Contains(roles, "Admin") && !slices.Contains(roles, "Local Leader") && !slices.Contains(roles, "Volunteer") {
 		util.ProcessResponse(util.GetUnAuthBodyResponse(ctx))
 		ctx.Abort()
 		return
