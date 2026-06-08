@@ -8131,7 +8131,8 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "withdrawAmount": {
-                    "type": "integer"
+                    "type": "integer",
+                    "format": "int64"
                 }
             }
         },
@@ -9155,6 +9156,9 @@ const docTemplate = `{
                 },
                 "id": {
                     "type": "string"
+                },
+                "is_upload_info": {
+                    "type": "boolean"
                 },
                 "owner": {
                     "type": "string"

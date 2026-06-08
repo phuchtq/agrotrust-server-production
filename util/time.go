@@ -25,7 +25,7 @@ func MilliSecToTime(milliseconds int64) time.Time {
 }
 
 func GetRequestDuration() time.Time {
-	return time.Now().Add(time.Minute * 2)
+	return time.Now().Add(time.Second * 30)
 }
 
 func GetBankTransactionDuration() time.Time {

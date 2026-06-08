@@ -50,7 +50,6 @@ func GenerateBankProfileService() (business.IBankProfileService, error) {
 		return nil, err
 	}
 
-	//return InitializeBankProfileService(cnn, errLogger), nil
 	return initializeBankProfileService(repository.InitializeBankProfileRepository(cnn, errLogger), _networkAliases, errLogger), nil
 }
 

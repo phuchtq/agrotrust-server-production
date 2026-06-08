@@ -49,18 +49,7 @@ func (r *registratioRequestRepo) GetRoleRegistrationRequests(role string, ctx co
 	var res []entities.RegistrationRequest
 	for rows.Next() {
 		var x entities.RegistrationRequest
-		// Original
-		// if err := rows.Scan(
-		// 	&x.ID, &x.RegisterRole, &x.IdentityCode, &x.IdentityCardBlobID,
-		// 	&x.AvatarBlobID, &x.Region, &x.FirstName, &x.LastName, &x.Gender,
-		// 	&x.DateOfBirth, &x.PhoneNumber, &x.Email, &x.Approvers, &x.Refusers,
-		// 	&x.RefuseReasons, &x.Status, &x.IsAvailableToConfirm, &x.IsConfirmRegister,
-		// 	&x.CreatedBy, &x.CreatedAt, &x.UpdatedAt, &x.ClosedAt); err != nil {
-
-		// 	r.errLogger.Println(errLogMsg + err.Error())
-		// 	return nil, internalErr
-		// }
-
+		
 		if err := rows.Scan(
 			&x.ID, &x.ProfileID, &x.RegisterRole, &x.IdentityCode, &x.IdentityCardBlobID,
 			&x.AvatarBlobID, &x.Region, &x.FirstName, &x.LastName, &x.Gender,
