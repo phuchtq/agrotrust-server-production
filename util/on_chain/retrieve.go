@@ -60,7 +60,6 @@ func GetOnChainObject[T any](req GetOnChainObjectRequest, ctx context.Context) (
 		if strings.Contains(err.Error(), "no result") {
 			return nil, nil
 		}
-		req.ErrLogger.Println("address: ", req.ObjectId)
 		req.ErrLogger.Println(noti.RETRIEVE_ON_CHAIN_DATA_ERR_MSG + err.Error())
 		return nil, internalErr
 	}
