@@ -15,6 +15,7 @@ import (
 	"raise-child/util/db"
 	on_chain "raise-child/util/on_chain"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/block-vision/sui-go-sdk/constant"
@@ -29,6 +30,18 @@ type backgroundService struct {
 	uploadChildRequestRepo         i_repository.IUploadChildRequestRepository
 	clients                        map[string]sui.ISuiAPI
 	errLogger                      *log.Logger
+}
+
+func logMissingEnvKeys(logger *log.Logger, scope string, keys ...string) bool {
+	var foundMissing bool
+	for _, key := range keys {
+		if strings.TrimSpace(os.Getenv(key)) == "" {
+			logger.Println(fmt.Sprintf("%s missing env: %s", scope, key))
+			foundMissing = true
+		}
+	}
+
+	return foundMissing
 }
 
 func initializeBackgroundService(
@@ -74,6 +87,9 @@ func (b *backgroundService) ProcessCreateChildrenWithdrawProposals(ctx context.C
 	var curTime time.Time = time.Now()
 	var curTimeEndOfDate time.Time = util.ToEndOfDate(curTime)
 	if !isChildrenWithdrawProposalDateValid(curTime) {
+		return
+	}
+	if logMissingEnvKeys(b.errLogger, "ProcessCreateChildrenWithdrawProposals", env.MANAGE_OBJECT_ID, env.POOL_ID, env.BOOKS_NEED_WITHDRAW_DATES_ID, env.HEALTH_INSURANCE_NEED_WITHDRAW_DATE_ID) {
 		return
 	}
 
@@ -257,6 +273,9 @@ func (b *backgroundService) ProcessCreateChildrenWithdrawProposals(ctx context.C
 // ProcessRefundVotePower implements business.IBackgroundService.
 func (b *backgroundService) ProcessRefundVotePower(ctx context.Context) {
 	var client = b.clients[constant.SuiTestnet]
+	if logMissingEnvKeys(b.errLogger, "ProcessRefundVotePower", env.POOL_ID, env.ALLOWED_FUNDED_WITHDRAW_RATE_OBJECT_ID) {
+		return
+	}
 	pool, _ := on_chain.GetOnChainObject[entities.MainPool](on_chain.GetOnChainObjectRequest{
 		Client:    client,
 		ObjectId:  os.Getenv(env.POOL_ID),
@@ -365,6 +384,9 @@ func (b *backgroundService) ProcessBackgroundCenterRequests(ctx context.Context)
 
 		if len(approvedRes) > 0 {
 			var client = b.clients[constant.SuiTestnet]
+			if logMissingEnvKeys(b.errLogger, "ProcessBackgroundCenterRequests", env.MANAGE_OBJECT_ID) {
+				return
+			}
 			manage, _ := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
 				Client:    client,
 				ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
@@ -459,6 +481,9 @@ func (b *backgroundService) ProcessBackgroundRegistrationRequests(ctx context.Co
 		var args [][]interface{}
 		var staffModule = on_chain.InitializeModuleStaff()
 		var client = b.clients[constant.SuiTestnet]
+		if logMissingEnvKeys(b.errLogger, "ProcessBackgroundRegistrationRequests", env.POOL_ID) {
+			return
+		}
 		for _, req := range approvedReqs {
 			modules = append(modules, staffModule.GetModule())
 
