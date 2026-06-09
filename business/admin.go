@@ -65,6 +65,63 @@ const (
 	admin_records_limit int = 10
 )
 
+// GetAdmin implements business.IAdminService.
+func (a *adminService) GetAdmin(id string, ctx context.Context) (response.AdminNftResponse, error) {
+	if !util.IsValidSuiAddressStrict(id) {
+		return response.AdminNftResponse{}, errors.New(noti.GENERIC_ERROR_WARN_MSG)
+	}
+
+	adminNft, err := on_chain.GetOnChainObject[entities.AdminNft](on_chain.GetOnChainObjectRequest{
+		Client:    a.clients[constant.SuiTestnet],
+		ObjectId:  id,
+		ErrLogger: a.errLogger,
+	}, ctx)
+
+	return adminNft.ToAdminNftResponse(), err
+}
+
+// GetAdminByOwner implements business.IAdminService.
+func (a *adminService) GetAdminByOwner(id string, ctx context.Context) (response.AdminNftResponse, error) {
+	var genericErr error = errors.New(noti.GENERIC_ERROR_WARN_MSG)
+	if !util.IsValidSuiAddressStrict(id) {
+		return response.AdminNftResponse{}, genericErr
+	}
+
+	var client = a.clients[constant.SuiTestnet]
+	manage, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
+		ErrLogger: a.errLogger,
+	}, ctx)
+	if err != nil {
+		return response.AdminNftResponse{}, err
+	}
+
+	if manage == nil {
+		return response.AdminNftResponse{}, errors.New(noti.INTERNALL_ERR_MSG)
+	}
+
+	var adminNftId string
+	for i, admin := range manage.AdminIds {
+		if admin == id {
+			adminNftId = manage.AdminNfts[i]
+			break
+		}
+	}
+
+	if adminNftId == "" {
+		return response.AdminNftResponse{}, genericErr
+	}
+
+	adminNft, err := on_chain.GetOnChainObject[entities.AdminNft](on_chain.GetOnChainObjectRequest{
+		Client:    client,
+		ObjectId:  adminNftId,
+		ErrLogger: a.errLogger,
+	}, ctx)
+
+	return adminNft.ToAdminNftResponse(), err
+}
+
 // GetAdmins implements business.IAdminService.
 func (a *adminService) GetAdmins(req request.GetAdminsRequest, ctx context.Context) (response.PaginationDataResponse, error) {
 	req.SortOrder = util.StandardizeSortOrder(req.SortOrder)

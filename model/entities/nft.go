@@ -77,8 +77,8 @@ func (s StaffNft) ToStaffNftResponse() response.StaffNftResponse {
 	}
 }
 
-func (a AdminNft) ToAdminNftResponse() response.AdminNftResponse {
-	if a.ID.ID == "" {
+func (a *AdminNft) ToAdminNftResponse() response.AdminNftResponse {
+	if a == nil {
 		return response.AdminNftResponse{}
 	}
 

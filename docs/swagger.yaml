@@ -211,7 +211,6 @@ definitions:
       updatedAt:
         type: string
       withdrawAmount:
-        format: int64
         type: integer
     type: object
   entities.PlatformConfig:
@@ -903,6 +902,35 @@ definitions:
         type: string
     required:
     - is_vote_yes
+    type: object
+  response.AdminNftResponse:
+    properties:
+      avatar_blob_id:
+        type: string
+      date_of_birth:
+        type: string
+      email:
+        type: string
+      first_name:
+        type: string
+      gender:
+        type: string
+      id:
+        type: string
+      identity_card_blob_id:
+        type: string
+      identity_code:
+        type: string
+      last_name:
+        type: string
+      name:
+        type: string
+      phone_number:
+        type: string
+      uploaded_at:
+        type: string
+      url:
+        type: string
     type: object
   response.BankProfileResponse:
     properties:
@@ -1733,6 +1761,66 @@ paths:
       security:
       - BearerAuth: []
       summary: Update publisher information
+      tags:
+      - admins
+  /admins/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve an admin
+      parameters:
+      - description: Admin NFT ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.AdminNftResponse'
+        "400":
+          description: Invalid data. Please try again.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "500":
+          description: There is something wrong in the system during the process.
+            Please try again later.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+      summary: Retrieve an admin
+      tags:
+      - admins
+  /admins/user/{id}:
+    get:
+      consumes:
+      - application/json
+      description: Retrieve an admin by owner address
+      parameters:
+      - description: Admin Address
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/response.AdminNftResponse'
+        "400":
+          description: Invalid data. Please try again.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+        "500":
+          description: There is something wrong in the system during the process.
+            Please try again later.
+          schema:
+            $ref: '#/definitions/response.MessageAPIResponse'
+      summary: Retrieve an admin by owner address
       tags:
       - admins
   /auth/login:

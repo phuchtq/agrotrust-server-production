@@ -832,7 +832,6 @@ func (m *moduleChild) ToCreateChildNormalNeedWithdrawProposalArguments(args Crea
 		args.ChildID,
 		args.Description,
 		proofBlobId,
-		fmt.Sprintf("%d", args.ClosedAt),
 		args.Sender,
 		sui.CLOCK_OBJECT_ID,
 	}

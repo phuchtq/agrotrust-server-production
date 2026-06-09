@@ -40,4 +40,6 @@ func InitializeAdminRoute(server *gin.Engine) {
 	// Normal group
 	var norGroup = server.Group(contextPath)
 	norGroup.GET("", transport.GetAdmins)
+	norGroup.GET("/:id", transport.GetAdmin)
+	norGroup.GET("/user/:id", transport.GetAdminByOwner)
 }

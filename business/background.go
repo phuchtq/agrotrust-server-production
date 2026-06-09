@@ -89,6 +89,7 @@ func (b *backgroundService) ProcessCreateChildrenWithdrawProposals(ctx context.C
 		ErrLogger: b.errLogger,
 	}, ctx)
 	if manage == nil {
+		b.errLogger.Println("Nil manage")
 		return
 	}
 
@@ -98,6 +99,7 @@ func (b *backgroundService) ProcessCreateChildrenWithdrawProposals(ctx context.C
 		ErrLogger: b.errLogger,
 	}, ctx)
 	if pool == nil {
+		b.errLogger.Println("Nil Pool")
 		return
 	}
 
@@ -107,6 +109,7 @@ func (b *backgroundService) ProcessCreateChildrenWithdrawProposals(ctx context.C
 		ErrLogger: b.errLogger,
 	}, ctx)
 	if localPools == nil {
+		b.errLogger.Println("Nil Local Pools")
 		return
 	}
 
@@ -116,6 +119,7 @@ func (b *backgroundService) ProcessCreateChildrenWithdrawProposals(ctx context.C
 		ErrLogger: b.errLogger,
 	}, ctx)
 	if booksNeedWithdrawDates == nil {
+		b.errLogger.Println("Nil Books Need Withdraw Dates")
 		return
 	}
 
@@ -125,6 +129,7 @@ func (b *backgroundService) ProcessCreateChildrenWithdrawProposals(ctx context.C
 		ErrLogger: b.errLogger,
 	}, ctx)
 	if healthNeedWithdrawDate == nil {
+		b.errLogger.Println("Nil Health Insurance Need Withdraw Date")
 		return
 	}
 
@@ -159,15 +164,15 @@ func (b *backgroundService) ProcessCreateChildrenWithdrawProposals(ctx context.C
 			return
 		}
 
-		for _, child := range children {
-			var localPoolId string
-			for _, localPool := range localPools {
-				if localPool.Region == req.Region {
-					localPoolId = localPool.ID.ID
-					break
-				}
+		var localPoolId string
+		for _, localPool := range localPools {
+			if localPool.Region == req.Region {
+				localPoolId = localPool.ID.ID
+				break
 			}
+		}
 
+		for _, child := range children {
 			// Books Needs Withdraw
 			for i := 0; i <= 1; i++ {
 				if data := b.prepareDataCreateBooksNeedWithdrawProposal(
@@ -204,7 +209,7 @@ func (b *backgroundService) ProcessCreateChildrenWithdrawProposals(ctx context.C
 
 			// Meal Need Withdraw
 			if data := b.prepareDataCreateMealNeedWithdrawProposal(
-				child.HealthInsuranceNeed,
+				child.MealNeed,
 				req.ActorAddress,
 				localPoolId,
 				module,
@@ -631,7 +636,6 @@ func (b *backgroundService) prepareDataCreateBooksNeedWithdrawProposal(needId, s
 			ChildID:     need.ChildID,
 			LocalPool:   poolId,
 			Description: description,
-			ClosedAt:    util.ToMilliseconds(util.GetRequestDuration()),
 			Sender:      sender,
 		})
 	}
@@ -662,7 +666,6 @@ func (b *backgroundService) prepareDataCreateHealthInsuranceNeedWithdrawProposal
 			ChildID:     need.ChildID,
 			LocalPool:   poolId,
 			Description: description,
-			ClosedAt:    util.ToMilliseconds(util.GetRequestDuration()),
 			Sender:      sender,
 		})
 	}
@@ -677,6 +680,7 @@ func (b *backgroundService) prepareDataCreateMealNeedWithdrawProposal(needId, se
 		ErrLogger: b.errLogger,
 	}, ctx)
 	if need == nil {
+		b.errLogger.Println("Nil Meal Need")
 		return nil
 	}
 
@@ -719,7 +723,6 @@ func (b *backgroundService) prepareDataCreateMealNeedWithdrawProposal(needId, se
 			ChildID:     need.ChildID,
 			LocalPool:   poolId,
 			Description: description,
-			ClosedAt:    util.ToMilliseconds(util.GetRequestDuration()),
 			Sender:      sender,
 		})
 	}
