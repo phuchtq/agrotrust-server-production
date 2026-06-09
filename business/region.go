@@ -519,52 +519,53 @@ func (r *regionService) GetSupportedRegionSuggestionsV2(req request.GetSupported
 	}
 
 	senderVal := ctx.Value("address")
-	sender, _ := senderVal.(string)
-	client := r.clients[constant.SuiTestnet]
-
-	manage, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
-		Client:    client,
-		ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
-		ErrLogger: r.errLogger,
-	}, ctx)
-	if err != nil {
-		return response.PaginationDataResponse{}, err
-	}
-
-	if !slices.Contains(manage.AdminIds, sender) {
-		var staffID string
-		var searchLength int
-		if len(manage.VolunteerNfts) > len(manage.LocalLeaderNfts) {
-			searchLength = len(manage.VolunteerNfts)
-		} else {
-			searchLength = len(manage.LocalLeaderNfts)
-		}
-
-		for i := 0; i < searchLength; i++ {
-			if i < len(manage.VolunteerNfts) {
-				if sender == manage.VolunteerIds[i] {
-					staffID = manage.VolunteerNfts[i]
-					break
-				}
-			}
-			if i < len(manage.LocalLeaderIds) {
-				if sender == manage.LocalLeaderIds[i] {
-					staffID = manage.LocalLeaderNfts[i]
-					break
-				}
-			}
-		}
-
-		staffNFT, err := on_chain.GetOnChainObject[entities.StaffNft](on_chain.GetOnChainObjectRequest{
+	sender, isOk := senderVal.(string)
+	if isOk {
+		client := r.clients[constant.SuiTestnet]
+		manage, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
 			Client:    client,
-			ObjectId:  staffID,
+			ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
 			ErrLogger: r.errLogger,
 		}, ctx)
 		if err != nil {
 			return response.PaginationDataResponse{}, err
 		}
 
-		req.Region = staffNFT.Region
+		if !slices.Contains(manage.AdminIds, sender) {
+			var staffID string
+			var searchLength int
+			if len(manage.VolunteerNfts) > len(manage.LocalLeaderNfts) {
+				searchLength = len(manage.VolunteerNfts)
+			} else {
+				searchLength = len(manage.LocalLeaderNfts)
+			}
+
+			for i := 0; i < searchLength; i++ {
+				if i < len(manage.VolunteerNfts) {
+					if sender == manage.VolunteerIds[i] {
+						staffID = manage.VolunteerNfts[i]
+						break
+					}
+				}
+				if i < len(manage.LocalLeaderIds) {
+					if sender == manage.LocalLeaderIds[i] {
+						staffID = manage.LocalLeaderNfts[i]
+						break
+					}
+				}
+			}
+
+			staffNFT, err := on_chain.GetOnChainObject[entities.StaffNft](on_chain.GetOnChainObjectRequest{
+				Client:    client,
+				ObjectId:  staffID,
+				ErrLogger: r.errLogger,
+			}, ctx)
+			if err != nil {
+				return response.PaginationDataResponse{}, err
+			}
+
+			req.Region = staffNFT.Region
+		}
 	}
 
 	req.SortOrder = util.StandardizeSortOrder(req.SortOrder)
