@@ -71,6 +71,7 @@ func GenerateBackgroundService() (business.IBackgroundService, error) {
 
 // ProcessCreateChildrenWithdrawProposals implements business.IBackgroundService.
 func (b *backgroundService) ProcessCreateChildrenWithdrawProposals(ctx context.Context) {
+	b.errLogger.Println("Create children withdraws call")
 	var curTime time.Time = time.Now()
 	var curTimeEndOfDate time.Time = util.ToEndOfDate(curTime)
 	if !isChildrenWithdrawProposalDateValid(curTime) {
@@ -222,11 +223,9 @@ func (b *backgroundService) ProcessCreateChildrenWithdrawProposals(ctx context.C
 				args = append(args, data)
 			}
 		}
-
 	}
 
 	var errExecuteTxs error
-	b.errLogger.Println("Create children withdraws call")
 	if args != nil && len(functions) > 0 && len(modules) > 0 {
 		for i := 1; i <= 3; i++ {
 			if err := on_chain.BuildMultiBackgroundTransactions(on_chain.BuildMultiBackgroundTransactionsRequest{
@@ -350,6 +349,8 @@ func (b *backgroundService) ProcessBackgroundCenterRequests(ctx context.Context)
 		return
 	}
 
+	b.errLogger.Println("Background center call")
+
 	if len(pendingRes) > 0 {
 		var refusedReqs, approvedRes []entities.CenterRequest
 		for _, req := range pendingRes {
@@ -440,6 +441,8 @@ func (b *backgroundService) ProcessBackgroundRegistrationRequests(ctx context.Co
 	if err != nil {
 		return
 	}
+
+	b.errLogger.Println("Registration background call")
 
 	if len(pendingRes) > 0 {
 		var refusedReqs, approvedReqs []entities.RegistrationRequest
@@ -617,6 +620,11 @@ func (b *backgroundService) prepareDataCreateBooksNeedWithdrawProposal(needId, s
 		return nil
 	}
 
+	if len(need.WithdrawProposals) >= len(need.WithdrawsForNeed) {
+		log.Println("Check withdraw ok")
+		return nil
+	}
+
 	if len(need.Donations) == len(need.WithdrawsForNeed) {
 		return nil
 	}
@@ -653,6 +661,11 @@ func (b *backgroundService) prepareDataCreateHealthInsuranceNeedWithdrawProposal
 		return nil
 	}
 
+	if len(need.WithdrawProposals) >= len(need.WithdrawsForNeed) {
+		log.Println("Check withdraw ok")
+		return nil
+	}
+
 	if len(need.Donations) == len(need.WithdrawsForNeed) {
 		return nil
 	}
@@ -681,6 +694,11 @@ func (b *backgroundService) prepareDataCreateMealNeedWithdrawProposal(needId, se
 	}, ctx)
 	if need == nil {
 		b.errLogger.Println("Nil Meal Need")
+		return nil
+	}
+
+	if len(need.WithdrawProposals) >= len(need.WithdrawsForNeed) {
+		log.Println("Check withdraw ok")
 		return nil
 	}
 
