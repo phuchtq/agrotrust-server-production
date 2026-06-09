@@ -86,7 +86,6 @@ func (b *backgroundService) ProcessCreateChildrenWithdrawProposals(ctx context.C
 	if !isChildrenWithdrawProposalDateValid(curTime) {
 		return
 	}
-	logMissingEnvKeys(b.errLogger, "ProcessCreateChildrenWithdrawProposals", env.MANAGE_OBJECT_ID, env.POOL_ID, env.BOOKS_NEED_WITHDRAW_DATES_ID, env.HEALTH_INSURANCE_NEED_WITHDRAW_DATE_ID)
 
 	reqs, _ := b.backgroundChildrenWithdrawRepo.GetCurrentPendingRequests(ctx)
 	if reqs == nil {
@@ -266,7 +265,6 @@ func (b *backgroundService) ProcessCreateChildrenWithdrawProposals(ctx context.C
 // ProcessRefundVotePower implements business.IBackgroundService.
 func (b *backgroundService) ProcessRefundVotePower(ctx context.Context) {
 	var client = b.clients[constant.SuiTestnet]
-	logMissingEnvKeys(b.errLogger, "ProcessCreateChildrenWithdrawProposals", env.MANAGE_OBJECT_ID, env.POOL_ID, env.BOOKS_NEED_WITHDRAW_DATES_ID, env.HEALTH_INSURANCE_NEED_WITHDRAW_DATE_ID)
 
 	pool, _ := on_chain.GetOnChainObject[entities.MainPool](on_chain.GetOnChainObjectRequest{
 		Client:    client,
@@ -378,8 +376,6 @@ func (b *backgroundService) ProcessBackgroundCenterRequests(ctx context.Context)
 
 		if len(approvedRes) > 0 {
 			var client = b.clients[constant.SuiTestnet]
-			logMissingEnvKeys(b.errLogger, "ProcessCreateChildrenWithdrawProposals", env.MANAGE_OBJECT_ID, env.POOL_ID, env.BOOKS_NEED_WITHDRAW_DATES_ID, env.HEALTH_INSURANCE_NEED_WITHDRAW_DATE_ID)
-
 			manage, _ := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
 				Client:    client,
 				ObjectId:  os.Getenv(env.MANAGE_OBJECT_ID),
@@ -476,7 +472,6 @@ func (b *backgroundService) ProcessBackgroundRegistrationRequests(ctx context.Co
 		var args [][]interface{}
 		var staffModule = on_chain.InitializeModuleStaff()
 		var client = b.clients[constant.SuiTestnet]
-		logMissingEnvKeys(b.errLogger, "ProcessCreateChildrenWithdrawProposals", env.MANAGE_OBJECT_ID, env.POOL_ID, env.BOOKS_NEED_WITHDRAW_DATES_ID, env.HEALTH_INSURANCE_NEED_WITHDRAW_DATE_ID)
 
 		for _, req := range approvedReqs {
 			modules = append(modules, staffModule.GetModule())

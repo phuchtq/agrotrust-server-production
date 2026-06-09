@@ -518,9 +518,9 @@ func (r *regionService) GetSupportedRegionSuggestionsV2(req request.GetSupported
 		}
 	}
 
-	senderVal := ctx.Value("address")
-	sender, isOk := senderVal.(string)
-	if isOk {
+	//senderVal := ctx.Value("address")
+	if senderVal := ctx.Value("address"); senderVal != nil {
+		sender, _ := senderVal.(string)
 		client := r.clients[constant.SuiTestnet]
 		manage, err := on_chain.GetOnChainObject[entities.Manage](on_chain.GetOnChainObjectRequest{
 			Client:    client,
@@ -565,9 +565,11 @@ func (r *regionService) GetSupportedRegionSuggestionsV2(req request.GetSupported
 			}
 
 			req.Region = staffNFT.Region
+			log.Println("Region in IF clause:", req.Region)
 		}
 	}
 
+	log.Println("Region out IF clause:", req.Region)
 	req.SortOrder = util.StandardizeSortOrder(req.SortOrder)
 	req.Keyword = strings.TrimSpace(req.Keyword)
 	if req.PageSize < 1 {

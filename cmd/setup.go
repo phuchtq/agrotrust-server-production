@@ -137,7 +137,7 @@ func setupBackgroundService(ctx context.Context, wg *sync.WaitGroup) {
 
 func processCenterBackgroundService(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
-	var duration time.Duration = time.Minute
+	var duration time.Duration = time.Minute / 2
 	var ticker = time.NewTicker(duration)
 	defer ticker.Stop()
 	for {
@@ -154,7 +154,7 @@ func processCenterBackgroundService(ctx context.Context, wg *sync.WaitGroup) {
 
 func processRegistrationBackgroundService(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
-	var duration time.Duration = time.Minute
+	var duration time.Duration = time.Minute / 2
 	var ticker = time.NewTicker(duration)
 	defer ticker.Stop()
 	for {
@@ -171,7 +171,7 @@ func processRegistrationBackgroundService(ctx context.Context, wg *sync.WaitGrou
 
 func processRefundVotePowerBackgroundService(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
-	var duration time.Duration = time.Minute
+	var duration time.Duration = time.Minute / 2
 	var ticker = time.NewTicker(duration)
 	defer ticker.Stop()
 	for {
@@ -188,7 +188,7 @@ func processRefundVotePowerBackgroundService(ctx context.Context, wg *sync.WaitG
 
 func processCreateChildrenWithdrawsBackgroundService(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
-	var duration time.Duration = time.Minute
+	var duration time.Duration = time.Minute / 2
 	var ticker = time.NewTicker(duration)
 	defer ticker.Stop()
 	for {

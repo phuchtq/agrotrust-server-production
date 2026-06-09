@@ -135,6 +135,7 @@ func GetSupportedRegionSuggestions(ctx *gin.Context) {
 // @Tags         regions
 // @Accept       json
 // @Produce      json
+// @Security     BearerAuth
 // @Param        request  query     request.GetSupportedRegionSuggestionsRequest  true  "Filter Criteria"
 // @Success      200  {object}  response.PaginationDataResponse
 // @Failure      400      {object}  response.MessageAPIResponse "Invalid data. Please try again."

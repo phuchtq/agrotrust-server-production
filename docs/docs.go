@@ -6005,6 +6005,11 @@ const docTemplate = `{
         },
         "/regions/supported-suggestionsv2": {
             "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Retrieves a list of supported region proposals based on filter criteria",
                 "consumes": [
                     "application/json"

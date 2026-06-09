@@ -20,6 +20,7 @@ var (
 	StaffRoleAuthorize         = skipOnPreflight(staffRoleAuthorize)
 	VolunteerRoleAuthorize     = skipOnPreflight(volunteerRoleAuthorize)
 	GotRolesAuthorizeAuthorize = skipOnPreflight(gotRolesAuthorize)
+	OptinalAuthorize           = skipOnPreflight(optinalAuthorize)
 )
 
 func skipOnPreflight(handler gin.HandlerFunc) gin.HandlerFunc {
@@ -72,6 +73,48 @@ func authorize(ctx *gin.Context) {
 	if len(roles) == 0 {
 		util.ProcessResponse(unAuthBodyResponse)
 		ctx.Abort()
+		return
+	}
+
+	ctx.Set("address", address)
+	ctx.Set("sub", sub)
+	ctx.Set("roles", roles)
+	ctx.Next()
+}
+
+func optinalAuthorize(ctx *gin.Context) {
+	var authHeader string = ctx.GetHeader("Authorization")
+	if authHeader == "" {
+		ctx.Next()
+		return
+	}
+
+	//var token string = strings.TrimPrefix(authHeader, "Bearer ")
+
+	address, sub, roles, exp, err := security.ExtractDataFromTokenV2(authHeader, util.GetLogConfig(shared.ERROR_LEVEL))
+	if err != nil {
+		ctx.Next()
+		return
+	}
+
+	// Token expired
+	if time.Now().After(exp) {
+		ctx.Next()
+		return
+	}
+
+	if !business.IsWalletRegistered(sub) {
+		ctx.Next()
+		return
+	}
+
+	if !util.IsValidSuiAddressStrict(address) {
+		ctx.Next()
+		return
+	}
+
+	if len(roles) == 0 {
+		ctx.Next()
 		return
 	}
 

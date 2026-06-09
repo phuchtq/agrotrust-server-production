@@ -5676,6 +5676,8 @@ paths:
             Please try again later.
           schema:
             $ref: '#/definitions/response.MessageAPIResponse'
+      security:
+      - BearerAuth: []
       summary: Get list of supported region proposals V2
       tags:
       - regions
