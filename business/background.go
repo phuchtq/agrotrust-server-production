@@ -631,7 +631,7 @@ func (b *backgroundService) prepareDataCreateBooksNeedWithdrawProposal(needId, s
 		return nil
 	}
 
-	if len(need.WithdrawProposals) >= len(need.WithdrawsForNeed) {
+	if len(need.WithdrawProposals) > len(need.WithdrawsForNeed) {
 		log.Println("Check withdraw ok")
 		return nil
 	}
@@ -672,7 +672,7 @@ func (b *backgroundService) prepareDataCreateHealthInsuranceNeedWithdrawProposal
 		return nil
 	}
 
-	if len(need.WithdrawProposals) >= len(need.WithdrawsForNeed) {
+	if len(need.WithdrawProposals) > len(need.WithdrawsForNeed) {
 		log.Println("Check withdraw ok")
 		return nil
 	}
@@ -708,7 +708,7 @@ func (b *backgroundService) prepareDataCreateMealNeedWithdrawProposal(needId, se
 		return nil
 	}
 
-	if len(need.WithdrawProposals) >= len(need.WithdrawsForNeed) {
+	if len(need.WithdrawProposals) > len(need.WithdrawsForNeed) {
 		log.Println("Check withdraw ok")
 		return nil
 	}
